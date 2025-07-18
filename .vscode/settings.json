@@ -1,0 +1,14 @@
+{
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always", // 저장 시 모든 문제 해결
+    "source.fixAll.eslint": "always" // ESLint를 저장 시 실행
+  },
+  "editor.formatOnSave": true, // 저장 시 포맷팅 실행
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ]
+}
