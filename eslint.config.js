@@ -7,7 +7,7 @@ import { globalIgnores } from 'eslint/config';
 import stylisticJs from '@stylistic/eslint-plugin';
 
 export default tseslint.config([
-  globalIgnores(['dist', 'node_modules', '!src/**/*']),
+  globalIgnores(['dist']),
   {
     files: ['src/**/*.{ts,tsx}'],
     plugins: {
@@ -37,7 +37,7 @@ export default tseslint.config([
           allowTemplateLiterals: true,
         },
       ],
-      '@stylistic/jsx-quotes': ['error'],
+      '@stylistic/jsx-quotes': ['error', 'prefer-single'],
       '@stylistic/semi': ['error'],
       '@stylistic/max-len': ['error', { code: 80, tabWidth: 2 }],
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
