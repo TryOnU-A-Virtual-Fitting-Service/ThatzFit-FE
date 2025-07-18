@@ -5,6 +5,8 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import { globalIgnores } from 'eslint/config';
 import stylisticJs from '@stylistic/eslint-plugin';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import react from 'eslint-plugin-react';
 
 export default tseslint.config([
   globalIgnores(['dist']),
@@ -12,6 +14,7 @@ export default tseslint.config([
     files: ['src/**/*.{ts,tsx}'],
     plugins: {
       '@stylistic': stylisticJs,
+      'simple-import-sort': simpleImportSort,
     },
     languageOptions: {
       ecmaVersion: 2020,
@@ -27,8 +30,26 @@ export default tseslint.config([
       tseslint.configs.stylisticTypeChecked,
       reactHooks.configs.recommended,
       reactRefresh.configs.vite,
+      react.configs.recommended,
+      importPlugin.configs.recommended,
     ],
     rules: {
+      'simple-import-sort/imports': [
+        'error',
+        {
+          groups: [
+            ['^react', '^@?\\w'],
+            ['^@/hooks'],
+            ['^@/utils'],
+            ['^@/components'],
+            ['^@/'],
+            ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
+            ['^\\./(?=.*/)(?!/?$)', '^\\.(?!/?$)', '^\\./?$'],
+            ['^\\u0000'],
+          ],
+        },
+      ],
+      'simple-import-sort/exports': 'error',
       '@stylistic/indent': ['error', 2],
       '@stylistic/quotes': [
         'error',
