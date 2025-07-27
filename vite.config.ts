@@ -8,9 +8,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        entryFileNames: `index.js`,
-        chunkFileNames: `index-vendor.js`,
-        assetFileNames: `[name].[ext]`,
+        entryFileNames: `index.[hash].js`,
+        chunkFileNames: `index-vendor.[hash].js`,
+        assetFileNames: `[name].[hash].[ext]`,
         manualChunks(id) {
           if (id.includes('node_modules')) {
             return 'index-vendor';
