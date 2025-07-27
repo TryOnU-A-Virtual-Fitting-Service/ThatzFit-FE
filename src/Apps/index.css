@@ -1,1 +1,101 @@
 @import 'tailwindcss';
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/Pretendard-Regular.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@layer base {
+  body {
+    font-family: 'Pretendard', sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-heading1 {
+    @apply font-bold text-[1.0625rem] leading-normal tracking-[-0.003em] ;
+  }
+
+  .text-heading1-semibold {
+    @apply font-semibold text-[1.0625rem] leading-normal tracking-[-0.003em];
+  }
+
+  .text-heading2 {
+    @apply font-semibold text-[0.9375rem] leading-normal tracking-[-0.003em];
+  }
+
+  .text-heading3 {
+    @apply font-semibold text-xs leading-normal tracking-[-0.003em];
+  }
+
+  .text-heading3-regular {
+    @apply font-normal text-xs leading-normal tracking-[-0.003em];
+  }
+
+  .text-body1 {
+    @apply font-semibold text-[0.6875rem] leading-normal tracking-[-0.003em];
+  }
+
+  .text-body1-medium {
+    @apply font-medium text-[0.6875rem] leading-normal tracking-[-0.003em];
+  }
+
+  .text-body2 {
+    @apply font-semibold text-[0.625rem] leading-normal tracking-[-0.003em];
+  }
+
+  .text-body2-medium {
+    @apply font-medium text-[0.625rem] leading-normal tracking-[-0.003em];
+  }
+
+  .text-body3 {
+    @apply font-semibold text-[0.5625rem] leading-normal tracking-[-0.003em];
+  }
+
+  .text-body3-medium {
+    @apply font-medium text-[0.5625rem] leading-normal tracking-[-0.003em];
+  }
+
+  .text-body3-regular {
+    @apply font-normal text-[0.5625rem] leading-normal tracking-[-0.003em];
+  }
+
+  .text-detail1 {
+    @apply font-semibold text-[0.5rem] leading-normal tracking-[-0.003em];
+  }
+
+  .text-detail1-medium {
+    @apply font-medium text-[0.5rem] leading-normal tracking-[-0.003em];
+  }
+
+}
+
+@theme {
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+  --color-red : #ff5247;
+
+  --color-blue-back: #eef3f8;
+  --color-light-blue : #CCDAEB;
+  --color-clouded-blue: #ABC2DD;
+  --color-dark-blue: #7D9EC5;
+
+  --color-sand : #F5F3EE;
+  --color-light-sand: #ebe6dd;
+  --color--warm-sand: #ccc1ab;
+  --color-dark-sand: #AB9D7F;
+
+  --color-grey-01: #181A1B;
+  --color-grey-02: #303337;
+  --color-grey-03: #484D52;
+  --color-grey-04: #9399A1;
+  --color-grey-05: #AEB3B8;
+  --color-grey-06: #C9CCD0;
+  --color-grey-07: #E4E6E7;
+  --color-grey-08: #F1F2F3;
+  --color-grey-09: #F9F9F9;
+  
+}
+
