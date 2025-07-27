@@ -50,12 +50,12 @@ export default tseslint.config(
         {
           groups: [
             ['^react', '^@?\\w'],
-            ['^@/apps'],
-            ['^@/pages'],
-            ['^@/widgets'],
-            ['^@/features'],
-            ['^@/entities'],
-            ['^@/shared'],
+            ['^@/Apps'],
+            ['^@/Pages'],
+            ['^@/Widgets'],
+            ['^@/Features'],
+            ['^@/Entities'],
+            ['^@/Shared'],
             ['^@/'],
             ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
             ['^\\./(?=.*/)(?!/?$)', '^\\.(?!/?$)', '^\\./?$'],
