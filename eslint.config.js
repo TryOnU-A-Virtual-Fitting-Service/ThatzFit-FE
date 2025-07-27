@@ -3,52 +3,63 @@ import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
-import { globalIgnores } from 'eslint/config';
-import stylisticJs from '@stylistic/eslint-plugin';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import react from 'eslint-plugin-react';
+import stylistic from '@stylistic/eslint-plugin';
 
-export default tseslint.config([
-  globalIgnores(['dist']),
+export default tseslint.config(
+  {
+    ignores: ['dist/'],
+  },
   {
     files: ['src/**/*.{ts,tsx}'],
     plugins: {
-      '@stylistic': stylisticJs,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
       'simple-import-sort': simpleImportSort,
+      react,
+      '@stylistic': stylistic,
     },
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+      },
+      parser: tseslint.parser,
       parserOptions: {
-        projectService: true,
+        ecmaFeatures: { jsx: true },
+        project: ['tsconfig.json', 'tsconfig.app.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.strictTypeChecked,
-      tseslint.configs.stylisticTypeChecked,
-      reactHooks.configs.recommended,
-      reactRefresh.configs.vite,
-      react.configs.recommended,
-      importPlugin.configs.recommended,
-    ],
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
     rules: {
+      ...js.configs.recommended.rules,
+      ...tseslint.configs.strictTypeChecked.rules,
+      ...tseslint.configs.stylisticTypeChecked.rules,
+      ...react.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      'react-refresh/only-export-components': 'warn',
       'simple-import-sort/imports': [
         'error',
         {
           groups: [
-                        ['^react', '^@?\\w'],
-                        ['^@/apps'],
-                        ['^@/pages'],
-                        ['^@/widgets'],
-                        ['^@/features'],
-                        ['^@/entities'],
-                        ['^@/shared'],
-                        ['^@/'],
-                        ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
-                        ['^\\./(?=.*/)(?!/?$)', '^\\.(?!/?$)', '^\\./?$'],
-                        ['^\\u0000'],
+            ['^react', '^@?\\w'],
+            ['^@/apps'],
+            ['^@/pages'],
+            ['^@/widgets'],
+            ['^@/features'],
+            ['^@/entities'],
+            ['^@/shared'],
+            ['^@/'],
+            ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
+            ['^\\./(?=.*/)(?!/?$)', '^\\.(?!/?$)', '^\\./?$'],
+            ['^\\u0000'],
           ],
         },
       ],
@@ -58,7 +69,7 @@ export default tseslint.config([
         'error',
         'single',
         {
-          allowTemplateLiterals: true,
+          allowTemplateLiterals: 'always',
         },
       ],
       '@stylistic/jsx-quotes': ['error', 'prefer-single'],
@@ -86,6 +97,6 @@ export default tseslint.config([
   },
   {
     files: ['**/*.{js,mjs}'],
-    extends: [tseslint.configs.disableTypeChecked],
+    ...tseslint.configs.disableTypeChecked,
   },
-]);
+);
