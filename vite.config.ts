@@ -19,7 +19,7 @@ export default defineConfig(() => {
           assetFileNames: 'index.[hash].[ext]',
           manualChunks: (id) => {
             if (id.includes('node_modules')) {
-              return 'index.vendor';
+              return 'index-vendor';
             }
           },
         }
