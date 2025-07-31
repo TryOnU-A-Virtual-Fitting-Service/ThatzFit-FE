@@ -5,7 +5,8 @@ import { App } from './App.tsx';
 
 import './index.css';
 
-createRoot(document.getElementById('root')!).render(
+
+createRoot(document.getElementById('thatzfit-root')!).render(
   <StrictMode>
     <App />
   </StrictMode>,
