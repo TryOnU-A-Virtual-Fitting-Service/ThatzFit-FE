@@ -1,10 +1,17 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
-
 @import 'tailwindcss';
+
+@font-face {
+  font-family: 'Pretendard Variable';
+  src: url('https://cdn.thatzfits.com/default/fonts/PretendardVariable.woff2') format('woff2-variations');
+  font-weight: 45 920;
+  font-style: normal;
+  font-display: swap;
+}
+
 
 @layer base {
   body {
-    font-family: 'Pretendard', sans-serif;
+    font-family: 'Pretendard Variable', sans-serif;
   }
 }
 
@@ -22,47 +29,51 @@
   }
 
   .text-heading3 {
-    @apply font-semibold text-xs leading-normal tracking-[-0.003em];
+    @apply font-semibold text-[0.8125rem] leading-normal tracking-[-0.003em];
   }
 
   .text-heading3-regular {
-    @apply font-normal text-xs leading-normal tracking-[-0.003em];
+    @apply font-normal text-[0.8125rem] leading-normal tracking-[-0.003em];
   }
 
   .text-body1 {
-    @apply font-semibold text-[0.6875rem] leading-normal tracking-[-0.003em];
+    @apply font-semibold text-xs leading-normal tracking-[-0.003em];
   }
 
   .text-body1-medium {
-    @apply font-medium text-[0.6875rem] leading-normal tracking-[-0.003em];
+    @apply font-medium text-xs leading-normal tracking-[-0.003em];
+  }
+
+  .text-body1-regular {
+    @apply font-normal text-xs leading-normal tracking-[-0.003em];
   }
 
   .text-body2 {
-    @apply font-semibold text-[0.625rem] leading-normal tracking-[-0.003em];
+    @apply font-semibold text-[0.6875rem] leading-normal tracking-[-0.003em];
   }
 
   .text-body2-medium {
-    @apply font-medium text-[0.625rem] leading-normal tracking-[-0.003em];
+    @apply font-medium text-[0.6875rem] leading-normal tracking-[-0.003em];
   }
 
   .text-body3 {
-    @apply font-semibold text-[0.5625rem] leading-normal tracking-[-0.003em];
+    @apply font-semibold text-[0.625rem] leading-normal tracking-[-0.003em];
   }
 
   .text-body3-medium {
-    @apply font-medium text-[0.5625rem] leading-normal tracking-[-0.003em];
+    @apply font-medium text-[0.625rem] leading-normal tracking-[-0.003em];
   }
 
   .text-body3-regular {
-    @apply font-normal text-[0.5625rem] leading-normal tracking-[-0.003em];
+    @apply font-normal text-[0.625rem] leading-[1.6] tracking-[-0.003em];
   }
 
   .text-detail1 {
-    @apply font-semibold text-[0.5rem] leading-normal tracking-[-0.003em];
+    @apply font-semibold text-[0.5625rem] leading-normal tracking-[-0.003em];
   }
 
   .text-detail1-medium {
-    @apply font-medium text-[0.5rem] leading-normal tracking-[-0.003em];
+    @apply font-medium text-[0.5625rem] leading-normal tracking-[-0.003em];
   }
 
 }

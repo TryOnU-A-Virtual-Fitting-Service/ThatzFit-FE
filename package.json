@@ -11,7 +11,9 @@
     "lint": "eslint .",
     "lint:fix": "eslint src/**/*.{ts,tsx,js,jsx} --fix",
     "preview": "vite preview",
-    "prepare": "husky"
+    "prepare": "husky",
+    "clean:linux" : "rm -rf dist && rm -rf node_modules",
+    "clean:windows" : "rmdir /s /q dist && rmdir /s /q node_modules"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",
