@@ -1,18 +1,18 @@
 import js from '@eslint/js';
-import globals from 'globals';
+import stylistic from '@stylistic/eslint-plugin';
+import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import tseslint from 'typescript-eslint';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
-import react from 'eslint-plugin-react';
-import stylistic from '@stylistic/eslint-plugin';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
     ignores: ['dist/'],
   },
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx,js,jsx}', 'eslint.config.js'],
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
@@ -74,7 +74,7 @@ export default tseslint.config(
       ],
       '@stylistic/jsx-quotes': ['error', 'prefer-single'],
       '@stylistic/semi': ['error'],
-      '@stylistic/max-len': ['error', { code: 80, tabWidth: 2 }],
+      '@stylistic/max-len': ['error', { code: 80, tabWidth: 2, ignoreUrls: true, ignoreComments: true, ignoreStrings: true, ignoreTemplateLiterals: true, ignoreTrailingComments: true }],
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
       '@stylistic/arrow-parens': ['error', 'always'],
       '@stylistic/keyword-spacing': ['error'],
