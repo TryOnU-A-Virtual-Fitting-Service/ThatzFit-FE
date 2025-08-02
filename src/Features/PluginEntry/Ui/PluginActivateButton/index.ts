@@ -1,0 +1,1 @@
+export { PluginActivateButton } from './PluginActivateButton';
