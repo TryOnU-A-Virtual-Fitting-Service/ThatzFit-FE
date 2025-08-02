@@ -3,13 +3,14 @@ import react from '@vitejs/plugin-react-swc'
 import tailwindcss from '@tailwindcss/vite'
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // https://vite.dev/config/
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), tsconfigPaths()],
     build: {
       rollupOptions: {
         input: resolve(__dirname, 'src/Apps/main.tsx'),
@@ -25,6 +26,9 @@ export default defineConfig(() => {
         }
       },
       emptyOutDir: true,
+    },
+    server: {
+      allowedHosts: ['http://localhost:8080'],
     }
   };
 })
