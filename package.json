@@ -9,7 +9,9 @@
     "build:dev": "tsc -b && vite build --mode development",
     "build:prod": "tsc -b && vite build --mode production",
     "lint": "eslint .",
-    "lint:fix": "eslint src/**/*.{ts,tsx,js,jsx} --fix",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "preview": "vite preview",
     "prepare": "husky",
     "clean:linux": "rm -rf dist && rm -rf node_modules",
@@ -31,6 +33,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react-swc": "^3.10.2",
     "eslint": "^9.29.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
@@ -38,6 +41,7 @@
     "globals": "^16.2.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
     "vite": "^7.0.0",
@@ -45,6 +49,7 @@
   },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write",
       "eslint --fix"
     ]
   },

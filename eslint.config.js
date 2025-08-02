@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
+import eslintConfigPrettier from 'eslint-config-prettier';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
@@ -74,7 +75,18 @@ export default tseslint.config(
       ],
       '@stylistic/jsx-quotes': ['error', 'prefer-single'],
       '@stylistic/semi': ['error'],
-      '@stylistic/max-len': ['error', { code: 80, tabWidth: 2, ignoreUrls: true, ignoreComments: true, ignoreStrings: true, ignoreTemplateLiterals: true, ignoreTrailingComments: true }],
+      '@stylistic/max-len': [
+        'error',
+        {
+          code: 80,
+          tabWidth: 2,
+          ignoreUrls: true,
+          ignoreComments: true,
+          ignoreStrings: true,
+          ignoreTemplateLiterals: true,
+          ignoreTrailingComments: true,
+        },
+      ],
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
       '@stylistic/arrow-parens': ['error', 'always'],
       '@stylistic/keyword-spacing': ['error'],
@@ -99,4 +111,5 @@ export default tseslint.config(
     files: ['**/*.{js,mjs}'],
     ...tseslint.configs.disableTypeChecked,
   },
+  eslintConfigPrettier,
 );
