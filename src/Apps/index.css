@@ -2,12 +2,12 @@
 
 @font-face {
   font-family: 'Pretendard Variable';
-  src: url('https://cdn.thatzfits.com/default/fonts/PretendardVariable.woff2') format('woff2-variations');
+  src: url('https://cdn.thatzfits.com/default/fonts/PretendardVariable.woff2')
+    format('woff2-variations');
   font-weight: 45 920;
   font-style: normal;
   font-display: swap;
 }
-
 
 @layer base {
   body {
@@ -17,7 +17,7 @@
 
 @layer utilities {
   .text-heading1 {
-    @apply font-bold text-[1.0625rem] leading-normal tracking-[-0.003em] ;
+    @apply font-bold text-[1.0625rem] leading-normal tracking-[-0.003em];
   }
 
   .text-heading1-semibold {
@@ -75,20 +75,19 @@
   .text-detail1-medium {
     @apply font-medium text-[0.5625rem] leading-normal tracking-[-0.003em];
   }
-
 }
 
 @theme {
   --color-white: #ffffff;
   --color-black: #000000;
-  --color-red : #ff5247;
+  --color-red: #ff5247;
 
   --color-blue-back: #eef3f8;
-  --color-light-blue : #ccdaeb;
+  --color-light-blue: #ccdaeb;
   --color-clouded-blue: #abc2dd;
   --color-dark-blue: #7d9ec5;
 
-  --color-sand : #f5f3ee;
+  --color-sand: #f5f3ee;
   --color-light-sand: #ebe6dd;
   --color-warm-sand: #ccc1ab;
   --color-dark-sand: #ab9d7f;
@@ -102,6 +101,4 @@
   --color-grey-07: #e4e6e7;
   --color-grey-08: #f1f2f3;
   --color-grey-09: #f9f9f9;
-  
 }
-
