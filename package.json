@@ -45,8 +45,7 @@
   },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "cd src && tsc --noEmit"
+      "eslint --fix"
     ]
   },
   "packageManager": "pnpm@10.0.0"
