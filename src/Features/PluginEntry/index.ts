@@ -1,1 +1,0 @@
-export { PluginEntryButton } from './Ui';
