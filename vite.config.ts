@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import tailwindcss from '@tailwindcss/vite';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import tsconfigPaths from 'vite-tsconfig-paths';
@@ -8,8 +8,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // https://vite.dev/config/
-export default defineConfig(({mode}) => {
-
+export default defineConfig(({ mode }) => {
   const isDev = mode === 'development';
   return {
     plugins: [react(), tailwindcss(), tsconfigPaths()],
@@ -25,12 +24,12 @@ export default defineConfig(({mode}) => {
               return 'index-vendor';
             }
           },
-        }
+        },
       },
       emptyOutDir: true,
     },
     server: {
       allowedHosts: ['http://localhost:8080'],
-    }
+    },
   };
-})
+});

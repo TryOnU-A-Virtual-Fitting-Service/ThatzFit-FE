@@ -8,7 +8,7 @@ code_review:
     summary: false
     code_review: false
 ignore_patterns:
-  - ".github/"
-  - ".husky/"
-  - ".storybook/"
-  - ".vscode/"
+  - '.github/'
+  - '.husky/'
+  - '.storybook/'
+  - '.vscode/'
