@@ -1,14 +1,14 @@
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
 export const createPluginEntryWrapper = () => {
-  const thatzfitEnrtyDiv =
+  const thatzfitEntryDiv =
     window.parent.document.getElementById('thatzfit-entry');
 
-  if (!thatzfitEnrtyDiv) {
+  if (!thatzfitEntryDiv) {
     return;
   }
 
-  let shadowRoot = thatzfitEnrtyDiv.shadowRoot;
+  let shadowRoot = thatzfitEntryDiv.shadowRoot;
 
   if (shadowRoot && shadowRoot.firstChild) {
     usePluginEntryStore.setState({
@@ -17,7 +17,7 @@ export const createPluginEntryWrapper = () => {
   }
 
   if (!shadowRoot) {
-    shadowRoot = thatzfitEnrtyDiv.attachShadow({ mode: 'open' });
+    shadowRoot = thatzfitEntryDiv.attachShadow({ mode: 'open' });
   }
 
   shadowRoot.innerHTML = '';
