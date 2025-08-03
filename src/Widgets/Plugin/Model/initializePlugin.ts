@@ -11,6 +11,6 @@ export const initializePlugin = () => {
 
   pluginWrapper.classList.add('thatzfit-desktop', 'thatzfit-hidden');
   usePluginStore.setState({
-    PluginWrapper: pluginWrapper,
+    pluginWrapper: pluginWrapper,
   });
 };

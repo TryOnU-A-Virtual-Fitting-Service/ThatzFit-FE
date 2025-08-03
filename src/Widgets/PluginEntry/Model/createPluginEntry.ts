@@ -12,7 +12,7 @@ export const createPluginEntryWrapper = () => {
 
   if (shadowRoot && shadowRoot.firstChild) {
     usePluginEntryStore.setState({
-      EntryWrapper: shadowRoot.firstChild as HTMLElement,
+      entryWrapper: shadowRoot.firstChild as HTMLElement,
     });
   }
 
@@ -34,6 +34,6 @@ export const createPluginEntryWrapper = () => {
 
   shadowRoot.appendChild(pluginEntry);
   usePluginEntryStore.setState({
-    EntryWrapper: pluginEntry,
+    entryWrapper: pluginEntry,
   });
 };

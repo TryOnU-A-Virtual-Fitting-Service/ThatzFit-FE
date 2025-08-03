@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 type PluginState = {
-  PluginWrapper: HTMLElement | null;
+  pluginWrapper: HTMLElement | null;
 };
 
 type PluginAction = {
@@ -11,6 +11,6 @@ type PluginAction = {
 type PluginStore = PluginState & PluginAction;
 
 export const usePluginStore = create<PluginStore>()((set) => ({
-  PluginWrapper: null,
-  setPluginWrapper: (pluginWrapper) => set({ PluginWrapper: pluginWrapper }),
+  pluginWrapper: null,
+  setPluginWrapper: (pluginWrapper) => set({ pluginWrapper: pluginWrapper }),
 }));
