@@ -20,8 +20,6 @@ export const createPluginEntryWrapper = () => {
     shadowRoot = thatzfitEntryDiv.attachShadow({ mode: 'open' });
   }
 
-  shadowRoot.innerHTML = '';
-
   const tailwind = document.createElement('script');
   tailwind.src = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
   shadowRoot.appendChild(tailwind);
