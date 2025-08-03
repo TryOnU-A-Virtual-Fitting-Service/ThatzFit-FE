@@ -1,0 +1,1 @@
+export { FittingModelView } from './FittingModelView';

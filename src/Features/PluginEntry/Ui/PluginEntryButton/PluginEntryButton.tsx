@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { usePluginStore } from '@/Entities/Plugin';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
-import { cn } from '@/Shared';
+import { cn } from '@/Shared/Lib';
 
 import { PluginActivateButton } from '../PluginActivateButton';
 import { PluginDeactivateButton } from '../PluginDeactivateButton';

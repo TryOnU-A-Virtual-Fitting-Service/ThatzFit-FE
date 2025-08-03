@@ -1,6 +1,6 @@
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
-import { Button } from '@/Shared';
+import { Button } from '@/Shared/Components';
 
 interface PluginActivateButtonProps {
   className?: string;

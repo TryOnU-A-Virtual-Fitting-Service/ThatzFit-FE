@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import svgr from 'vite-plugin-svgr';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -11,7 +12,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export default defineConfig(({ mode }) => {
   const isDev = mode === 'development';
   return {
-    plugins: [react(), tailwindcss(), tsconfigPaths()],
+    plugins: [react(), tailwindcss(), tsconfigPaths(), svgr()],
     build: {
       rollupOptions: {
         input: resolve(__dirname, 'src/Apps/main.tsx'),

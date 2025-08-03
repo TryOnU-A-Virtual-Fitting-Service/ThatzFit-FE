@@ -28,6 +28,10 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src", "vite-env.d.ts"],
+  "include": [
+    "src",
+    "vite-env.d.ts",
+    "src/Pages/Plugin/Ui/PluginLayout/.tsxinLayout.tsx"
+  ],
   "exclude": ["node_modules", "dist"]
 }

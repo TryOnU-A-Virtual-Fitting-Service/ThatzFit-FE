@@ -16,9 +16,10 @@
     "prepare": "husky",
     "clean:linux": "rm -rf dist && rm -rf node_modules",
     "clean:windows": "rmdir /s /q dist && rmdir /s /q node_modules",
-    "ts:check": "tsc --noEmit"
+    "ts:check": "tsc --noEmit --project tsconfig.app.json"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.11",
     "class-variance-authority": "^0.7.1",
@@ -53,6 +54,7 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
     "vite": "^7.0.0",
+    "vite-plugin-svgr": "^4.3.0",
     "vite-tsconfig-paths": "^5.1.4"
   },
   "lint-staged": {
