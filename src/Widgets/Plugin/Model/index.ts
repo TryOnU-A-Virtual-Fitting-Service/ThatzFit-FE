@@ -1,0 +1,1 @@
+export { initializePlugin } from './initializePlugin';

@@ -1,0 +1,1 @@
+export { createPluginEntry } from './Model';
