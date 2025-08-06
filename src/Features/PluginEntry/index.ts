@@ -1,5 +1,1 @@
-export {
-  ModelZoomDialog,
-  PluginEntryButton,
-  ThatzfitLandingButton,
-} from './Ui';
+export { PluginEntryButton } from './Ui';

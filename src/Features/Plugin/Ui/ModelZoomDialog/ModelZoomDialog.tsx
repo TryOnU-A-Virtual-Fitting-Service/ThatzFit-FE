@@ -12,6 +12,14 @@ import {
 } from '@/Shared/Components';
 
 export const ModelZoomDialog = () => {
+  const iframe = document.getElementById(
+    'thatzfit-iframe',
+  ) as HTMLIFrameElement;
+  const iframeDocument =
+    iframe.contentWindow?.document || iframe.contentDocument;
+
+  const container = iframeDocument?.getElementById('thatzfit-root');
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -19,7 +27,11 @@ export const ModelZoomDialog = () => {
           <Maximize2 />
         </Button>
       </DialogTrigger>
-      <DialogContent className='z-[10000000]' showCloseButton={false}>
+      <DialogContent
+        className='z-[10000000]'
+        showCloseButton={false}
+        container={container}
+      >
         <DialogHeader>
           <DialogTitle>Model Zoom</DialogTitle>
         </DialogHeader>
