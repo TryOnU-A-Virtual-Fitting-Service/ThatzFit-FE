@@ -1,4 +1,4 @@
-import { ModelZoomDialog } from '@/Features/PluginEntry';
+import { ModelZoomDialog } from '@/Features/Plugin';
 
 export const FittingModelView = () => {
   return (

@@ -1,4 +1,4 @@
-import { ThatzfitLandingButton } from '@/Features/PluginEntry';
+import { ThatzfitLandingButton } from '@/Features/Plugin';
 
 export const FooterSection = () => {
   return (
