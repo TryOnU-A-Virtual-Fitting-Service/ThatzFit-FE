@@ -11,3 +11,9 @@ export {
   DialogTitle,
   DialogTrigger,
 } from './Dialog';
+export {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './Tooltip';
