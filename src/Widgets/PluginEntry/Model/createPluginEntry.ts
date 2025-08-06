@@ -1,26 +1,24 @@
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
 export const createPluginEntryWrapper = () => {
-  const thatzfitEnrtyDiv =
+  const thatzfitEntryDiv =
     window.parent.document.getElementById('thatzfit-entry');
 
-  if (!thatzfitEnrtyDiv) {
+  if (!thatzfitEntryDiv) {
     return;
   }
 
-  let shadowRoot = thatzfitEnrtyDiv.shadowRoot;
+  let shadowRoot = thatzfitEntryDiv.shadowRoot;
 
   if (shadowRoot && shadowRoot.firstChild) {
     usePluginEntryStore.setState({
-      EntryWrapper: shadowRoot.firstChild as HTMLElement,
+      entryWrapper: shadowRoot.firstChild as HTMLElement,
     });
   }
 
   if (!shadowRoot) {
-    shadowRoot = thatzfitEnrtyDiv.attachShadow({ mode: 'open' });
+    shadowRoot = thatzfitEntryDiv.attachShadow({ mode: 'open' });
   }
-
-  shadowRoot.innerHTML = '';
 
   const tailwind = document.createElement('script');
   tailwind.src = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
@@ -36,6 +34,6 @@ export const createPluginEntryWrapper = () => {
 
   shadowRoot.appendChild(pluginEntry);
   usePluginEntryStore.setState({
-    EntryWrapper: pluginEntry,
+    entryWrapper: pluginEntry,
   });
 };

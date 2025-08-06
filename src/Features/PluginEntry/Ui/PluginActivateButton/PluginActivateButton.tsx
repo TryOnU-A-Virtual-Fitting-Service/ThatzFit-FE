@@ -11,9 +11,9 @@ export const PluginActivateButton = ({
   className,
   onClick,
 }: PluginActivateButtonProps) => {
-  const EntryWrapper = usePluginEntryStore((state) => state.EntryWrapper);
+  const entryWrapper = usePluginEntryStore((state) => state.entryWrapper);
 
-  if (!EntryWrapper) {
+  if (!entryWrapper) {
     return null;
   }
 

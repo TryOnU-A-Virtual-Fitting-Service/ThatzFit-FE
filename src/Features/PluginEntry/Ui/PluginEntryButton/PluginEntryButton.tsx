@@ -10,20 +10,20 @@ import { PluginActivateButton } from '../PluginActivateButton';
 import { PluginDeactivateButton } from '../PluginDeactivateButton';
 
 export const PluginEntryButton = () => {
-  const EntryWrapper = usePluginEntryStore((state) => state.EntryWrapper);
-  const PluginWrapper = usePluginStore((state) => state.PluginWrapper);
+  const entryWrapper = usePluginEntryStore((state) => state.entryWrapper);
+  const pluginWrapper = usePluginStore((state) => state.pluginWrapper);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!PluginWrapper) {
+    if (!pluginWrapper) {
       return;
     }
 
-    PluginWrapper.classList.toggle('thatzfit-visible', isOpen);
-    PluginWrapper.classList.toggle('thatzfit-hidden', !isOpen);
-  }, [isOpen, PluginWrapper]);
+    pluginWrapper.classList.toggle('thatzfit-visible', isOpen);
+    pluginWrapper.classList.toggle('thatzfit-hidden', !isOpen);
+  }, [isOpen, pluginWrapper]);
 
-  if (!EntryWrapper) {
+  if (!entryWrapper) {
     return null;
   }
 
@@ -46,6 +46,6 @@ export const PluginEntryButton = () => {
         onClick={handleClickEntryButton}
       />
     ),
-    EntryWrapper,
+    entryWrapper,
   );
 };
