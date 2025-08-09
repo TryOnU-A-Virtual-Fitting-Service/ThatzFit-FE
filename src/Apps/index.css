@@ -261,63 +261,63 @@
 
 @layer utilities {
   .text-heading1 {
-    @apply text-[1.0625rem] font-bold leading-normal tracking-[-0.003em];
+    @apply text-[1.0625rem] leading-normal font-bold tracking-[-0.003em];
   }
 
   .text-heading1-semibold {
-    @apply text-[1.0625rem] font-semibold leading-normal tracking-[-0.003em];
+    @apply text-[1.0625rem] leading-normal font-semibold tracking-[-0.003em];
   }
 
   .text-heading2 {
-    @apply text-[0.9375rem] font-semibold leading-normal tracking-[-0.003em];
+    @apply text-[0.9375rem] leading-normal font-semibold tracking-[-0.003em];
   }
 
   .text-heading3 {
-    @apply text-[0.8125rem] font-semibold leading-normal tracking-[-0.003em];
+    @apply text-[0.8125rem] leading-normal font-semibold tracking-[-0.003em];
   }
 
   .text-heading3-regular {
-    @apply text-[0.8125rem] font-normal leading-normal tracking-[-0.003em];
+    @apply text-[0.8125rem] leading-normal font-normal tracking-[-0.003em];
   }
 
   .text-body1 {
-    @apply text-xs font-semibold leading-[1.2] tracking-[-0.003em];
+    @apply text-xs leading-[1.2] font-semibold tracking-[-0.003em];
   }
 
   .text-body1-medium {
-    @apply text-xs font-medium leading-normal tracking-[-0.003em];
+    @apply text-xs leading-normal font-medium tracking-[-0.003em];
   }
 
   .text-body1-regular {
-    @apply text-xs font-normal leading-normal tracking-[-0.003em];
+    @apply text-xs leading-normal font-normal tracking-[-0.003em];
   }
 
   .text-body2 {
-    @apply text-[0.6875rem] font-semibold leading-normal tracking-[-0.003em];
+    @apply text-[0.6875rem] leading-normal font-semibold tracking-[-0.003em];
   }
 
   .text-body2-medium {
-    @apply text-[0.6875rem] font-medium leading-normal tracking-[-0.003em];
+    @apply text-[0.6875rem] leading-normal font-medium tracking-[-0.003em];
   }
 
   .text-body3 {
-    @apply text-[0.625rem] font-semibold leading-normal tracking-[-0.003em];
+    @apply text-[0.625rem] leading-normal font-semibold tracking-[-0.003em];
   }
 
   .text-body3-medium {
-    @apply text-[0.625rem] font-medium leading-normal tracking-[-0.003em];
+    @apply text-[0.625rem] leading-normal font-medium tracking-[-0.003em];
   }
 
   .text-body3-regular {
-    @apply text-[0.625rem] font-normal leading-[1.6] tracking-[-0.003em];
+    @apply text-[0.625rem] leading-[1.6] font-normal tracking-[-0.003em];
   }
 
   .text-detail1 {
-    @apply text-[0.5625rem] font-semibold leading-normal tracking-[-0.003em];
+    @apply text-[0.5625rem] leading-normal font-semibold tracking-[-0.003em];
   }
 
   .text-detail1-medium {
-    @apply text-[0.5625rem] font-medium leading-normal tracking-[-0.003em];
+    @apply text-[0.5625rem] leading-normal font-medium tracking-[-0.003em];
   }
 }
 
