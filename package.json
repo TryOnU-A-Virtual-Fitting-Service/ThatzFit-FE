@@ -16,7 +16,7 @@
     "prepare": "husky",
     "clean:linux": "rm -rf dist && rm -rf node_modules",
     "clean:windows": "rmdir /s /q dist && rmdir /s /q node_modules",
-    "ts:check": "tsc --noEmit --project tsconfig.app.json"
+    "ts:check": "tsc --noEmit --project tsconfig.json"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",
