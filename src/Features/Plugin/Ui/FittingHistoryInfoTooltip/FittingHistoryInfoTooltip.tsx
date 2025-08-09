@@ -1,9 +1,10 @@
-import { type MouseEvent, useState } from 'react';
-import { Info } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Info, X } from 'lucide-react';
 
 import { usePluginStore } from '@/Entities/Plugin';
 
 import {
+  buttonVariants,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -12,34 +13,45 @@ import {
 export const FittingHistoryInfoTooltip = () => {
   const pluginIframe = usePluginStore((state) => state.pluginIframe);
   const iframeDocument = pluginIframe?.contentDocument;
-  const rootDiv = iframeDocument?.body;
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const closeTimerRef = useRef<number | null>(null);
 
-  const handleMouseEnter = (e: MouseEvent<HTMLSpanElement>) => {
-    e.stopPropagation();
+  const openTooltip = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
     setIsOpen(true);
   };
 
-  const handleMouseLeave = (e: MouseEvent<HTMLSpanElement>) => {
-    e.stopPropagation();
-    setIsOpen(false);
+  const scheduleClose = () => {
+    if (closeTimerRef.current) return;
+    closeTimerRef.current = window.setTimeout(() => {
+      setIsOpen(false);
+      closeTimerRef.current = null;
+    }, 100);
   };
 
   return (
-    <Tooltip open={isOpen} delayDuration={0}>
+    <Tooltip open={isOpen} onOpenChange={setIsOpen}>
       <TooltipTrigger asChild>
-        <span onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+        <span onPointerEnter={openTooltip} onPointerLeave={scheduleClose}>
           <Info className='text-grey-07 size-3.5' />
         </span>
       </TooltipTrigger>
       <TooltipContent
-        container={rootDiv}
+        container={iframeDocument?.body}
+        onPointerEnter={openTooltip}
+        onPointerLeave={scheduleClose}
         className='bg-light-blue fill-light-blue'
       >
         <span className='text-body2-medium text-grey-03'>
           최대 20개까지 저장됩니다
         </span>
+        <button className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+          <X />
+        </button>
       </TooltipContent>
     </Tooltip>
   );
