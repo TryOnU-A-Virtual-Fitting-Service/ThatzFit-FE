@@ -4,13 +4,13 @@ import { createPortal } from 'react-dom';
 import { usePluginStore } from '@/Entities/Plugin';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
-import { cn } from '@/Shared';
+import { cn } from '@/Shared/Lib';
 
 import { PluginActivateButton } from '../PluginActivateButton';
 import { PluginDeactivateButton } from '../PluginDeactivateButton';
 
 export const PluginEntryButton = () => {
-  const EntryWrapper = usePluginEntryStore((state) => state.entryWrapper);
+  const entryWrapper = usePluginEntryStore((state) => state.entryWrapper);
   const pluginWrapper = usePluginStore((state) => state.pluginWrapper);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -23,7 +23,7 @@ export const PluginEntryButton = () => {
     pluginWrapper.classList.toggle('thatzfit-hidden', !isOpen);
   }, [isOpen, pluginWrapper]);
 
-  if (!EntryWrapper) {
+  if (!entryWrapper) {
     return null;
   }
 
@@ -46,6 +46,6 @@ export const PluginEntryButton = () => {
         onClick={handleClickEntryButton}
       />
     ),
-    EntryWrapper,
+    entryWrapper,
   );
 };

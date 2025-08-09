@@ -1,0 +1,1 @@
+export { FittingModelImage } from './FittingModelImage';

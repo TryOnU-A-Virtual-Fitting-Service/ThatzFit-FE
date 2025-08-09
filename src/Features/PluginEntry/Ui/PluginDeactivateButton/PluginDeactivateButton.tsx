@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 
-import { Button } from '@/Shared';
+import { Button } from '@/Shared/Components';
 
 interface PluginDeactivateButtonProps {
   className?: string;

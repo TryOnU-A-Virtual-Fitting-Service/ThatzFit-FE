@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 
 import { initializeThatzfitStyle } from '@/Apps/Model/initializeThatzfitStyle';
 
+import { FittingPage } from '@/Pages/Plugin';
+
 import { initializePlugin } from '@/Widgets/Plugin';
 import { createPluginEntry } from '@/Widgets/PluginEntry';
 
@@ -16,9 +18,7 @@ export const App = () => {
 
   return (
     <>
-      <div className='text-red bg-blue text-3xl font-bold underline'>
-        Hello World
-      </div>
+      <FittingPage />
       <PluginEntryButton />
     </>
   );

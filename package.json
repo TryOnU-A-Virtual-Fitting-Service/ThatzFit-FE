@@ -9,17 +9,19 @@
     "build:dev": "tsc -b && vite build --mode development",
     "build:prod": "tsc -b && vite build --mode production",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "lint:fix": "eslint src/**/*.{js,jsx,ts,tsx} --fix",
+    "format": "prettier --write src/**/*.{js,jsx,ts,tsx}",
+    "format:check": "prettier --check src/**/*.{js,jsx,ts,tsx}",
     "preview": "vite preview",
     "prepare": "husky",
     "clean:linux": "rm -rf dist && rm -rf node_modules",
     "clean:windows": "rmdir /s /q dist && rmdir /s /q node_modules",
-    "ts:check": "tsc --noEmit"
+    "ts:check": "tsc --noEmit --project tsconfig.json"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tooltip": "^1.2.7",
     "@tailwindcss/vite": "^4.1.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -53,6 +55,7 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
     "vite": "^7.0.0",
+    "vite-plugin-svgr": "^4.3.0",
     "vite-tsconfig-paths": "^5.1.4"
   },
   "lint-staged": {
