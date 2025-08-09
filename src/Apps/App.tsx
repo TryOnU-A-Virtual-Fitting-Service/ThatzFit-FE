@@ -16,12 +16,6 @@ export const App = () => {
     initializePlugin();
   }, []);
 
-  useEffect(() => {
-    initializeThatzfitStyle();
-    createPluginEntry();
-    initializePlugin();
-  }, []);
-
   return (
     <>
       <FittingPage />
