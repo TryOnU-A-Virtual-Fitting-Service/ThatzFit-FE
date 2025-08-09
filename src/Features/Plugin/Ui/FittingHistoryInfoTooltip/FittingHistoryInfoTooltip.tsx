@@ -4,7 +4,7 @@ import { Info, X } from 'lucide-react';
 import { usePluginStore } from '@/Entities/Plugin';
 
 import {
-  buttonVariants,
+  Button,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -17,7 +17,7 @@ export const FittingHistoryInfoTooltip = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const closeTimerRef = useRef<number | null>(null);
 
-  const openTooltip = () => {
+  const handlePointerOpen = () => {
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
@@ -25,7 +25,7 @@ export const FittingHistoryInfoTooltip = () => {
     setIsOpen(true);
   };
 
-  const scheduleClose = () => {
+  const handlePointerLeave = () => {
     if (closeTimerRef.current) return;
     closeTimerRef.current = window.setTimeout(() => {
       setIsOpen(false);
@@ -33,25 +33,40 @@ export const FittingHistoryInfoTooltip = () => {
     }, 100);
   };
 
+  const handleClickCloseButton = () => {
+    setIsOpen(false);
+  };
+
   return (
     <Tooltip open={isOpen} onOpenChange={setIsOpen}>
       <TooltipTrigger asChild>
-        <span onPointerEnter={openTooltip} onPointerLeave={scheduleClose}>
-          <Info className='text-grey-07 size-3.5' />
+        <span
+          onPointerEnter={handlePointerOpen}
+          onPointerLeave={handlePointerLeave}
+          className='text-grey-07 hover:text-grey-05'
+        >
+          <Info className='size-3.5' />
         </span>
       </TooltipTrigger>
       <TooltipContent
         container={iframeDocument?.body}
-        onPointerEnter={openTooltip}
-        onPointerLeave={scheduleClose}
+        onPointerEnter={handlePointerOpen}
+        onPointerLeave={handlePointerLeave}
         className='bg-light-blue fill-light-blue'
       >
-        <span className='text-body2-medium text-grey-03'>
-          최대 20개까지 저장됩니다
-        </span>
-        <button className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
-          <X />
-        </button>
+        <div className='flex items-center gap-1'>
+          <span className='text-body2-medium text-grey-03'>
+            최대 20개까지 저장됩니다
+          </span>
+          <Button
+            variant='ghost'
+            size='icon'
+            onClick={handleClickCloseButton}
+            className='text-grey-03 hover:text-grey-04 h-4 w-4 cursor-pointer hover:bg-transparent'
+          >
+            <X />
+          </Button>
+        </div>
       </TooltipContent>
     </Tooltip>
   );
