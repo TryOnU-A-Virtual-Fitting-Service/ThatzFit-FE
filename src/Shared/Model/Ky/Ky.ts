@@ -1,5 +1,5 @@
 import type { KyInstance, Options } from 'ky';
-import ky, { HTTPError } from 'ky';
+import ky from 'ky';
 
 import { BASE_URL, createCustomError } from '../../Config';
 import type { KySuccess, SuccessResponse } from '../../Type';
@@ -40,52 +40,27 @@ const fetch = async <T = unknown>({
   }
 };
 
-export const get = async <T = unknown>({
-  url,
-  options,
-}: {
+type FetchParams = {
   url: string;
   options?: Options;
-}) => {
+};
+
+export const get = async <T = unknown>({ url, options }: FetchParams) => {
   return fetch<T>({ method: 'get', url, options });
 };
 
-export const post = async <T = unknown>({
-  url,
-  options,
-}: {
-  url: string;
-  options?: Options;
-}) => {
+export const post = async <T = unknown>({ url, options }: FetchParams) => {
   return fetch<T>({ method: 'post', url, options });
 };
 
-export const put = async <T = unknown>({
-  url,
-  options,
-}: {
-  url: string;
-  options?: Options;
-}) => {
+export const put = async <T = unknown>({ url, options }: FetchParams) => {
   return fetch<T>({ method: 'put', url, options });
 };
 
-export const patch = async <T = unknown>({
-  url,
-  options,
-}: {
-  url: string;
-  options?: Options;
-}) => {
+export const patch = async <T = unknown>({ url, options }: FetchParams) => {
   return fetch<T>({ method: 'patch', url, options });
 };
 
-export const del = async <T = unknown>({
-  url,
-  options,
-}: {
-  url: string;
-  options?: Options;
-}) => {
+export const del = async <T = unknown>({ url, options }: FetchParams) => {
   return fetch<T>({ method: 'delete', url, options });
 };
