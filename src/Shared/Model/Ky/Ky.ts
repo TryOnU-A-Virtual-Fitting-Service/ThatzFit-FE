@@ -1,8 +1,10 @@
 import type { KyInstance, Options } from 'ky';
-import ky from 'ky';
+import ky, { HTTPError } from 'ky';
 
-import { BASE_URL } from '../../Config';
-import type { HttpMethod, KySuccess, SuccessResponse } from '../../Type';
+import { BASE_URL, createCustomError } from '../../Config';
+import type { KySuccess, SuccessResponse } from '../../Type';
+
+import { covertToKyMethod } from './Ky.util';
 
 const api: KyInstance = ky.create({
   prefixUrl: BASE_URL,
@@ -20,10 +22,6 @@ const api: KyInstance = ky.create({
   },
 });
 
-const kyMethod = (method: Request['method']) => {
-  return method.toLowerCase() as HttpMethod;
-};
-
 const fetch = async <T = unknown>({
   method,
   url,
@@ -33,8 +31,13 @@ const fetch = async <T = unknown>({
   url: string;
   options?: Options;
 }): Promise<KySuccess<T>> => {
-  const httpMethod = kyMethod(method);
-  return (await api[httpMethod])<SuccessResponse<T>>(url, options);
+  const httpMethod = covertToKyMethod(method);
+
+  try {
+    return (await api[httpMethod])<SuccessResponse<T>>(url, options);
+  } catch (error: unknown) {
+    throw await createCustomError(error);
+  }
 };
 
 export const get = async <T = unknown>({
