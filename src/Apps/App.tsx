@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 
 import { initializeThatzfitStyle } from '@/Apps/Model/initializeThatzfitStyle';
-
-import { FittingPage } from '@/Pages/Plugin';
+import { PluginRouter } from '@/Apps/Ui/PluginRouter';
+import { TanstackQueryProvider } from '@/Apps/Ui/TanstackQueryProvider';
 
 import { initializePlugin } from '@/Widgets/Plugin';
 import { createPluginEntry } from '@/Widgets/PluginEntry';
@@ -17,9 +17,9 @@ export const App = () => {
   }, []);
 
   return (
-    <>
-      <FittingPage />
+    <TanstackQueryProvider>
+      <PluginRouter />
       <PluginEntryButton />
-    </>
+    </TanstackQueryProvider>
   );
 };
