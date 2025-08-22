@@ -1,0 +1,1 @@
+export { postUserInit } from './Post';
