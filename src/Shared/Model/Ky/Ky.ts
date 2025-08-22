@@ -1,4 +1,4 @@
-import type { BeforeRequestHook, KyInstance, Options } from 'ky';
+import type { KyInstance, Options } from 'ky';
 import ky from 'ky';
 import { nanoid } from 'nanoid';
 
@@ -6,7 +6,7 @@ import { BASE_URL, createCustomError, USER_TOKEN_KEY } from '../../Config';
 import type { KySuccess, SuccessResponse } from '../../Type';
 import { parentLocalStorage } from '../ParentLocalStorage';
 
-import { covertToKyMethod } from './Ky.util';
+import { covertToKyMethod, removePrefixUrl } from './Ky.util';
 
 const api: KyInstance = ky.create({
   prefixUrl: BASE_URL,
@@ -46,36 +46,32 @@ const fetch = async <T = unknown>({
   url: string;
   options?: Options;
 }): Promise<KySuccess<T>> => {
+  const path = removePrefixUrl(url);
   const httpMethod = covertToKyMethod(method);
 
   try {
-    return (await api[httpMethod])<SuccessResponse<T>>(url, options);
+    return (await api[httpMethod])<SuccessResponse<T>>(path, options);
   } catch (error: unknown) {
     throw await createCustomError(error);
   }
 };
 
-type FetchParams = {
-  url: string;
-  options?: Options;
-};
-
-export const get = async <T = unknown>({ url, options }: FetchParams) => {
+export const get = async <T = unknown>(url: string, options?: Options) => {
   return fetch<T>({ method: 'get', url, options });
 };
 
-export const post = async <T = unknown>({ url, options }: FetchParams) => {
+export const post = async <T = unknown>(url: string, options?: Options) => {
   return fetch<T>({ method: 'post', url, options });
 };
 
-export const put = async <T = unknown>({ url, options }: FetchParams) => {
+export const put = async <T = unknown>(url: string, options?: Options) => {
   return fetch<T>({ method: 'put', url, options });
 };
 
-export const patch = async <T = unknown>({ url, options }: FetchParams) => {
+export const patch = async <T = unknown>(url: string, options?: Options) => {
   return fetch<T>({ method: 'patch', url, options });
 };
 
-export const del = async <T = unknown>({ url, options }: FetchParams) => {
+export const del = async <T = unknown>(url: string, options?: Options) => {
   return fetch<T>({ method: 'delete', url, options });
 };
