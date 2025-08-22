@@ -13,7 +13,7 @@ export default tseslint.config(
     ignores: ['dist/'],
   },
   {
-    files: ['src/**/*.{ts,tsx,js,jsx}', 'eslint.config.js'],
+    files: ['src/**/*.{ts,tsx,js,jsx}', 'eslint.config.js', 'src/**/*.d.ts'],
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
@@ -24,6 +24,7 @@ export default tseslint.config(
     languageOptions: {
       globals: {
         ...globals.browser,
+        Schema: 'readonly',
       },
       parser: tseslint.parser,
       parserOptions: {
@@ -43,6 +44,7 @@ export default tseslint.config(
       ...tseslint.configs.stylisticTypeChecked.rules,
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
+      '@typescript-eslint/no-namespace': 'off',
       'no-unused-vars': 'off',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
