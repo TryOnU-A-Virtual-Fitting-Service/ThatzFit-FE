@@ -1,0 +1,1 @@
+export { usePostUserInit } from './Model';
