@@ -1,8 +1,10 @@
-import type { KyInstance, Options } from 'ky';
+import type { BeforeRequestHook, KyInstance, Options } from 'ky';
 import ky from 'ky';
+import { nanoid } from 'nanoid';
 
-import { BASE_URL, createCustomError } from '../../Config';
+import { BASE_URL, createCustomError, USER_TOKEN_KEY } from '../../Config';
 import type { KySuccess, SuccessResponse } from '../../Type';
+import { parentLocalStorage } from '../ParentLocalStorage';
 
 import { covertToKyMethod } from './Ky.util';
 
@@ -16,11 +18,24 @@ const api: KyInstance = ky.create({
   },
 
   hooks: {
-    beforeRequest: [],
-    beforeRetry: [],
+    beforeRequest: [injectUserToken],
     afterResponse: [],
   },
 });
+
+function injectUserToken(request: Request) {
+  const userToken = getUserToken();
+  request.headers.set(USER_TOKEN_KEY, userToken);
+}
+
+function getUserToken() {
+  let userToken = parentLocalStorage.getItem(USER_TOKEN_KEY);
+  if (!userToken) {
+    userToken = nanoid();
+    parentLocalStorage.setItem(USER_TOKEN_KEY, userToken);
+  }
+  return userToken;
+}
 
 const fetch = async <T = unknown>({
   method,
