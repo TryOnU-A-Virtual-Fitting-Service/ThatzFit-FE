@@ -1,1 +1,1 @@
-export { usePostUserInit } from './usePostUserInit';
+export { usePostUserInfo } from './usePostUserInfo';

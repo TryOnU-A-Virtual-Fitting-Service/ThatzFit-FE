@@ -1,1 +1,1 @@
-export { usePostUserInit } from './Model';
+export { usePostUserInfo } from './Model';

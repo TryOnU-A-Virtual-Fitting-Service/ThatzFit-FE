@@ -1,9 +1,9 @@
 import { post } from '@/Shared/Model';
 
-import type { PostUserInitRequestDto, PostUserInitResponseDto } from '../Type';
+import type { PostUserInfoRequestDto, PostUserInfoResponseDto } from '../Type';
 
-export const postUserInit = async (dto: PostUserInitRequestDto) => {
-  return post<PostUserInitResponseDto>(`/api/users/init`, {
+export const postUserInfo = async (dto: PostUserInfoRequestDto) => {
+  return post<PostUserInfoResponseDto>(`/api/users/init`, {
     body: JSON.stringify(dto),
   }).then((res) => res.json());
 };

@@ -1,1 +1,1 @@
-export { postUserInit } from './Post';
+export { postUserInfo } from './Post';
