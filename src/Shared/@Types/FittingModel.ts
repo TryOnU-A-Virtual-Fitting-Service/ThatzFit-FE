@@ -1,8 +1,10 @@
 declare global {
   namespace Schema {
     type FittingModel = {
-      defaultModelId: string;
+      defaultModelId: number;
       defaultModelUrl: string;
+      modelName: string;
+      sortOrder: number;
     };
   }
 }
