@@ -8,7 +8,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/Shared/Components/Ui';
+} from '@/Shared/Components';
 
 export const FittingHistoryInfoTooltip = () => {
   const pluginIframe = usePluginStore((state) => state.pluginIframe);
