@@ -1,11 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-
-import { usePostUserInfo } from '@/Features/User';
 
 import { usePluginStore } from '@/Entities/Plugin';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
-import { getUserToken } from '@/Entities/User';
 
 import { cn } from '@/Shared/Lib';
 
@@ -16,8 +13,6 @@ export const PluginEntryButton = () => {
   const entryWrapper = usePluginEntryStore((state) => state.entryWrapper);
   const pluginWrapper = usePluginStore((state) => state.pluginWrapper);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const firstRender = useRef<boolean>(true);
-  const { mutate: postUserInfo } = usePostUserInfo();
 
   useEffect(() => {
     if (!pluginWrapper) {
@@ -34,12 +29,6 @@ export const PluginEntryButton = () => {
 
   const handleClickEntryButton = () => {
     setIsOpen((prev) => !prev);
-    if (firstRender.current) {
-      postUserInfo({
-        uuid: getUserToken(),
-      });
-      firstRender.current = false;
-    }
   };
 
   return createPortal(

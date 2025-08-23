@@ -1,1 +1,0 @@
-export { postUserInfo } from './Post';

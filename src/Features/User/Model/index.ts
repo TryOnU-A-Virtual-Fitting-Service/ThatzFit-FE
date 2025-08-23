@@ -1,1 +1,0 @@
-export { usePostUserInfo } from './usePostUserInfo';
