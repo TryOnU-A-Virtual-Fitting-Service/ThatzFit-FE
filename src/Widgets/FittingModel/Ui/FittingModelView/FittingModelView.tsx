@@ -1,6 +1,9 @@
-import { FittingModelActionDialog, ModelZoomDialog } from '@/Features/Plugin';
+import {
+  FittingModelActionDialog,
+  ModelZoomDialog,
+} from '@/Features/FittingModel';
 
-import { FittingModelImage } from '@/Entities/Plugin';
+import { FittingModelImage } from '@/Entities/FittingModel';
 
 export const FittingModelView = () => {
   return (

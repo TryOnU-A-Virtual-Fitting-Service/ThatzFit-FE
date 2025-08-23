@@ -1,7 +1,1 @@
-export {
-  FittingButton,
-  FittingHistoryInfoTooltip,
-  FittingModelActionDialog,
-  ModelZoomDialog,
-  ThatzfitLandingButton,
-} from './Ui';
+export { ThatzfitLandingButton } from './Ui';
