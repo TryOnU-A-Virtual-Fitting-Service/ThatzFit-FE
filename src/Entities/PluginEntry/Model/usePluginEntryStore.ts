@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
 
 type PluginEntryState = {
   entryWrapper: HTMLElement | null;
@@ -10,7 +11,15 @@ type PluginEntryAction = {
 
 type PluginEntryStore = PluginEntryState & PluginEntryAction;
 
-export const usePluginEntryStore = create<PluginEntryStore>()((set) => ({
-  entryWrapper: null,
-  setEntryWrapper: (entryWrapper) => set({ entryWrapper: entryWrapper }),
-}));
+export const usePluginEntryStore = create<PluginEntryStore>()(
+  devtools(
+    (set) => ({
+      entryWrapper: null,
+      setEntryWrapper: (entryWrapper) =>
+        set({ entryWrapper: entryWrapper }, undefined, 'setEntryWrapper'),
+    }),
+    {
+      name: 'PluginEntryStore',
+    },
+  ),
+);
