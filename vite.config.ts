@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import tailwindcss from '@tailwindcss/vite';
 import { dirname, resolve } from 'node:path';
@@ -11,6 +11,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const isDev = mode === 'development';
+  const env = loadEnv(mode, process.cwd(), '');
+
   return {
     plugins: [react(), tailwindcss(), tsconfigPaths(), svgr()],
     build: {
@@ -30,7 +32,13 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
     },
     server: {
-      allowedHosts: ['http://localhost:8080'],
+      proxy: {
+        '/api': {
+          target: env.VITE_DEV_SERVER,
+          changeOrigin: true,
+          secure: true,
+        },
+      },
     },
   };
 });
