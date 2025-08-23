@@ -1,8 +1,8 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 
 import { rootRouter } from '@/Apps/Routes';
 
-const router = createBrowserRouter([rootRouter]);
+const router = createMemoryRouter([rootRouter]);
 
 export const PluginRouter = () => {
   return <RouterProvider router={router} />;
