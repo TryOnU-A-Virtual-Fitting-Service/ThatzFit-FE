@@ -1,2 +1,2 @@
-export { postUserInfo } from './Api';
+export { postUserInfo, userQueries, userQueryKeys } from './Api';
 export { getUserToken } from './Model';
