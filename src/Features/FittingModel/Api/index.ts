@@ -1,0 +1,1 @@
+export { postFittingModel } from './Post';
