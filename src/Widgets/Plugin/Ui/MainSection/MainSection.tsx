@@ -1,7 +1,7 @@
-import { FittingButton } from '@/Features/Plugin';
+import { FittingHistorySection } from '@/Widgets/FittingHistory';
+import { FittingModelView } from '@/Widgets/FittingModel';
 
-import { FittingHistorySection } from '../FittingHistorySection';
-import { FittingModelView } from '../FittingModelView';
+import { FittingButton } from '@/Features/Fitting';
 
 export const MainSection = () => {
   return (

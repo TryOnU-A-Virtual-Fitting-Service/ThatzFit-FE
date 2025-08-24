@@ -4,7 +4,7 @@ export const initializeThatzfitStyle = () => {
   );
 
   document.styleSheets[0].insertRule(
-    '#thatzfit-iframe { width: 100% !important; height: 100% !important; background-color: transparent !important; border-radius: 0.75rem !important; }',
+    '#thatzfit-iframe { display: block !important; width: 100% !important; height: 100% !important; background-color: transparent !important; border-radius: 0.75rem !important; }',
   );
 
   document.styleSheets[0].insertRule(

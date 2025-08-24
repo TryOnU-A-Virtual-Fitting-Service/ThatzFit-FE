@@ -1,0 +1,1 @@
+export { fittingModelQueries } from './Query';

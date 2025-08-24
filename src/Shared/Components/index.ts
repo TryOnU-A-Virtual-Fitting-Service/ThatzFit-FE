@@ -1,5 +1,5 @@
-export { Button } from './Ui';
 export {
+  Button,
   Dialog,
   DialogClose,
   DialogContent,
@@ -10,4 +10,8 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from './Ui';

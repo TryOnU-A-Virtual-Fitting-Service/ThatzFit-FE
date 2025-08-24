@@ -1,4 +1,4 @@
-import { FittingHistoryInfoTooltip } from '@/Features/Plugin';
+import { FittingHistoryInfoTooltip } from '@/Features/FittingHistory';
 
 export const FittingHistorySection = () => {
   return (

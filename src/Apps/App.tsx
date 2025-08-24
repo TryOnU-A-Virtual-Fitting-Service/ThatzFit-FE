@@ -1,25 +1,26 @@
 import { useEffect } from 'react';
 
-import { initializeThatzfitStyle } from '@/Apps/Model/initializeThatzfitStyle';
-
-import { FittingPage } from '@/Pages/Plugin';
-
 import { initializePlugin } from '@/Widgets/Plugin';
 import { createPluginEntry } from '@/Widgets/PluginEntry';
 
 import { PluginEntryButton } from '@/Features/PluginEntry';
+
+import { PluginRouter } from './Ui/PluginRouter';
+import { TanstackQueryProvider } from './Ui/TanstackQueryProvider';
+import { initializeThatzfitStyle, initUserInfo } from './Model';
 
 export const App = () => {
   useEffect(() => {
     initializeThatzfitStyle();
     createPluginEntry();
     initializePlugin();
+    initUserInfo();
   }, []);
 
   return (
-    <>
-      <FittingPage />
+    <TanstackQueryProvider>
+      <PluginRouter />
       <PluginEntryButton />
-    </>
+    </TanstackQueryProvider>
   );
 };
