@@ -5,9 +5,9 @@ import { getUserInfo } from '../Api';
 import { userQueryKeys } from './Key';
 
 export const userQueries = {
-  userInfo: () =>
+  userInfoOptions: () =>
     queryOptions({
       queryKey: userQueryKeys.userInfo(),
-      queryFn: getUserInfo,
+      queryFn: () => getUserInfo(),
     }),
 };
