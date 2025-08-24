@@ -46,8 +46,6 @@ export const createCustomError = async (error: unknown): Promise<unknown> => {
     });
   }
 
-  console.log(error);
-
   return new CustomError({
     code: 'UNKNOWN_ERROR',
     message: 'An unknown error occurred',
