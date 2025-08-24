@@ -1,2 +1,3 @@
-export { FittingModelActionDialog } from './FittingModelActionDialog';
-export { ModelZoomDialog } from './ModelZoomDialog';
+export { FittingModelAddButton } from './FittingModelAddButton';
+export { FittingModelEditButton } from './FittingModelEditButton';
+export { FittingModelUploadInput } from './FittingModelUploadInput';
