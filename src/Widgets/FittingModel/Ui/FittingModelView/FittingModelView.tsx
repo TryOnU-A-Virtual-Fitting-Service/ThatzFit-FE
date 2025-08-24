@@ -1,12 +1,10 @@
 import {
-  FittingModelActionDialog,
-  ModelZoomDialog,
-} from '@/Widgets/FittingModel';
-
-import {
   FittingModelImage,
   useFittingModelStore,
 } from '@/Entities/FittingModel';
+
+import { FittingModelActionDialog } from '../FittingModelActionDialog';
+import { ModelZoomDialog } from '../ModelZoomDialog';
 
 export const FittingModelView = () => {
   const currentFittingModel = useFittingModelStore(
