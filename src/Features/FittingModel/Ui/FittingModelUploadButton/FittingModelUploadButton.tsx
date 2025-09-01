@@ -10,6 +10,7 @@ import {
 import { usePluginStore } from '@/Entities/Plugin';
 
 import { Button } from '@/Shared/Components';
+import { isCustomError } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
 
 type FittingModelUploadButtonProps = {
@@ -82,7 +83,9 @@ export const FittingModelUploadButton = ({
 
       toast.success('새로운 모델을 추가했어요.');
     } catch (error) {
-      console.error(error);
+      if (isCustomError(error) || error instanceof Error) {
+        toast.error(error.message);
+      }
     } finally {
       setFittingModelUploadStatus({
         isUploading: false,
