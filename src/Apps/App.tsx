@@ -5,7 +5,7 @@ import { createPluginEntry } from '@/Widgets/PluginEntry';
 
 import { PluginEntryButton } from '@/Features/PluginEntry';
 
-import { ToastProvider } from '@/Shared/Ui';
+import { Toast, ToastProvider } from '@/Shared/Ui';
 
 import { PluginRouter } from './Ui/PluginRouter';
 import { TanstackQueryProvider } from './Ui/TanstackQueryProvider';
@@ -24,6 +24,7 @@ export const App = () => {
       <ToastProvider>
         <PluginRouter />
         <PluginEntryButton />
+        <Toast />
       </ToastProvider>
     </TanstackQueryProvider>
   );
