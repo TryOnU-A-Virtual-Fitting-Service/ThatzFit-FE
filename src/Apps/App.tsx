@@ -5,6 +5,8 @@ import { createPluginEntry } from '@/Widgets/PluginEntry';
 
 import { PluginEntryButton } from '@/Features/PluginEntry';
 
+import { Toast, ToastProvider } from '@/Shared/Ui';
+
 import { PluginRouter } from './Ui/PluginRouter';
 import { TanstackQueryProvider } from './Ui/TanstackQueryProvider';
 import { initializeThatzfitStyle, initUserInfo } from './Model';
@@ -19,8 +21,11 @@ export const App = () => {
 
   return (
     <TanstackQueryProvider>
-      <PluginRouter />
-      <PluginEntryButton />
+      <ToastProvider>
+        <PluginRouter />
+        <PluginEntryButton />
+        <Toast />
+      </ToastProvider>
     </TanstackQueryProvider>
   );
 };

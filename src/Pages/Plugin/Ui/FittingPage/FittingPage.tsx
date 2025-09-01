@@ -27,6 +27,7 @@ export const FittingPage = () => {
       setCurrentFittingModel({
         modelUrl: userInfo.recentlyUsedModel.modelUrl,
         imageName: userInfo.recentlyUsedModel.imageName,
+        modelName: userInfo.recentlyUsedModel.modelName,
       });
     }
   }, [isSuccess, userInfo, setCurrentFittingModel]);

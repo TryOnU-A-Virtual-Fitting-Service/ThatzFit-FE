@@ -1,1 +1,5 @@
-export { FittingModelView } from './Ui';
+export {
+  FittingModelActionDialog,
+  FittingModelView,
+  ModelZoomDialog,
+} from './Ui';

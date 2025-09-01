@@ -10,6 +10,7 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
+  Input,
   Tooltip,
   TooltipContent,
   TooltipProvider,

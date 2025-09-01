@@ -3,7 +3,7 @@ import Slogan from '../../../../../public/assets/Slogan.svg?react';
 
 export const CompanyInfoSection = () => {
   return (
-    <section className='flex h-full w-full flex-col items-center justify-center gap-[0.5625rem] pt-4'>
+    <section className='flex h-full w-full flex-col items-center justify-center gap-[0.5625rem]'>
       <MusinsaLogo />
       <Slogan />
     </section>

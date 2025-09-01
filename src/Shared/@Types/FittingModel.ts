@@ -5,6 +5,7 @@ declare global {
       defaultModelUrl: string;
       modelName: string;
       sortOrder: number;
+      isCustom: boolean;
     };
   }
 }
