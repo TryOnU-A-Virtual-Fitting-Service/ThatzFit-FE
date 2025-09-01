@@ -20,6 +20,7 @@ export default tseslint.config(
       'simple-import-sort': simpleImportSort,
       react,
       '@stylistic': stylistic,
+      '@typescript-eslint': tseslint.plugin,
     },
     languageOptions: {
       globals: {
@@ -45,6 +46,7 @@ export default tseslint.config(
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/no-unused-vars': 'warn',
       'no-unused-vars': 'off',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
