@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 
 import { usePluginStore } from '@/Entities/Plugin';
 
@@ -15,6 +15,9 @@ type FittingModelActionDialogProps = {
 export const FittingModelActionDialog = ({
   dialogTriggerClassName,
 }: FittingModelActionDialogProps) => {
+  const [isModelActionDialogOpen, setIsModelActionDialogOpen] =
+    useState<boolean>(false);
+
   const iframe = usePluginStore((state) => state.pluginIframe);
 
   const iframeDocument =
@@ -25,7 +28,10 @@ export const FittingModelActionDialog = ({
   }
 
   return (
-    <Dialog>
+    <Dialog
+      open={isModelActionDialogOpen}
+      onOpenChange={setIsModelActionDialogOpen}
+    >
       <FittingModelActionDialogTrigger
         dialogTriggerClassName={dialogTriggerClassName}
       />
@@ -34,7 +40,11 @@ export const FittingModelActionDialog = ({
           <FittingModelActionDialogLoading iframeDocument={iframeDocument} />
         }
       >
-        <FittingModelActionDialogContent iframeDocument={iframeDocument} />
+        <FittingModelActionDialogContent
+          iframeDocument={iframeDocument}
+          isModelActionDialogOpen={isModelActionDialogOpen}
+          setIsModelActionDialogOpen={setIsModelActionDialogOpen}
+        />
       </Suspense>
     </Dialog>
   );

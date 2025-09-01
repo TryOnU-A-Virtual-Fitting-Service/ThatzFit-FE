@@ -1,7 +1,12 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
+import { FittingModelEditList } from '@/Widgets/FittingModel/Ui/FittingModelEditList';
+import { FittingModelList } from '@/Widgets/FittingModel/Ui/FittingModelList';
+
 import {
+  FITTING_MODEL_ACTION_MODE,
+  type FittingModelActionMode,
   FittingModelAddButton,
   FittingModelEditButton,
   FittingModelUploadInput,
@@ -10,76 +15,80 @@ import {
 import { useFittingModelStore } from '@/Entities/FittingModel';
 import { fittingModelQueries } from '@/Entities/FittingModel/Api';
 
-import {
-  Button,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
-} from '@/Shared/Components';
+import { DialogContent } from '@/Shared/Components';
 
 import { FittingModelAddDialog } from '../FittingModelAddDialog';
 
 type FittingModelActionDialogContentProps = {
   iframeDocument: Document;
+  isModelActionDialogOpen: boolean;
+  setIsModelActionDialogOpen: (isModelActionDialogOpen: boolean) => void;
 };
 
 export const FittingModelActionDialogContent = ({
   iframeDocument,
+  isModelActionDialogOpen,
+  setIsModelActionDialogOpen,
 }: FittingModelActionDialogContentProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isModelAddDialogOpen, setIsModelAddDialogOpen] =
     useState<boolean>(false);
+
+  const [fittingModelActionMode, setFittingModelActionMode] =
+    useState<FittingModelActionMode>(FITTING_MODEL_ACTION_MODE.SELECT);
+
+  const setFittingModelList = useFittingModelStore(
+    (state) => state.setDefaultModels,
+  );
 
   const { data: fittingModelList } = useSuspenseQuery({
     ...fittingModelQueries.listOptions(),
     select: (response) => response.data,
   });
 
-  const setCurrentFittingModel = useFittingModelStore(
-    (state) => state.setCurrentFittingModel,
-  );
+  useEffect(() => {
+    setFittingModelActionMode(FITTING_MODEL_ACTION_MODE.SELECT);
+  }, [isModelActionDialogOpen]);
 
-  const handleClickFittingModel = (defaultModelUrl: string) => {
-    setCurrentFittingModel({
-      modelUrl: defaultModelUrl,
-      imageName: defaultModelUrl.split('/').pop() ?? '',
-    });
-  };
+  useEffect(() => {
+    setFittingModelList(fittingModelList);
+  }, [fittingModelList, setFittingModelList]);
 
   return (
-    <DialogContent
-      container={iframeDocument?.body}
-      showCloseButton={false}
-      className='w-[12.5rem] overflow-visible p-2.5'
-    >
-      <DialogTitle className='sr-only'>모델 선택</DialogTitle>
-      <div className='absolute top-[-1.875rem] right-0 flex w-full justify-end gap-2'>
-        <FittingModelAddButton fileInputRef={fileInputRef} />
-        <FittingModelUploadInput
-          fileInputRef={fileInputRef}
-          setIsModelAddDialogOpen={setIsModelAddDialogOpen}
-        />
-        <FittingModelAddDialog
-          isOpen={isModelAddDialogOpen}
-          setIsOpen={setIsModelAddDialogOpen}
-        />
-        <FittingModelEditButton />
-      </div>
-      <div className='flex h-full w-full flex-col'>
-        {fittingModelList.map((fittingModel) => (
-          <DialogClose key={fittingModel.defaultModelId}>
-            <Button
-              variant='ghost'
-              className='text-body1 text-grey-01 hover:bg-grey-07 hover:text-grey-01 w-full bg-white'
-              onClick={() =>
-                handleClickFittingModel(fittingModel.defaultModelUrl)
-              }
-            >
-              {fittingModel.modelName}
-            </Button>
-          </DialogClose>
-        ))}
-      </div>
-    </DialogContent>
+    <>
+      <DialogContent
+        container={iframeDocument?.body}
+        showCloseButton={false}
+        className='w-[12.5rem] overflow-visible p-2.5'
+      >
+        <div className='absolute top-[-1.875rem] right-0 flex w-full justify-end gap-2'>
+          <FittingModelAddButton
+            fittingModelCount={fittingModelList.length}
+            fileInputRef={fileInputRef}
+          />
+          <FittingModelUploadInput
+            fileInputRef={fileInputRef}
+            setIsModelAddDialogOpen={setIsModelAddDialogOpen}
+          />
+          <FittingModelEditButton
+            setFittingModelActionMode={setFittingModelActionMode}
+          />
+        </div>
+        {fittingModelActionMode === FITTING_MODEL_ACTION_MODE.SELECT && (
+          <FittingModelList fittingModelList={fittingModelList} />
+        )}
+        {fittingModelActionMode === FITTING_MODEL_ACTION_MODE.EDIT && (
+          <FittingModelEditList
+            fittingModelList={fittingModelList}
+            setModelActionMode={setFittingModelActionMode}
+          />
+        )}
+      </DialogContent>
+      <FittingModelAddDialog
+        isOpen={isModelAddDialogOpen}
+        setIsOpen={setIsModelAddDialogOpen}
+        setIsModelActionDialogOpen={setIsModelActionDialogOpen}
+      />
+    </>
   );
 };
