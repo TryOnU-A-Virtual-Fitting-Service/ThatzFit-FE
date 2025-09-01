@@ -5,6 +5,12 @@ import type { PostFittingModelRequestDto } from '../Type';
 
 export const usePostFittingModel = () => {
   return useMutation({
-    mutationFn: (dto: PostFittingModelRequestDto) => postFittingModel(dto),
+    mutationFn: ({
+      dto,
+      updateUploadProgress,
+    }: {
+      dto: PostFittingModelRequestDto;
+      updateUploadProgress?: (uploadProgress: number) => void;
+    }) => postFittingModel({ dto, updateUploadProgress }),
   });
 };
