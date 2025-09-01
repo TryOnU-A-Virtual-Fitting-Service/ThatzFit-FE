@@ -1,1 +1,9 @@
-export type { PostFittingModelRequestDto } from './PostFittingModelDto';
+export type {
+  DeleteFittingModel,
+  PatchFittingModelListRequestDto,
+  UpdateFittingModel,
+} from './PatchFittingModelListDto';
+export type {
+  PostFittingModelRequestDto,
+  PostFittingModelResponseDto,
+} from './PostFittingModelDto';
