@@ -1,5 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 
+import { useFittingModelStore } from '@/Entities/FittingModel';
+
 import { Button, DialogTrigger } from '@/Shared/Components';
 import { cn } from '@/Shared/Lib';
 
@@ -10,6 +12,9 @@ type FittingModelActionDialogTriggerProps = {
 export const FittingModelActionDialogTrigger = ({
   dialogTriggerClassName,
 }: FittingModelActionDialogTriggerProps) => {
+  const currentFittingModelName = useFittingModelStore(
+    (state) => state.currentFittingModel.modelName,
+  );
   return (
     <DialogTrigger asChild>
       <Button
@@ -19,7 +24,9 @@ export const FittingModelActionDialogTrigger = ({
         )}
       >
         <div className='flex items-center gap-1'>
-          <span className='text-body3 select-none'>기본모델</span>
+          <span className='text-body3 select-none'>
+            {currentFittingModelName}
+          </span>
           <ChevronDown />
         </div>
       </Button>
