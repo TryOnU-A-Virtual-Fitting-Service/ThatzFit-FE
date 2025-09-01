@@ -1,4 +1,4 @@
-type FittingModelUpdateStatus = 'UPDATE' | 'DELETE';
+import type { FittingModelUpdateStatus } from '@/Entities/FittingModel';
 
 export type UpdateFittingModel = {
   id: Schema.FittingModel['defaultModelId'];
