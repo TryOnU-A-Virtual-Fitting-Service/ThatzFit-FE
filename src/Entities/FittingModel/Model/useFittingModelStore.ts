@@ -12,10 +12,6 @@ type FittingModelState = {
     modelImageFile: File;
     modelImageUrl: string;
   };
-  fittingModelUploadInfo: {
-    isUploading: boolean;
-    uploadProgress: number;
-  };
   fittingModelActionDialog: {
     isOpen: boolean;
   };
@@ -35,10 +31,6 @@ type FittingModelAction = {
   setAddedFittingModel: (addedFittingModel?: {
     modelImageFile: File;
     modelImageUrl: string;
-  }) => void;
-  setFittingModelUploadInfo: (fittingModelUploadInfo: {
-    isUploading: boolean;
-    uploadProgress: number;
   }) => void;
   setFittingModelActionDialog: (fittingModelActionDialog: {
     isOpen: boolean;
@@ -61,10 +53,6 @@ export const useFittingModelStore = create<FittingModelStore>()(
         modelName: '',
       },
       addedFittingModel: undefined,
-      fittingModelUploadInfo: {
-        isUploading: false,
-        uploadProgress: 0,
-      },
       fittingModelActionDialog: {
         isOpen: false,
       },
@@ -80,9 +68,6 @@ export const useFittingModelStore = create<FittingModelStore>()(
       },
       setAddedFittingModel: (addedFittingModel) => {
         set({ addedFittingModel }, undefined, 'setAddedFittingModel');
-      },
-      setFittingModelUploadInfo: (fittingModelUploadInfo) => {
-        set({ fittingModelUploadInfo }, undefined, 'setFittingModelUploadInfo');
       },
       setFittingModelActionDialog: (fittingModelActionDialog) => {
         set(
@@ -100,7 +85,7 @@ export const useFittingModelStore = create<FittingModelStore>()(
             },
           }),
           undefined,
-          'setFittingModelUploadProgress',
+          'setFittingModelUploadStatus',
         );
       },
     }),
