@@ -13,10 +13,14 @@ export const FittingButton = () => {
       setIsPluginOpen: state.setIsPluginOpen,
     })),
   );
+  const setCapturedClothingImage = useFittingStore(
+    (state) => state.setCapturedClothingImage,
+  );
 
   const handleClickFittingButton = () => {
     setIsCapturing(true);
     setIsPluginOpen(false);
+    setCapturedClothingImage(null);
 
     if (!pluginWrapper) {
       return;
