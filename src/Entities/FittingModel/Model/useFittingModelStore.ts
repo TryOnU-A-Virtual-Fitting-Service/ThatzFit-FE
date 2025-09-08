@@ -4,9 +4,10 @@ import { devtools } from 'zustand/middleware';
 type FittingModelState = {
   defaultModels: Schema.FittingModel[];
   currentFittingModel: {
-    modelUrl: string;
+    defaultModelUrl: Schema.FittingModel['defaultModelUrl'];
     imageName: string;
     modelName: Schema.FittingModel['modelName'];
+    defaultModelId: Schema.FittingModel['defaultModelId'];
   };
   addedFittingModel?: {
     modelImageFile: File;
@@ -17,16 +18,16 @@ type FittingModelState = {
   };
   fittingModelUploadStatus: {
     isUploading: boolean;
-    uploadProgress: number;
   };
 };
 
 type FittingModelAction = {
   setDefaultModels: (defaultModels: Schema.FittingModel[]) => void;
   setCurrentFittingModel: (currentFittingModel: {
-    modelUrl: string;
+    defaultModelUrl: Schema.FittingModel['defaultModelUrl'];
     imageName: string;
     modelName: Schema.FittingModel['modelName'];
+    defaultModelId: Schema.FittingModel['defaultModelId'];
   }) => void;
   setAddedFittingModel: (addedFittingModel?: {
     modelImageFile: File;
@@ -37,7 +38,6 @@ type FittingModelAction = {
   }) => void;
   setFittingModelUploadStatus: (fittingModelUploadStatus: {
     isUploading: boolean;
-    uploadProgress: number;
   }) => void;
 };
 
@@ -48,9 +48,10 @@ export const useFittingModelStore = create<FittingModelStore>()(
     (set) => ({
       defaultModels: [],
       currentFittingModel: {
-        modelUrl: '',
+        defaultModelUrl: '',
         imageName: '',
         modelName: '',
+        defaultModelId: 0,
       },
       addedFittingModel: undefined,
       fittingModelActionDialog: {

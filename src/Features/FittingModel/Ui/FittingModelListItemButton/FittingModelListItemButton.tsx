@@ -21,9 +21,10 @@ export const FittingModelListItemButton = ({
     modelName: Schema.FittingModel['modelName'];
   }) => {
     setCurrentFittingModel({
-      modelUrl: defaultModelUrl,
+      defaultModelUrl: defaultModelUrl,
       imageName: defaultModelUrl.split('/').pop() ?? '',
       modelName,
+      defaultModelId: fittingModel.defaultModelId,
     });
   };
 

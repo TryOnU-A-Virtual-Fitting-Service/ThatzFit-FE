@@ -1,8 +1,10 @@
 declare global {
   namespace Schema {
     type FittingHistory = {
-      tryOnResultId: number;
+      tryOnJobId: Schema.Fitting['tryOnJobId'];
       tryOnResultUrl: string;
+      defaultModelId: Schema.FittingModel['defaultModelId'];
+      modelName: Schema.FittingModel['modelName'];
     };
   }
 }

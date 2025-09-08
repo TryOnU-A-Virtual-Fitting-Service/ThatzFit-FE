@@ -1,0 +1,1 @@
+export { FittingClothingCaptureScreen } from './FittingClothingCaptureScreen';

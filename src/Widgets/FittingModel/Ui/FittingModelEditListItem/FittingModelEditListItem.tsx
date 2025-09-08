@@ -34,7 +34,7 @@ export const FittingModelEditListItem = ({
   } = useSortable({ id: fittingModel.defaultModelId });
 
   const selectedModelUrl = useFittingModelStore(
-    (state) => state.currentFittingModel.modelUrl,
+    (state) => state.currentFittingModel.defaultModelUrl,
   );
 
   const handleChangeModelName = (modelName: string) => {

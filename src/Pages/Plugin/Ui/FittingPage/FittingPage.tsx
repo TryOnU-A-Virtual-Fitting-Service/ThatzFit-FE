@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
+import { FittingClothingCaptureScreen, FittingDialog } from '@/Widgets/Fitting';
 import {
   CompanyInfoSection,
   FooterSection,
@@ -25,24 +26,29 @@ export const FittingPage = () => {
   useEffect(() => {
     if (isSuccess) {
       setCurrentFittingModel({
-        modelUrl: userInfo.recentlyUsedModel.modelUrl,
+        defaultModelUrl: userInfo.recentlyUsedModel.defaultModelUrl,
         imageName: userInfo.recentlyUsedModel.imageName,
         modelName: userInfo.recentlyUsedModel.modelName,
+        defaultModelId: userInfo.recentlyUsedModel.defaultModelId,
       });
     }
   }, [isSuccess, userInfo, setCurrentFittingModel]);
 
   return (
-    <PluginLayout>
-      <PluginLayout.Header>
-        <CompanyInfoSection />
-      </PluginLayout.Header>
-      <PluginLayout.Main>
-        <MainSection />
-      </PluginLayout.Main>
-      <PluginLayout.Footer>
-        <FooterSection />
-      </PluginLayout.Footer>
-    </PluginLayout>
+    <>
+      <PluginLayout>
+        <PluginLayout.Header>
+          <CompanyInfoSection />
+        </PluginLayout.Header>
+        <PluginLayout.Main>
+          <MainSection />
+        </PluginLayout.Main>
+        <PluginLayout.Footer>
+          <FooterSection />
+        </PluginLayout.Footer>
+      </PluginLayout>
+      <FittingClothingCaptureScreen />
+      <FittingDialog />
+    </>
   );
 };

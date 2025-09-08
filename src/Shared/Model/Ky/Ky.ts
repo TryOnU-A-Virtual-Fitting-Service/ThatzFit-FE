@@ -11,7 +11,7 @@ import { covertToKyMethod, removePrefixUrl } from './Ky.util';
 const api: KyInstance = ky.create({
   prefixUrl: BASE_URL,
   retry: 0,
-  timeout: 10000,
+  timeout: 300000,
   credentials: 'include',
   headers: {
     'Content-Type': 'application/json',
