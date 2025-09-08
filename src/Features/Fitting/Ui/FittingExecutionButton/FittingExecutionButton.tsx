@@ -25,7 +25,7 @@ export const FittingExecutionButton = () => {
   const { toast } = useToast();
 
   if (!capturedClothingImage) {
-    return;
+    return null;
   }
 
   const handleClickExecutionButton = () => {
