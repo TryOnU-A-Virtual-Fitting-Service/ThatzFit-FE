@@ -1,1 +1,5 @@
-export { FittingClothingCaptureScreen, FittingDialog } from './Ui';
+export {
+  FittingClothingCaptureScreen,
+  FittingDialog,
+  FittingLoadingView,
+} from './Ui';
