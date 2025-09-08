@@ -24,6 +24,7 @@ export const useFittingStore = create<FittingStore>()(
     isCapturing: false,
     capturedClothingImage: null,
     isFittingDialogOpen: false,
+    isImageProcessing: false,
     fittingJobId: null,
     setIsCapturing: (isCapturing) =>
       set({ isCapturing }, undefined, 'setIsCapturing'),
