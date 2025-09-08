@@ -11,7 +11,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const isDev = mode === 'development';
-  const env = loadEnv(mode, process.cwd(), '');
 
   return {
     plugins: [react(), tailwindcss(), tsconfigPaths(), svgr()],
@@ -30,15 +29,6 @@ export default defineConfig(({ mode }) => {
         },
       },
       emptyOutDir: true,
-    },
-    server: {
-      proxy: {
-        '/api': {
-          target: env.VITE_DEV_SERVER,
-          changeOrigin: true,
-          secure: true,
-        },
-      },
     },
   };
 });
