@@ -1,6 +1,11 @@
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
+import { FITTING_MODEL_LOADING_MESSAGE } from '@/Widgets/FittingModel/Ui/FittingModelView/FittingModelView.constant';
+
+import { usePostFitting } from '@/Features/Fitting/Model';
+import { usePostFittingModel } from '@/Features/FittingModel';
+
 import {
   FittingModelImage,
   useFittingModelStore,
@@ -12,23 +17,21 @@ import { ModelZoomDialog } from '../ModelZoomDialog';
 import { FittingModelViewLoading } from './FittingModelView.loading';
 
 export const FittingModelView = () => {
-  const {
-    currentFittingModel,
-    fittingModelUploadStatus,
-    fittingModelList,
-    setCurrentFittingModel,
-  } = useFittingModelStore(
-    useShallow((state) => ({
-      currentFittingModel: state.currentFittingModel,
-      fittingModelUploadStatus: state.fittingModelUploadStatus,
-      fittingModelList: state.defaultModels,
-      setCurrentFittingModel: state.setCurrentFittingModel,
-    })),
-  );
+  const { currentFittingModel, fittingModelList, setCurrentFittingModel } =
+    useFittingModelStore(
+      useShallow((state) => ({
+        currentFittingModel: state.currentFittingModel,
+        fittingModelList: state.defaultModels,
+        setCurrentFittingModel: state.setCurrentFittingModel,
+      })),
+    );
+
+  const { isPending: isPostFittingPending } = usePostFitting();
+  const { isPending: isPostFittingModelPending } = usePostFittingModel();
 
   useEffect(() => {
     const currentSelectedFittingModel = fittingModelList.find(
-      (model) => model.defaultModelUrl === currentFittingModel.modelUrl,
+      (model) => model.defaultModelUrl === currentFittingModel.defaultModelUrl,
     );
 
     if (
@@ -42,16 +45,24 @@ export const FittingModelView = () => {
     }
   }, [fittingModelList, currentFittingModel, setCurrentFittingModel]);
 
+  const loadingText = (() => {
+    if (isPostFittingModelPending) {
+      return FITTING_MODEL_LOADING_MESSAGE.UPLOAD_MODEL;
+    }
+    if (isPostFittingPending) {
+      return FITTING_MODEL_LOADING_MESSAGE.EXECUTE_FITTING;
+    }
+    return '';
+  })();
+
   return (
     <div className='bg-grey-08 relative flex h-[18.75rem] w-full justify-center rounded-[0.375rem] p-[0.5625rem] select-none'>
       <FittingModelActionDialog dialogTriggerClassName='absolute top-2 left-2' />
-      {fittingModelUploadStatus.isUploading ? (
-        <FittingModelViewLoading
-          uploadProgress={fittingModelUploadStatus.uploadProgress}
-        />
+      {isPostFittingModelPending || isPostFittingPending ? (
+        <FittingModelViewLoading loadingText={loadingText} />
       ) : (
         <FittingModelImage
-          src={currentFittingModel.modelUrl}
+          src={currentFittingModel.defaultModelUrl}
           imageFileName={currentFittingModel.imageName}
           className='object-contain'
         />
