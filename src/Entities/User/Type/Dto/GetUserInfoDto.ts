@@ -1,7 +1,8 @@
 export type GetUserInfoResponseDto = {
   recentlyUsedModel: {
-    modelUrl: string;
-    imageName: string;
+    defaultModelId: Schema.FittingModel['defaultModelId'];
+    defaultModelUrl: Schema.FittingModel['defaultModelUrl'];
     modelName: Schema.FittingModel['modelName'];
+    imageName: string;
   };
 };
