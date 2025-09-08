@@ -24,7 +24,9 @@ export const postFitting = async (dto: PostFittingRequestDto) => {
   );
 
   return post<PostFittingResponseDto>(`/api/try-on/fitting`, {
-    headers: undefined,
+    headers: {
+      'Content-Type': undefined,
+    },
     body: formData,
   }).then((res) => res.json());
 };

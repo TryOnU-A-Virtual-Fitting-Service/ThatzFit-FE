@@ -10,7 +10,9 @@ export const postFittingModel = async (dto: PostFittingModelRequestDto) => {
   formData.append('file', dto.file);
 
   return post<PostFittingModelResponseDto>(`/api/default-model`, {
-    headers: undefined,
+    headers: {
+      'Content-Type': undefined,
+    },
     body: formData,
   }).then((res) => res.json());
 };
