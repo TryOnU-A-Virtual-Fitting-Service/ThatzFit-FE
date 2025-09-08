@@ -36,7 +36,7 @@ export const ModelZoomDialogContent = () => {
       </DialogClose>
       <div className='h-[37.75rem] w-[30.3125rem] select-none'>
         <FittingModelImage
-          src={currentFittingModel.modelUrl}
+          src={currentFittingModel.defaultModelUrl}
           imageFileName={currentFittingModel.imageName}
           className='h-full w-full object-contain'
         />
