@@ -197,6 +197,13 @@
   .text-detail1-medium {
     @apply text-[0.5625rem] leading-normal font-medium tracking-[-0.003em];
   }
+
+  .scrollbar-hide {
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    scrollbar-width: none;
+  }
 }
 
 @theme {
