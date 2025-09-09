@@ -5,7 +5,7 @@ const PluginHeader = ({ children }: PropsWithChildren) => {
 };
 
 const PluginMain = ({ children }: PropsWithChildren) => {
-  return <main className='h-full'>{children}</main>;
+  return <main className='h-full min-w-0'>{children}</main>;
 };
 
 const PluginFooter = ({ children }: PropsWithChildren) => {
