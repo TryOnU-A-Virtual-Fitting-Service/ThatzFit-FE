@@ -1,1 +1,4 @@
-export type GetFittingHistoryListResponseDto = Schema.FittingHistory[];
+export type GetFittingHistoryListResponseDto = {
+  defaultModels: Schema.FittingModel[];
+  tryOnResults: Schema.FittingHistory[];
+};
