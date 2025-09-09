@@ -183,18 +183,16 @@ export const useExtractCroppedClothing = () => {
 
           // NOTE: 캡처 영역과 겹치는 이미지만 처리, 겹치지 않는 이미지는 cloneDoc에서 제거
           if (isIntersecting) {
-            let imgUrl = '';
             await postClothesImageDataUrl(
               {
                 imageUrl: img.src,
               },
               {
                 onSuccess: ({ data: { dataUrl } }) => {
-                  imgUrl = dataUrl;
+                  imgList[idx].src = dataUrl;
                 },
               },
             );
-            imgList[idx].src = imgUrl;
           } else {
             imgList[idx].src = '';
             imgList[idx].style.display = 'none';
