@@ -32,7 +32,7 @@ export const FittingButton = () => {
 
   return (
     <Button
-      className='bg-grey-02 text-body1 hover:text-grey-07 h-8 w-full cursor-pointer rounded-md text-white hover:bg-black'
+      className='bg-grey-02 text-body1 hover:text-grey-07 h-8 w-full cursor-pointer rounded-md text-white select-none hover:bg-black'
       onClick={handleClickFittingButton}
     >
       입어보기
