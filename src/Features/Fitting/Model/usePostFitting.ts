@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useShallow } from 'zustand/react/shallow';
 
 import { useFittingStore } from '@/Entities/Fitting';
+import { fittingHistoryKeys } from '@/Entities/FittingHistory';
 import { useFittingModelStore } from '@/Entities/FittingModel';
 
 import { useToast } from '@/Shared/Model';
@@ -14,6 +15,7 @@ const FITTING_FAILED_MESSAGE = '피팅에 실패했어요.';
 
 export const usePostFitting = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const {
     fittingJobId,
@@ -56,17 +58,17 @@ export const usePostFitting = () => {
         {
           request: {
             tryOnJobId: fittingJobId,
-            modelUrl:
-              fittingModelList.find(
-                (model) =>
-                  model.defaultModelId === currentFittingModel.defaultModelId,
-              )?.defaultModelUrl ?? '',
+            modelUrl: currentFittingModel.defaultModelUrl,
             defaultModelId: currentFittingModel.defaultModelId,
           },
           file: clothingImageFile,
         },
         {
           onSuccess: ({ data }) => {
+            queryClient.invalidateQueries({
+              queryKey: fittingHistoryKeys.list(),
+            });
+            toast.success('피팅을 완료했어요.');
             setCurrentFittingModel({
               ...currentFittingModel,
               defaultModelUrl: data.tryOnResultUrl,
