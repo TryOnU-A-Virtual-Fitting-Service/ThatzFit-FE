@@ -163,7 +163,7 @@ export const useExtractCroppedClothing = () => {
     width: number;
     height: number;
     callback: (blob: Blob) => void;
-  }) =>
+  }) => {
     html2canvas(document.body, {
       allowTaint: true,
       useCORS: true,
@@ -172,13 +172,16 @@ export const useExtractCroppedClothing = () => {
         setIsImageProcessing(true);
         const imgList = cloneDoc.querySelectorAll('img');
 
-        const promiseList = [...imgList].map(async (img, idx) => {
+        for (let idx = 0; idx < imgList.length; idx++) {
+          const img = imgList[idx];
           const rect = img.getBoundingClientRect();
+          const scrollHeight = window.scrollY;
+
           const isIntersecting = !(
             left + width < rect.left ||
             left > rect.right ||
-            top + height < rect.top ||
-            top > rect.bottom
+            top + height < rect.top + scrollHeight ||
+            top > rect.bottom + scrollHeight
           );
 
           // NOTE: 캡처 영역과 겹치는 이미지만 처리, 겹치지 않는 이미지는 cloneDoc에서 제거
@@ -194,11 +197,13 @@ export const useExtractCroppedClothing = () => {
               },
             );
           } else {
-            imgList[idx].src = '';
-            imgList[idx].style.display = 'none';
+            const width = img.style.width;
+            const height = img.style.height;
+
+            imgList[idx].innerHTML =
+              `<div style={{width: ${width}, height: ${height}}></div>`;
           }
-        });
-        await Promise.all(promiseList);
+        }
         setIsImageProcessing(false);
       },
     }).then((canvas) => {
@@ -216,6 +221,7 @@ export const useExtractCroppedClothing = () => {
       cvs.getContext('2d')?.putImageData(img, 0, 0);
       extractCroppedImageToBlob(cvs, callback);
     });
+  };
 
   return { croppedImageToBlob };
 };
