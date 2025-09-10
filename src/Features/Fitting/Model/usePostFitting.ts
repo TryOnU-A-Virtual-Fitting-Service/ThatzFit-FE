@@ -90,6 +90,7 @@ export const usePostFitting = () => {
     capturedClothingImage,
     fittingModelList,
     toast,
+    queryClient,
     executeFitting,
     setFittingJobId,
     setCapturedClothingImage,
