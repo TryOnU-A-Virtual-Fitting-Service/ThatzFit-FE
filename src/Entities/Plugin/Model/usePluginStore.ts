@@ -5,12 +5,15 @@ type PluginState = {
   pluginWrapper: HTMLElement | null;
   pluginIframe: HTMLIFrameElement | null;
   isPluginOpen: boolean;
+  companyLogoUrl: string;
+  companySloganUrl: string;
 };
 
 type PluginAction = {
   setPluginWrapper: (pluginWrapper: HTMLElement | null) => void;
   setPluginIframe: (pluginIframe: HTMLIFrameElement | null) => void;
   setIsPluginOpen: (isPluginOpen: boolean) => void;
+  setCompanyInfo: (logoUrl: string, sloganUrl: string) => void;
 };
 
 type PluginStore = PluginState & PluginAction;
@@ -27,6 +30,8 @@ export const usePluginStore = create<PluginStore>()(
         set({ pluginIframe: pluginIframe }, undefined, 'setPluginIframe'),
       setIsPluginOpen: (isPluginOpen) =>
         set({ isPluginOpen: isPluginOpen }, undefined, 'setIsPluginOpen'),
+      setCompanyInfo: (logoUrl, sloganUrl) =>
+        set({ companyLogoUrl: logoUrl, companySloganUrl: sloganUrl }),
     }),
     {
       name: 'PluginStore',
