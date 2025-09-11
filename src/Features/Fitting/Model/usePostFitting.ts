@@ -65,10 +65,10 @@ export const usePostFitting = () => {
         },
         {
           onSuccess: ({ data }) => {
+            toast.success('피팅을 완료했어요.');
             queryClient.invalidateQueries({
               queryKey: fittingHistoryKeys.list(),
             });
-            toast.success('피팅을 완료했어요.');
             setCurrentFittingModel({
               ...currentFittingModel,
               defaultModelUrl: data.tryOnResultUrl,
