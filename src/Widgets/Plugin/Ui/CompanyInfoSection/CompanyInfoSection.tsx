@@ -2,7 +2,13 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { CompanyLogo, CompanySlogan, usePluginStore } from '@/Entities/Plugin';
 
-export const CompanyInfoSection = () => {
+import { cn } from '@/Shared/Lib';
+
+type CompanyInfoSectionProps = {
+  className?: string;
+};
+
+export const CompanyInfoSection = ({ className }: CompanyInfoSectionProps) => {
   const { logoUrl, sloganUrl } = usePluginStore(
     useShallow((state) => ({
       logoUrl: state.companyLogoUrl,
@@ -10,7 +16,12 @@ export const CompanyInfoSection = () => {
     })),
   );
   return (
-    <section className='flex h-full w-full flex-col items-center justify-center gap-[0.5625rem]'>
+    <section
+      className={cn(
+        'flex h-fit w-full flex-col items-center gap-[0.5625rem]',
+        className,
+      )}
+    >
       <CompanyLogo logoUrl={logoUrl} />
       <CompanySlogan sloganUrl={sloganUrl} />
     </section>
