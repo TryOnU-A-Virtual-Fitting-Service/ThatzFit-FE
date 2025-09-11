@@ -1,11 +1,20 @@
-import { Spinner } from '@/Shared/Ui';
+import { FittingModelUploadProgress } from '@/Entities/FittingModel';
 
-export const FittingModelUploadLoadingView = () => {
+import { LoadingAnimation } from '@/Shared/Ui';
+
+type FittingModelUploadLoadingViewProps = {
+  isLoading?: boolean;
+};
+
+export const FittingModelUploadLoadingView = ({
+  isLoading = false,
+}: FittingModelUploadLoadingViewProps) => {
   return (
     <div className='absolute inset-0 flex flex-col items-center justify-center gap-2'>
-      <Spinner />
+      <LoadingAnimation />
       <div className='flex flex-col items-center'>
-        <span className='text-body3-medium animate-bounce text-black'>
+        <FittingModelUploadProgress isLoading={isLoading} />
+        <span className='text-body3-medium text-black'>
           모델이 될 준비 중...
         </span>
       </div>

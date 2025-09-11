@@ -1,21 +1,10 @@
-import { memo } from 'react';
-import Lottie from 'lottie-react';
-
 import { FittingProgress } from '@/Entities/Fitting';
 
-import fittingLoading from '../../../../../public/assets/loading/fitting-loading.json';
+import { LoadingAnimation } from '@/Shared/Ui';
 
 type FittingLoadingViewProps = {
   isLoading?: boolean;
 };
-
-const LoadingAnimation = memo(() => {
-  return (
-    <Lottie animationData={fittingLoading} loop autoPlay className='h-5 w-5' />
-  );
-});
-
-LoadingAnimation.displayName = 'LoadingAnimation';
 
 export const FittingLoadingView = ({ isLoading }: FittingLoadingViewProps) => {
   return (
