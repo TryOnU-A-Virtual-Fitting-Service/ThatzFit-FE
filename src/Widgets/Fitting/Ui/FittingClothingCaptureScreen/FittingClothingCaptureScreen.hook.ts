@@ -199,9 +199,11 @@ export const useExtractCroppedClothing = () => {
           } else {
             const width = img.style.width;
             const height = img.style.height;
+            const div = document.createElement('div');
+            div.style.width = width;
+            div.style.height = height;
 
-            imgList[idx].innerHTML =
-              `<div style={{width: ${width}, height: ${height}}></div>`;
+            imgList[idx].replaceWith(div);
           }
         }
         setIsImageProcessing(false);
