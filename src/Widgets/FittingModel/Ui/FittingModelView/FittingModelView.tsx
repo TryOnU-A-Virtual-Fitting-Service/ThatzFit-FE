@@ -6,7 +6,6 @@ import { FittingModelUploadLoadingView } from '@/Widgets/FittingModel/Ui/Fitting
 
 import { usePostFitting } from '@/Features/Fitting/Model';
 import { usePostFittingModel } from '@/Features/FittingModel';
-import { FittingResultRouteButton } from '@/Features/FittingResult';
 
 import {
   FittingModelImage,
@@ -51,7 +50,9 @@ export const FittingModelView = () => {
       {isPostFittingPending && (
         <FittingLoadingView isLoading={isPostFittingPending} />
       )}
-      {isPostFittingModelPending && <FittingModelUploadLoadingView />}
+      {isPostFittingModelPending && (
+        <FittingModelUploadLoadingView isLoading={isPostFittingModelPending} />
+      )}
       {!isPostFittingPending && !isPostFittingModelPending && (
         <FittingModelImage
           src={currentFittingModel.defaultModelUrl}

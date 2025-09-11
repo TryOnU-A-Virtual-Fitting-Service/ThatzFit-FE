@@ -5,4 +5,4 @@ export {
 } from './Config';
 export { useFittingModelStore } from './Model';
 export type { GetFittingModelListResponseDto } from './Type';
-export { FittingModelImage } from './Ui';
+export { FittingModelImage, FittingModelUploadProgress } from './Ui';

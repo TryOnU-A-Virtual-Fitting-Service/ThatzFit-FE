@@ -5,4 +5,5 @@
 interface ImportMetaEnv {
   readonly VITE_DEV_SERVER: string;
   readonly VITE_PROD_SERVER: string;
+  readonly VITE_CDN_HOST: string;
 }
