@@ -16,11 +16,19 @@ export const FittingButton = () => {
   const setCapturedClothingImage = useFittingStore(
     (state) => state.setCapturedClothingImage,
   );
+  const setIsFittingDialogOpen = useFittingStore(
+    (state) => state.setIsFittingDialogOpen,
+  );
 
-  const handleClickFittingButton = () => {
+  const initCaptureScreen = () => {
     setIsCapturing(true);
     setIsPluginOpen(false);
+    setIsFittingDialogOpen(false);
     setCapturedClothingImage(null);
+  };
+
+  const handleClickFittingButton = () => {
+    initCaptureScreen();
 
     if (!pluginWrapper) {
       return;
