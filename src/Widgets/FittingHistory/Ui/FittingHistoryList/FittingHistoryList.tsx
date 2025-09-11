@@ -81,6 +81,7 @@ export const FittingHistoryList = ({
       }
       case 'ArrowRight':
       case 'ArrowUp': {
+        event.preventDefault();
         event.stopPropagation();
         event.currentTarget.scrollLeft += 16;
         calculateCanScrollDirection.current({
