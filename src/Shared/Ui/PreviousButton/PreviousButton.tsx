@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 
 import { Button } from '@/Shared/Components';
 import { cn } from '@/Shared/Lib';
@@ -29,7 +29,7 @@ export const PreviousButton = ({
       onClick={handleClickPreviousButton}
       className={cn('cursor-pointer', className)}
     >
-      <ChevronRight />
+      <ChevronLeft />
     </Button>
   );
 };
