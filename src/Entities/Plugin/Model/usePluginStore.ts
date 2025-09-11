@@ -1,3 +1,4 @@
+import { Underline } from 'lucide-react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
@@ -39,11 +40,15 @@ export const usePluginStore = create<PluginStore>()(
       setIsPluginOpen: (isPluginOpen) =>
         set({ isPluginOpen: isPluginOpen }, undefined, 'setIsPluginOpen'),
       setCompanyInfo: (logoUrl, sloganUrl, pluginButtonImageUrl) =>
-        set({
-          companyLogoUrl: logoUrl,
-          companySloganUrl: sloganUrl,
-          pluginButtonImageUrl: pluginButtonImageUrl,
-        }),
+        set(
+          {
+            companyLogoUrl: logoUrl,
+            companySloganUrl: sloganUrl,
+            pluginButtonImageUrl: pluginButtonImageUrl,
+          },
+          undefined,
+          'setCompanyInfo',
+        ),
     }),
     {
       name: 'PluginStore',
