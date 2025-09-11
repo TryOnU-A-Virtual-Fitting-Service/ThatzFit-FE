@@ -11,6 +11,7 @@ export {
   DialogTitle,
   DialogTrigger,
   Input,
+  Skeleton,
   Tooltip,
   TooltipContent,
   TooltipProvider,

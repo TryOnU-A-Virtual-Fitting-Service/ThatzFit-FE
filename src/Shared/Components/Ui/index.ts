@@ -12,6 +12,7 @@ export {
   DialogTrigger,
 } from './Dialog';
 export { Input } from './Input';
+export { Skeleton } from './Skeleton';
 export {
   Tooltip,
   TooltipContent,

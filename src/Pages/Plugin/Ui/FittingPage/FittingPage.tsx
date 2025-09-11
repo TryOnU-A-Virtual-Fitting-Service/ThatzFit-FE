@@ -38,7 +38,7 @@ export const FittingPage = () => {
     <>
       <PluginLayout>
         <PluginLayout.Header>
-          <CompanyInfoSection />
+          <CompanyInfoSection className='pt-4' />
         </PluginLayout.Header>
         <PluginLayout.Main>
           <MainSection />

@@ -16,11 +16,19 @@ export const FittingButton = () => {
   const setCapturedClothingImage = useFittingStore(
     (state) => state.setCapturedClothingImage,
   );
+  const setIsFittingDialogOpen = useFittingStore(
+    (state) => state.setIsFittingDialogOpen,
+  );
 
-  const handleClickFittingButton = () => {
+  const initCaptureScreen = () => {
     setIsCapturing(true);
     setIsPluginOpen(false);
+    setIsFittingDialogOpen(false);
     setCapturedClothingImage(null);
+  };
+
+  const handleClickFittingButton = () => {
+    initCaptureScreen();
 
     if (!pluginWrapper) {
       return;
@@ -32,7 +40,7 @@ export const FittingButton = () => {
 
   return (
     <Button
-      className='bg-grey-02 text-body1 hover:text-grey-07 h-8 w-full cursor-pointer rounded-md text-white hover:bg-black'
+      className='bg-grey-02 text-body1 hover:text-grey-07 h-8 w-full cursor-pointer rounded-md text-white select-none hover:bg-black'
       onClick={handleClickFittingButton}
     >
       입어보기

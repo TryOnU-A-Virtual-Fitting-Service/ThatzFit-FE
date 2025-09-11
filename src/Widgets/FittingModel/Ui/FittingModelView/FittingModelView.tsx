@@ -6,6 +6,7 @@ import { FittingModelUploadLoadingView } from '@/Widgets/FittingModel/Ui/Fitting
 
 import { usePostFitting } from '@/Features/Fitting/Model';
 import { usePostFittingModel } from '@/Features/FittingModel';
+import { FittingResultRouteButton } from '@/Features/FittingResult';
 
 import {
   FittingModelImage,
@@ -58,6 +59,8 @@ export const FittingModelView = () => {
           className='object-contain'
         />
       )}
+      {/* TODO: 사이즈 추천 기능 완성 시 추가 */}
+      {/* <FittingResultRouteButton /> */}
       <ModelZoomDialog dialogTriggerClassName='absolute top-2 right-2' />
     </div>
   );

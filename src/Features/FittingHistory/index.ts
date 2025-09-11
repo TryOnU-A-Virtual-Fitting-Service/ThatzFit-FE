@@ -1,1 +1,5 @@
-export { FittingHistoryInfoTooltip } from './Ui';
+export {
+  FittingHistoryInfoTooltip,
+  FittingHistoryListItem,
+  FittingHistoryListItemLoading,
+} from './Ui';

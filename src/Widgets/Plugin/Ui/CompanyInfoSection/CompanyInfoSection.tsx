@@ -1,11 +1,29 @@
-import MusinsaLogo from '../../../../../public/assets/Musinsa_Logo.svg?react';
-import Slogan from '../../../../../public/assets/Slogan.svg?react';
+import { useShallow } from 'zustand/react/shallow';
 
-export const CompanyInfoSection = () => {
+import { CompanyLogo, CompanySlogan, usePluginStore } from '@/Entities/Plugin';
+
+import { cn } from '@/Shared/Lib';
+
+type CompanyInfoSectionProps = {
+  className?: string;
+};
+
+export const CompanyInfoSection = ({ className }: CompanyInfoSectionProps) => {
+  const { logoUrl, sloganUrl } = usePluginStore(
+    useShallow((state) => ({
+      logoUrl: state.companyLogoUrl,
+      sloganUrl: state.companySloganUrl,
+    })),
+  );
   return (
-    <section className='flex h-full w-full flex-col items-center justify-center gap-[0.5625rem]'>
-      <MusinsaLogo />
-      <Slogan />
+    <section
+      className={cn(
+        'flex h-fit w-full flex-col items-center gap-[0.5625rem]',
+        className,
+      )}
+    >
+      <CompanyLogo logoUrl={logoUrl} />
+      <CompanySlogan sloganUrl={sloganUrl} />
     </section>
   );
 };
