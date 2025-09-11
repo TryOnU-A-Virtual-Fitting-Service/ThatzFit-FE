@@ -25,7 +25,7 @@ export const FittingModelUploadProgress = ({
         }
         return next;
       });
-    });
+    }, intervalTime);
 
     return () => clearInterval(interval);
   }, [isLoading]);
