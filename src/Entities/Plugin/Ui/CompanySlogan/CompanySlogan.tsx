@@ -4,5 +4,5 @@ interface CompanySloganProps {
 }
 
 export const CompanySlogan = ({ sloganUrl, className }: CompanySloganProps) => {
-  return <img src={sloganUrl} className={className} />;
+  return <img src={sloganUrl} alt='회사 슬로건' className={className} />;
 };

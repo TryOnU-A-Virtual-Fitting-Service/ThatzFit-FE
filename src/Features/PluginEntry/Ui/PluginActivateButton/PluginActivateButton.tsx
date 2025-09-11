@@ -38,6 +38,7 @@ export const PluginActivateButton = ({
     >
       <img
         src={pluginButtonImageUrl}
+        alt='플러그인 진입 버튼 로고'
         onLoad={handleImageLoad}
         className='object-fit h-full w-full rounded-lg'
       />

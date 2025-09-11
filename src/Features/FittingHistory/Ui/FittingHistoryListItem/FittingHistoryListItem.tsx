@@ -31,6 +31,7 @@ export const FittingHistoryListItem = ({
     >
       <img
         src={fittingHistory.tryOnResultUrl}
+        alt='가상 피팅 결과'
         className='h-full w-full object-contain'
       />
     </Button>
