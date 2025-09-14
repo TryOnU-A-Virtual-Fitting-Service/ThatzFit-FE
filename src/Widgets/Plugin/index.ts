@@ -1,2 +1,7 @@
 export { initializePlugin } from './Model';
-export { CompanyInfoSection, FooterSection, MainSection } from './Ui';
+export {
+  CompanyInfoSection,
+  FooterSection,
+  MainSection,
+  RootErrorFallbackMainSection,
+} from './Ui';
