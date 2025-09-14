@@ -1,7 +1,6 @@
 import { type RouteObject } from 'react-router-dom';
 
-import { FittingPage } from '@/Pages/Plugin';
-import { FittingResultPage } from '@/Pages/Plugin/Ui';
+import { FittingPage, FittingResultPage } from '@/Pages/Plugin';
 
 export const pluginRoutes: RouteObject = {
   children: [
@@ -12,6 +11,13 @@ export const pluginRoutes: RouteObject = {
     {
       path: 'fitting/result',
       element: <FittingResultPage />,
+    },
+    {
+      path: '*',
+      loader: () => {
+        throw new Error();
+      },
+      element: <></>,
     },
   ],
 };

@@ -1,7 +1,10 @@
 import type { PropsWithChildren } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
-// TODO Error Fallback 정의 필요
+import { RootErrorFallback } from '@/Pages/Plugin';
+
 export const RootErrorBoundary = ({ children }: PropsWithChildren) => {
-  return <ErrorBoundary fallback={<div>Error</div>}>{children}</ErrorBoundary>;
+  return (
+    <ErrorBoundary fallback={<RootErrorFallback />}>{children}</ErrorBoundary>
+  );
 };
