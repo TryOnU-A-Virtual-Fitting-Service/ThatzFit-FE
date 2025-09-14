@@ -1,5 +1,7 @@
 import { Navigate, Outlet, type RouteObject } from 'react-router-dom';
 
+import { RootErrorFallback } from '@/Pages/Plugin';
+
 import { RootErrorBoundary } from '../Ui';
 
 import { pluginRoutes } from './Plugin';
@@ -11,6 +13,7 @@ export const rootRouter: RouteObject = {
       <Outlet />
     </RootErrorBoundary>
   ),
+  errorElement: <RootErrorFallback />,
   children: [
     {
       path: '/',
