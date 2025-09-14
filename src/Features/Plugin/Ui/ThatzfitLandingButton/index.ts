@@ -1,0 +1,1 @@
+export { ThatzfitLandingButton } from './ThatzfitLandingButton';

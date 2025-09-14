@@ -1,0 +1,1 @@
+export { FittingResultMainSection } from './FittingResultMainSection';

@@ -21,7 +21,14 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "declaration": true
   },
-  "include": ["src"]
+  "include": ["src", "vite-env.d.ts", "**/*.d.ts"],
+  "exclude": ["node_modules", "dist"]
 }

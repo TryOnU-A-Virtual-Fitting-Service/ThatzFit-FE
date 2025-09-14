@@ -1,0 +1,1 @@
+export { CompanySlogan } from './CompanySlogan';

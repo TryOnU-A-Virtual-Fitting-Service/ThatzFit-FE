@@ -1,0 +1,1 @@
+export { getPluginSetup } from './Get';
