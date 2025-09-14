@@ -1,1 +1,1 @@
-export { ThatzfitLandingButton } from './Ui';
+export { PluginReloadButton, ThatzfitLandingButton } from './Ui';
