@@ -37,6 +37,9 @@ export const useCroppedClothing = () => {
   const screenshotBackgroundRef = useRef<HTMLDivElement>(null);
   const screenshotAreaRef = useRef<HTMLDivElement>(null);
 
+  const w = window.parent ?? window;
+  const d = parent.document ?? document;
+
   const handleCroppedStart = (event: MouseEvent) => {
     setIsDragging(true);
     setStartX(event.clientX);
@@ -58,9 +61,8 @@ export const useCroppedClothing = () => {
 
     const top = Math.min(y, startY);
     const left = Math.min(x, startX);
-
-    const right = document.body.clientWidth - Math.max(x, startX);
-    const bottom = window.innerHeight - Math.max(y, startY);
+    const right = d.body.clientWidth - Math.max(x, startX);
+    const bottom = w.innerHeight - Math.max(y, startY);
 
     screenshotAreaRef.current.style.top = `${top}px`;
     screenshotAreaRef.current.style.left = `${left}px`;
@@ -72,7 +74,7 @@ export const useCroppedClothing = () => {
     const x = event.clientX;
     const y = event.clientY;
 
-    const scrollWidth = window.innerWidth - document.body.clientWidth;
+    const scrollWidth = w.innerWidth - d.body.clientWidth;
 
     const top = Math.min(y, startY);
     const left = Math.min(x, startX);
@@ -85,7 +87,7 @@ export const useCroppedClothing = () => {
     try {
       await croppedImageToBlob({
         left,
-        top: top + window.scrollY,
+        top: top + w.scrollY,
         width,
         height,
         callback: setCapturedClothingImage,
@@ -129,6 +131,9 @@ export const useCroppedClothing = () => {
 };
 
 export const useExtractCroppedClothing = () => {
+  const w = window.parent ?? window;
+  const d = parent.document ?? document;
+
   const setIsImageProcessing = useFittingStore(
     (state) => state.setIsImageProcessing,
   );
@@ -164,10 +169,10 @@ export const useExtractCroppedClothing = () => {
     height: number;
     callback: (blob: Blob) => void;
   }) => {
-    html2canvas(document.body, {
+    html2canvas(d.body, {
       allowTaint: true,
       useCORS: true,
-      width: document.body.clientWidth,
+      width: d.body.clientWidth,
       onclone: async (cloneDoc) => {
         setIsImageProcessing(true);
         const imgList = cloneDoc.querySelectorAll('img');
@@ -175,7 +180,7 @@ export const useExtractCroppedClothing = () => {
         for (let idx = 0; idx < imgList.length; idx++) {
           const img = imgList[idx];
           const rect = img.getBoundingClientRect();
-          const scrollHeight = window.scrollY;
+          const scrollHeight = w.scrollY;
 
           const isIntersecting = !(
             left + width < rect.left ||

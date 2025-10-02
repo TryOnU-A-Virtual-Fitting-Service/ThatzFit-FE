@@ -24,6 +24,8 @@ export const FittingClothingCaptureScreen = () => {
     handleCancelCapture,
   } = useCroppedClothing();
 
+  const w = window.parent ?? window;
+
   if (!isCapturing || !pluginEntryWrapper) {
     return null;
   }
@@ -45,7 +47,7 @@ export const FittingClothingCaptureScreen = () => {
           isCapturing && 'cursor-crosshair',
         )}
         style={{
-          borderWidth: isCapturing ? `0 0 ${window.innerHeight}px 0` : 0,
+          borderWidth: isCapturing ? `0 0 ${w.innerHeight}px 0` : 0,
         }}
         onMouseDown={handleCroppedStart}
         onMouseMove={handleCroppedAreaMove}
