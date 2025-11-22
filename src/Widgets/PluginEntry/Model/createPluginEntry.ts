@@ -38,7 +38,7 @@ export const createPluginEntryWrapper = () => {
   style.rel = 'stylesheet';
   style.href = import.meta.env.DEV
     ? './src/Apps/index.css'
-    : 'https://cdn.thatzfit.com/plugin/index.Bi_tNvAp.css';
+    : 'https://cdn.thatzfit.com/plugin/index.Dh-C2C5M.css';
   shadowRoot.appendChild(style);
 
   const pluginEntry = document.createElement('div');
