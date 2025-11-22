@@ -71,23 +71,26 @@ export const useCroppedClothing = () => {
   };
 
   const handleCroppedEnd = async (event: MouseEvent) => {
-    const x = event.clientX;
-    const y = event.clientY;
+    const x = event.clientX + w.scrollX;
+    const y = event.clientY + w.scrollY;
+
+    const sx = startX + w.scrollX;
+    const sy = startY + w.scrollY;
 
     const scrollWidth = w.innerWidth - d.body.clientWidth;
 
-    const top = Math.min(y, startY);
-    const left = Math.min(x, startX);
-    const width = Math.max(x, startX) - left + scrollWidth;
-    const height = Math.max(y, startY) - top;
+    const top = Math.min(y, sy);
+    const left = Math.min(x, sx);
+    const width = Math.max(x, sx) - left + scrollWidth;
+    const height = Math.max(y, sy) - top;
 
     setIsFittingDialogOpen(true);
     setIsDragging(false);
     setIsMouseMoving(false);
     try {
-      await croppedImageToBlob({
+      croppedImageToBlob({
         left,
-        top: top + w.scrollY,
+        top,
         width,
         height,
         callback: setCapturedClothingImage,
@@ -169,6 +172,9 @@ export const useExtractCroppedClothing = () => {
     height: number;
     callback: (blob: Blob) => void;
   }) => {
+    const originalImageList = w.document.querySelectorAll('img');
+    const originalImageListArray = Array.from(originalImageList);
+
     html2canvas(d.body, {
       allowTaint: true,
       useCORS: true,
@@ -176,39 +182,47 @@ export const useExtractCroppedClothing = () => {
       onclone: async (cloneDoc) => {
         setIsImageProcessing(true);
         const imgList = cloneDoc.querySelectorAll('img');
+        for (let idx = 0; idx < originalImageListArray.length; idx++) {
+          const originalImage = originalImageListArray[idx];
+          const clonedImage = imgList[idx];
 
-        for (let idx = 0; idx < imgList.length; idx++) {
-          const img = imgList[idx];
-          const rect = img.getBoundingClientRect();
-          const scrollHeight = w.scrollY;
+          if (!clonedImage) {
+            continue;
+          }
 
-          const isIntersecting = !(
-            left + width < rect.left ||
-            left > rect.right ||
-            top + height < rect.top + scrollHeight ||
-            top > rect.bottom + scrollHeight
-          );
+          const rect = originalImage.getBoundingClientRect();
+          const { scrollX, scrollY } = w;
 
-          // NOTE: 캡처 영역과 겹치는 이미지만 처리, 겹치지 않는 이미지는 cloneDoc에서 제거
-          if (isIntersecting) {
+          const rectTop = rect.top + scrollY;
+          const rectBottom = rect.bottom + scrollY;
+          const rectLeft = rect.left + scrollX;
+          const rectRight = rect.right + scrollX;
+
+          const isNotIntersecting =
+            left + width < rectLeft ||
+            left > rectRight ||
+            top + height < rectTop ||
+            top > rectBottom;
+
+          if (!isNotIntersecting) {
             await postClothesImageDataUrl(
               {
-                imageUrl: img.src,
+                imageUrl: originalImage.src,
               },
               {
                 onSuccess: ({ data: { dataUrl } }) => {
-                  imgList[idx].src = dataUrl;
+                  clonedImage.src = dataUrl;
                 },
               },
             );
           } else {
-            const width = img.style.width;
-            const height = img.style.height;
+            const width = originalImage.style.width;
+            const height = originalImage.style.height;
             const div = document.createElement('div');
             div.style.width = width;
             div.style.height = height;
 
-            imgList[idx].replaceWith(div);
+            clonedImage.replaceWith(div);
           }
         }
         setIsImageProcessing(false);
@@ -226,6 +240,8 @@ export const useExtractCroppedClothing = () => {
         return;
       }
       cvs.getContext('2d')?.putImageData(img, 0, 0);
+
+      window.parent.document.body.appendChild(cvs);
       extractCroppedImageToBlob(cvs, callback);
     });
   };
