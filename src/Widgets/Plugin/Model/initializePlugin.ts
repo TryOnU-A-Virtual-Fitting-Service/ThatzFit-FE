@@ -12,7 +12,7 @@ export const initializePlugin = () => {
     return;
   }
 
-  pluginWrapper.classList.add('thatzfit-desktop', 'thatzfit-hidden');
+  pluginWrapper.classList.add('thatzfit-initialHidden', 'thatzfit-desktop');
   usePluginStore.setState({
     pluginWrapper: pluginWrapper,
     pluginIframe: iframe,
