@@ -178,7 +178,11 @@ export const useExtractCroppedClothing = () => {
     html2canvas(d.body, {
       allowTaint: true,
       useCORS: true,
-      width: d.body.clientWidth,
+      scale: 1,
+      x: 0,
+      y: 0,
+      width: d.body.scrollWidth,
+      height: d.body.scrollHeight,
       onclone: async (cloneDoc) => {
         setIsImageProcessing(true);
         const imgList = cloneDoc.querySelectorAll('img');
@@ -241,7 +245,6 @@ export const useExtractCroppedClothing = () => {
       }
       cvs.getContext('2d')?.putImageData(img, 0, 0);
 
-      window.parent.document.body.appendChild(cvs);
       extractCroppedImageToBlob(cvs, callback);
     });
   };
