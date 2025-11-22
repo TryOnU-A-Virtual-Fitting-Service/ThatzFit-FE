@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -21,12 +21,22 @@ export const PluginEntryButton = () => {
     })),
   );
 
+  const isFirstRender = useRef<boolean>(true);
+
   useEffect(() => {
     if (!pluginWrapper) {
       return;
     }
 
     pluginWrapper.classList.toggle('thatzfit-visible', isPluginOpen);
+
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (pluginWrapper.classList.contains('thatzfit-initialHidden')) {
+      pluginWrapper.classList.remove('thatzfit-initialHidden');
+    }
     pluginWrapper.classList.toggle('thatzfit-hidden', !isPluginOpen);
   }, [isPluginOpen, pluginWrapper]);
 
