@@ -46,11 +46,12 @@ export default tseslint.config(
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       '@typescript-eslint/no-namespace': 'off',
-      '@typescript-eslint/no-unused-vars': 'warn',
       'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'error',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'react-refresh/only-export-components': 'warn',
+      'no-console': ['error', { allow: ['warn', 'info', 'error'] }],
       'simple-import-sort/imports': [
         'error',
         {
