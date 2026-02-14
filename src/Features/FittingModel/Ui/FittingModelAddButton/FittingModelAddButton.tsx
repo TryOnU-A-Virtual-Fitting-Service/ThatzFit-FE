@@ -8,7 +8,7 @@ import { FITTING_MODEL_MAX_COUNT } from './FittingModelAddButton.constant';
 
 type FittingModelAddButtonProps = {
   fittingModelCount: number;
-  fileInputRef?: RefObject<HTMLInputElement>;
+  fileInputRef?: RefObject<HTMLInputElement | null>;
 };
 
 export const FittingModelAddButton = ({

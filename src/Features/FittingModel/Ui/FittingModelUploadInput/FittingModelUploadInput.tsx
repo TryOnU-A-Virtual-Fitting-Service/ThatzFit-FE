@@ -3,7 +3,7 @@ import type { ChangeEvent, RefObject } from 'react';
 import { useFittingModelStore } from '@/Entities/FittingModel';
 
 type FittingModelUploadInputProps = {
-  fileInputRef?: RefObject<HTMLInputElement>;
+  fileInputRef?: RefObject<HTMLInputElement | null>;
   setIsModelAddDialogOpen: (isModelAddDialogOpen: boolean) => void;
 };
 
