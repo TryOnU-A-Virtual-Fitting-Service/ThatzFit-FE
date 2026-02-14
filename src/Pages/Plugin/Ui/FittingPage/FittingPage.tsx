@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 
 import { FittingClothingCaptureScreen, FittingDialog } from '@/Widgets/Fitting';
 import {
@@ -8,31 +8,34 @@ import {
   MainSection,
 } from '@/Widgets/Plugin';
 
-import { useFittingModelStore } from '@/Entities/FittingModel';
-import { userQueries } from '@/Entities/User';
+import {
+  fittingModelQueries,
+  useFittingModelStore,
+} from '@/Entities/FittingModel';
 
 import { PluginLayout } from '../PluginLayout';
 
 export const FittingPage = () => {
-  const { data: userInfo, isSuccess } = useQuery({
-    ...userQueries.userInfoOptions(),
-    select: (response) => response.data,
-  });
+  const { data: fittingModelList, isSuccess: isFittingModelListSuccess } =
+    useSuspenseQuery({
+      ...fittingModelQueries.listOptions(),
+      select: (response) => response.data,
+    });
 
   const setCurrentFittingModel = useFittingModelStore(
     (state) => state.setCurrentFittingModel,
   );
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isFittingModelListSuccess) {
       setCurrentFittingModel({
-        defaultModelUrl: userInfo.recentlyUsedModel.defaultModelUrl,
-        imageName: userInfo.recentlyUsedModel.imageName,
-        modelName: userInfo.recentlyUsedModel.modelName,
-        defaultModelId: userInfo.recentlyUsedModel.defaultModelId,
+        defaultModelUrl: fittingModelList[0].defaultModelUrl,
+        imageName: fittingModelList[0].defaultModelUrl.split('/').pop() ?? '',
+        modelName: fittingModelList[0].modelName,
+        defaultModelId: fittingModelList[0].defaultModelId,
       });
     }
-  }, [isSuccess, userInfo, setCurrentFittingModel]);
+  }, [setCurrentFittingModel, fittingModelList, isFittingModelListSuccess]);
 
   return (
     <>
