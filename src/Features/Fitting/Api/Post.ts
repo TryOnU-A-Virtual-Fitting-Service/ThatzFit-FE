@@ -8,7 +8,7 @@ import type {
   PostFittingResponseDto,
 } from '../Type';
 export const postFittingJob = async () => {
-  return post<PostFittingJobResponseDto>('/api/try-on/job').then((res) =>
+  return post<PostFittingJobResponseDto>('/api/v1/try-on/job').then((res) =>
     res.json(),
   );
 };
@@ -23,7 +23,7 @@ export const postFitting = async (dto: PostFittingRequestDto) => {
     }),
   );
 
-  return post<PostFittingResponseDto>(`/api/try-on/fitting`, {
+  return post<PostFittingResponseDto>(`/api/v1/try-on/fitting`, {
     headers: {
       'Content-Type': undefined,
     },
@@ -34,7 +34,7 @@ export const postFitting = async (dto: PostFittingRequestDto) => {
 export const postClothesImageDataUrl = async (
   dto: PostClothesImageDataUrlRequestDto,
 ) => {
-  return post<PostClothesImageDataUrlResponseDto>(`/api/try-on/image`, {
+  return post<PostClothesImageDataUrlResponseDto>(`/api/v1/try-on/image`, {
     body: JSON.stringify(dto),
   }).then((res) => res.json());
 };
