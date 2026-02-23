@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { initializePlugin } from '@/Widgets/Plugin';
 import { createPluginEntry } from '@/Widgets/PluginEntry';
@@ -14,18 +14,38 @@ import { TanstackQueryProvider } from './Ui/TanstackQueryProvider';
 import { initializeThatzfitStyle, initUserInfo } from './Model';
 
 export const App = () => {
+  const [isUserInitialized, setIsUserInitialized] = useState(false);
+
   useEffect(() => {
-    initializeThatzfitStyle();
-    createPluginEntry();
-    initializePlugin();
-    initUserInfo();
-    initialCompanyInfo();
+    let isMounted = true;
+
+    const bootstrap = async () => {
+      initializeThatzfitStyle();
+      createPluginEntry();
+      initializePlugin();
+
+      try {
+        await initUserInfo();
+        void initialCompanyInfo();
+        if (isMounted) {
+          setIsUserInitialized(true);
+        }
+      } catch (error) {
+        console.error('Failed to initialize user info', error);
+      }
+    };
+
+    void bootstrap();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
     <TanstackQueryProvider>
       <ToastProvider>
-        <PluginRouter />
+        {isUserInitialized ? <PluginRouter /> : null}
         <PluginEntryButton />
         <Toast />
       </ToastProvider>
