@@ -8,6 +8,7 @@ import {
 import { useShallow } from 'zustand/react/shallow';
 
 import {
+  CaptureError,
   type CaptureRect,
   createCaptureEngine,
 } from '@/Features/Fitting/Model/captureEngine';
@@ -16,6 +17,27 @@ import { useFittingStore } from '@/Entities/Fitting';
 import { usePluginStore } from '@/Entities/Plugin';
 
 import { useToast } from '@/Shared/Model';
+
+const getCaptureErrorMessage = (error: unknown): string => {
+  if (!(error instanceof CaptureError)) {
+    return '옷 캡처에 실패했어요.';
+  }
+
+  switch (error.code) {
+    case 'CANVAS_LIMIT_EXCEEDED':
+      return '선택 영역이 너무 커서 캡처할 수 없어요. 영역을 조금 줄여주세요.';
+    case 'CORS_TAINT':
+      return '외부 이미지 보안 정책으로 캡처에 실패했어요. 다시 시도해 주세요.';
+    case 'DISPLAY_MEDIA_DENIED':
+      return '화면 공유 권한을 허용해 주세요. 권한 허용 후 다시 시도해 주세요.';
+    case 'DISPLAY_MEDIA_NOT_SUPPORTED':
+      return '현재 브라우저에서 화면 공유 캡처를 지원하지 않아요.';
+    case 'EMPTY_IMAGE_BLOB':
+      return '캡처 이미지 생성에 실패했어요. 다시 시도해 주세요.';
+    default:
+      return '옷 캡처에 실패했어요.';
+  }
+};
 
 export const useCroppedClothing = () => {
   const { setIsCapturing, setCapturedClothingImage, setIsFittingDialogOpen } =
@@ -133,8 +155,11 @@ export const useCroppedClothing = () => {
     try {
       const capturedBlob = await croppedImageToBlob(rect);
       setCapturedClothingImage(capturedBlob);
-    } catch {
-      toast.error('옷 캡처에 실패했어요.');
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('[capture] capture failed', error);
+      }
+      toast.error(getCaptureErrorMessage(error));
       setIsFittingDialogOpen(false);
     } finally {
       setIsCapturing(false);
@@ -176,6 +201,7 @@ export const useExtractCroppedClothing = () => {
       createCaptureEngine({
         setImageProcessing: setIsImageProcessing,
         proxyUrl: '/api/v1/try-on/image/proxy',
+        fallbackToDisplayMedia: true,
       }),
     [setIsImageProcessing],
   );
