@@ -7,7 +7,6 @@ import {
 } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
-import { usePostClothesImageDataUrl } from '@/Features/Fitting';
 import {
   type CaptureRect,
   createCaptureEngine,
@@ -172,17 +171,13 @@ export const useExtractCroppedClothing = () => {
     (state) => state.setIsImageProcessing,
   );
 
-  const { mutateAsync: postClothesImageDataUrl } = usePostClothesImageDataUrl();
   const captureEngine = useMemo(
     () =>
       createCaptureEngine({
-        convertImageToDataUrl: async (imageUrl: string) => {
-          const response = await postClothesImageDataUrl({ imageUrl });
-          return response.data.dataUrl;
-        },
         setImageProcessing: setIsImageProcessing,
+        proxyUrl: '/api/v1/try-on/image/proxy',
       }),
-    [postClothesImageDataUrl, setIsImageProcessing],
+    [setIsImageProcessing],
   );
 
   const croppedImageToBlob = (rect: CaptureRect) => {

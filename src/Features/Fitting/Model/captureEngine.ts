@@ -27,20 +27,8 @@ const DEFAULT_CAPTURE_ENGINE: CaptureEngineKind =
     : 'html2canvas';
 
 type Html2CanvasCaptureEngineOptions = {
-  convertImageToDataUrl: (imageUrl: string) => Promise<string>;
   setImageProcessing: (isProcessing: boolean) => void;
-};
-
-const isIntersectingRect = (
-  source: DOMRect,
-  target: { left: number; top: number; right: number; bottom: number },
-) => {
-  return !(
-    source.right < target.left ||
-    source.left > target.right ||
-    source.bottom < target.top ||
-    source.top > target.bottom
-  );
+  proxyUrl?: string;
 };
 
 const toImageBlob = (canvas: HTMLCanvasElement) =>
@@ -58,6 +46,7 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
   constructor(private readonly options: Html2CanvasCaptureEngineOptions) {}
 
   async capture(rect: CaptureRect): Promise<Blob> {
+    const proxyUrl = this.options.proxyUrl ?? '/api/v1/try-on/image/proxy';
     const clampedRect = this.getClampedViewportRect(rect);
     const documentRect = {
       left: clampedRect.left + window.scrollX,
@@ -66,15 +55,12 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
       height: clampedRect.height,
     };
 
-    const sourceImageRects = Array.from(document.querySelectorAll('img')).map(
-      (img) => img.getBoundingClientRect(),
-    );
-
     this.options.setImageProcessing(true);
     try {
       const canvas = await html2canvas(document.body, {
-        allowTaint: true,
-        useCORS: true,
+        allowTaint: false,
+        useCORS: false,
+        proxy: proxyUrl,
         backgroundColor: null,
         scale: window.devicePixelRatio || 1,
         scrollX: window.scrollX,
@@ -83,13 +69,6 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
         y: documentRect.top,
         width: documentRect.width,
         height: documentRect.height,
-        onclone: async (cloneDoc) => {
-          await this.convertTargetImagesToDataUrl(
-            cloneDoc,
-            sourceImageRects,
-            clampedRect,
-          );
-        },
       });
 
       return await toImageBlob(canvas);
@@ -119,53 +98,6 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
       width: Math.round(right - left),
       height: Math.round(bottom - top),
     };
-  }
-
-  private async convertTargetImagesToDataUrl(
-    cloneDoc: Document,
-    sourceImageRects: DOMRect[],
-    viewportRect: CaptureRect,
-  ) {
-    const failedImageUrls: string[] = [];
-    const cloneImages = Array.from(cloneDoc.querySelectorAll('img'));
-    const targetRect = {
-      left: viewportRect.left,
-      top: viewportRect.top,
-      right: viewportRect.left + viewportRect.width,
-      bottom: viewportRect.top + viewportRect.height,
-    };
-
-    for (let index = 0; index < cloneImages.length; index++) {
-      const sourceRect = sourceImageRects[index];
-      if (!sourceRect || !isIntersectingRect(sourceRect, targetRect)) {
-        continue;
-      }
-
-      const cloneImage = cloneImages[index];
-      const sourceUrl = cloneImage.currentSrc || cloneImage.src;
-
-      if (!sourceUrl) {
-        continue;
-      }
-
-      try {
-        const dataUrl = await this.options.convertImageToDataUrl(sourceUrl);
-        if (!dataUrl) {
-          failedImageUrls.push(sourceUrl);
-          continue;
-        }
-        cloneImage.src = dataUrl;
-        cloneImage.srcset = '';
-      } catch {
-        failedImageUrls.push(sourceUrl);
-      }
-    }
-
-    if (import.meta.env.DEV && failedImageUrls.length > 0) {
-      console.warn('[capture] failed to convert image urls', {
-        failedImageUrls,
-      });
-    }
   }
 }
 
