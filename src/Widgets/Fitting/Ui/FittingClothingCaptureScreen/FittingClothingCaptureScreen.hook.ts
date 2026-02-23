@@ -1,8 +1,17 @@
-import { type KeyboardEvent, type MouseEvent, useRef, useState } from 'react';
-import html2canvas from 'html2canvas-pro';
+import {
+  type KeyboardEvent,
+  type MouseEvent,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { usePostClothesImageDataUrl } from '@/Features/Fitting';
+import {
+  type CaptureRect,
+  createCaptureEngine,
+} from '@/Features/Fitting/Model/captureEngine';
 
 import { useFittingStore } from '@/Entities/Fitting';
 import { usePluginStore } from '@/Entities/Plugin';
@@ -37,6 +46,42 @@ export const useCroppedClothing = () => {
   const screenshotBackgroundRef = useRef<HTMLDivElement>(null);
   const screenshotAreaRef = useRef<HTMLDivElement>(null);
 
+  const resetCaptureOverlay = () => {
+    if (screenshotBackgroundRef.current) {
+      screenshotBackgroundRef.current.style.borderWidth = '0';
+    }
+    if (screenshotAreaRef.current) {
+      screenshotAreaRef.current.style.top = '0';
+      screenshotAreaRef.current.style.left = '0';
+    }
+  };
+
+  const restorePluginVisibility = () => {
+    if (!pluginWrapper) {
+      return;
+    }
+    setIsPluginOpen(true);
+    pluginWrapper.classList.toggle('thatzfit-visible', true);
+    pluginWrapper.classList.toggle('thatzfit-hidden', false);
+  };
+
+  const getViewportSelectionRect = (x: number, y: number): CaptureRect => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    const left = Math.max(0, Math.min(Math.min(x, startX), viewportWidth));
+    const top = Math.max(0, Math.min(Math.min(y, startY), viewportHeight));
+    const right = Math.max(0, Math.min(Math.max(x, startX), viewportWidth));
+    const bottom = Math.max(0, Math.min(Math.max(y, startY), viewportHeight));
+
+    return {
+      left,
+      top,
+      width: Math.max(right - left, 0),
+      height: Math.max(bottom - top, 0),
+    };
+  };
+
   const handleCroppedStart = (event: MouseEvent) => {
     setIsDragging(true);
     setStartX(event.clientX);
@@ -53,66 +98,60 @@ export const useCroppedClothing = () => {
     }
     setIsMouseMoving(true);
 
-    const x = event.clientX;
-    const y = event.clientY;
+    const rect = getViewportSelectionRect(event.clientX, event.clientY);
+    const rightBorder = Math.max(
+      window.innerWidth - (rect.left + rect.width),
+      0,
+    );
+    const bottomBorder = Math.max(
+      window.innerHeight - (rect.top + rect.height),
+      0,
+    );
 
-    const top = Math.min(y, startY);
-    const left = Math.min(x, startX);
-
-    const right = document.body.clientWidth - Math.max(x, startX);
-    const bottom = window.innerHeight - Math.max(y, startY);
-
-    screenshotAreaRef.current.style.top = `${top}px`;
-    screenshotAreaRef.current.style.left = `${left}px`;
-
-    screenshotBackgroundRef.current.style.borderWidth = `${top}px ${right}px ${bottom}px ${left}px`;
+    screenshotAreaRef.current.style.top = `${rect.top}px`;
+    screenshotAreaRef.current.style.left = `${rect.left}px`;
+    screenshotBackgroundRef.current.style.borderWidth = `${rect.top}px ${rightBorder}px ${bottomBorder}px ${rect.left}px`;
   };
 
   const handleCroppedEnd = async (event: MouseEvent) => {
-    const x = event.clientX;
-    const y = event.clientY;
+    if (!isDragging) {
+      return;
+    }
 
-    const scrollWidth = window.innerWidth - document.body.clientWidth;
-
-    const top = Math.min(y, startY);
-    const left = Math.min(x, startX);
-    const width = Math.max(x, startX) - left + scrollWidth;
-    const height = Math.max(y, startY) - top;
-
-    setIsFittingDialogOpen(true);
     setIsDragging(false);
     setIsMouseMoving(false);
+
+    const rect = getViewportSelectionRect(event.clientX, event.clientY);
+    if (rect.width < 1 || rect.height < 1) {
+      setIsFittingDialogOpen(false);
+      setIsCapturing(false);
+      resetCaptureOverlay();
+      restorePluginVisibility();
+      return;
+    }
+
+    setIsFittingDialogOpen(true);
     try {
-      await croppedImageToBlob({
-        left,
-        top: top + window.scrollY,
-        width,
-        height,
-        callback: setCapturedClothingImage,
-      });
+      const capturedBlob = await croppedImageToBlob(rect);
+      setCapturedClothingImage(capturedBlob);
     } catch {
       toast.error('옷 캡처에 실패했어요.');
       setIsFittingDialogOpen(false);
-      if (screenshotBackgroundRef.current) {
-        screenshotBackgroundRef.current.style.borderWidth = '0';
-      }
-      if (screenshotAreaRef.current) {
-        screenshotAreaRef.current.style.top = '0';
-        screenshotAreaRef.current.style.left = '0';
-      }
     } finally {
       setIsCapturing(false);
-      if (pluginWrapper) {
-        setIsPluginOpen(true);
-        pluginWrapper.classList.toggle('thatzfit-visible');
-        pluginWrapper.classList.toggle('thatzfit-hidden');
-      }
+      resetCaptureOverlay();
+      restorePluginVisibility();
     }
   };
 
   const handleCancelCapture = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
+      setIsDragging(false);
+      setIsMouseMoving(false);
+      setIsFittingDialogOpen(false);
       setIsCapturing(false);
+      resetCaptureOverlay();
+      restorePluginVisibility();
     }
   };
 
@@ -134,95 +173,20 @@ export const useExtractCroppedClothing = () => {
   );
 
   const { mutateAsync: postClothesImageDataUrl } = usePostClothesImageDataUrl();
+  const captureEngine = useMemo(
+    () =>
+      createCaptureEngine({
+        convertImageToDataUrl: async (imageUrl: string) => {
+          const response = await postClothesImageDataUrl({ imageUrl });
+          return response.data.dataUrl;
+        },
+        setImageProcessing: setIsImageProcessing,
+      }),
+    [postClothesImageDataUrl, setIsImageProcessing],
+  );
 
-  const extractCroppedImageToBlob = (
-    canvas?: HTMLCanvasElement,
-    callback?: (blob: Blob) => void,
-  ) => {
-    if (!canvas) {
-      return;
-    }
-
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        return;
-      }
-      callback?.(blob);
-    });
-  };
-
-  const croppedImageToBlob = ({
-    left,
-    top,
-    width,
-    height,
-    callback,
-  }: {
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-    callback: (blob: Blob) => void;
-  }) => {
-    html2canvas(document.body, {
-      allowTaint: true,
-      useCORS: true,
-      width: document.body.clientWidth,
-      onclone: async (cloneDoc) => {
-        setIsImageProcessing(true);
-        const imgList = cloneDoc.querySelectorAll('img');
-
-        for (let idx = 0; idx < imgList.length; idx++) {
-          const img = imgList[idx];
-          const rect = img.getBoundingClientRect();
-          const scrollHeight = window.scrollY;
-
-          const isIntersecting = !(
-            left + width < rect.left ||
-            left > rect.right ||
-            top + height < rect.top + scrollHeight ||
-            top > rect.bottom + scrollHeight
-          );
-
-          // NOTE: 캡처 영역과 겹치는 이미지만 처리, 겹치지 않는 이미지는 cloneDoc에서 제거
-          if (isIntersecting) {
-            await postClothesImageDataUrl(
-              {
-                imageUrl: img.src,
-              },
-              {
-                onSuccess: ({ data: { dataUrl } }) => {
-                  imgList[idx].src = dataUrl;
-                },
-              },
-            );
-          } else {
-            const width = img.style.width;
-            const height = img.style.height;
-            const div = document.createElement('div');
-            div.style.width = width;
-            div.style.height = height;
-
-            imgList[idx].replaceWith(div);
-          }
-        }
-        setIsImageProcessing(false);
-      },
-    }).then((canvas) => {
-      const img = canvas
-        .getContext('2d')
-        ?.getImageData(left, top, width, height);
-
-      const cvs = document.createElement('canvas');
-      cvs.width = width;
-      cvs.height = height;
-
-      if (!img) {
-        return;
-      }
-      cvs.getContext('2d')?.putImageData(img, 0, 0);
-      extractCroppedImageToBlob(cvs, callback);
-    });
+  const croppedImageToBlob = (rect: CaptureRect) => {
+    return captureEngine.capture(rect);
   };
 
   return { croppedImageToBlob };
