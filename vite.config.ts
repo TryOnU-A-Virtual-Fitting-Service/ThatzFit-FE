@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss(), tsconfigPaths(), svgr()],
     build: {
+      manifest: 'asset-manifest.json',
       rollupOptions: {
         input: resolve(__dirname, 'src/Apps/main.tsx'),
         output: {
