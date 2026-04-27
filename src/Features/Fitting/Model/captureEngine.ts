@@ -20,13 +20,14 @@ export type CaptureErrorCode =
   | 'UNKNOWN';
 
 export class CaptureError extends Error {
-  constructor(
-    readonly code: CaptureErrorCode,
-    message: string,
-    readonly cause?: unknown,
-  ) {
+  readonly code: CaptureErrorCode;
+  readonly cause?: unknown;
+
+  constructor(code: CaptureErrorCode, message: string, cause?: unknown) {
     super(message);
     this.name = 'CaptureError';
+    this.code = code;
+    this.cause = cause;
   }
 }
 
@@ -183,12 +184,16 @@ const toCaptureError = (error: unknown): CaptureError => {
 };
 
 export class DisplayMediaCaptureEngine implements CaptureEngine {
+  private readonly options: Pick<
+    Html2CanvasCaptureEngineOptions,
+    'setImageProcessing'
+  >;
+
   constructor(
-    private readonly options: Pick<
-      Html2CanvasCaptureEngineOptions,
-      'setImageProcessing'
-    >,
-  ) {}
+    options: Pick<Html2CanvasCaptureEngineOptions, 'setImageProcessing'>,
+  ) {
+    this.options = options;
+  }
 
   async capture(rect: CaptureRect): Promise<Blob> {
     const clampedRect = getClampedViewportRect(rect);
@@ -272,7 +277,11 @@ export class DisplayMediaCaptureEngine implements CaptureEngine {
 }
 
 export class Html2CanvasCaptureEngine implements CaptureEngine {
-  constructor(private readonly options: Html2CanvasCaptureEngineOptions) {}
+  private readonly options: Html2CanvasCaptureEngineOptions;
+
+  constructor(options: Html2CanvasCaptureEngineOptions) {
+    this.options = options;
+  }
 
   async capture(rect: CaptureRect): Promise<Blob> {
     const proxyUrl = this.options.proxyUrl ?? '/api/v1/try-on/image/proxy';
@@ -333,11 +342,19 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
 }
 
 class FallbackCaptureEngine implements CaptureEngine {
+  private readonly primary: CaptureEngine;
+  private readonly fallback: CaptureEngine;
+  private readonly enabled: boolean;
+
   constructor(
-    private readonly primary: CaptureEngine,
-    private readonly fallback: CaptureEngine,
-    private readonly enabled: boolean,
-  ) {}
+    primary: CaptureEngine,
+    fallback: CaptureEngine,
+    enabled: boolean,
+  ) {
+    this.primary = primary;
+    this.fallback = fallback;
+    this.enabled = enabled;
+  }
 
   async capture(rect: CaptureRect): Promise<Blob> {
     try {
