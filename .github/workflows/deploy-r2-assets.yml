@@ -64,8 +64,8 @@ jobs:
         env:
           THATZFIT_FE_MANIFEST_PATH: ../../dist/asset-manifest.json
         run: |
-          npm ci
-          npm run build
+          pnpm install --frozen-lockfile
+          pnpm run build
 
       - name: Build loader
         working-directory: _external/Thatzfit-loader
