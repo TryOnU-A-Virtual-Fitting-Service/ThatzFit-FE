@@ -27,9 +27,13 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       AWS_REGION: auto
       AWS_DEFAULT_REGION: auto
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
       R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      CDN_BASE_URL: ${{ vars.CDN_BASE_URL || secrets.CDN_BASE_URL || vars.VITE_CDN_HOST }}
       VITE_CDN_HOST: ${{ vars.VITE_CDN_HOST || secrets.CDN_BASE_URL }}
+      DATABASE_URL: ${{ secrets.R2_ASSET_AUDIT_DATABASE_URL || secrets.DATABASE_URL }}
     steps:
       - name: Checkout FE
         uses: actions/checkout@v4
@@ -67,6 +71,14 @@ jobs:
           token: ${{ secrets.CI_REPO_TOKEN || github.token }}
           path: _external/Thatzfit-loader
 
+      - name: Checkout R2 asset audit
+        uses: actions/checkout@v4
+        with:
+          repository: TryOnU-A-Virtual-Fitting-Service/ThatzFit-BE-fastapi
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.CI_REPO_TOKEN || github.token }}
+          path: _external/ThatzFit-BE-fastapi
+
       - name: Build SDK injector
         working-directory: _external/thatzfit-sdk-injector
         env:
@@ -81,10 +93,37 @@ jobs:
           npm ci
           npm run build
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install R2 audit dependencies
+        working-directory: _external/ThatzFit-BE-fastapi
+        run: |
+          python -m pip install --upgrade pip uv
+          uv sync --frozen --no-dev
+
+      - name: Smoke test R2 audit script
+        working-directory: _external/ThatzFit-BE-fastapi
+        run: |
+          test -f ../../dist/asset-manifest.json
+          uv run python -m py_compile scripts/check_r2_assets.py
+          uv run python scripts/check_r2_assets.py --help
+
+      - name: Validate deploy and audit env
+        run: |
+          missing=0
+          for name in R2_ENDPOINT_URL R2_BUCKET_NAME R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY DATABASE_URL; do
+            if [ -z "${!name}" ]; then
+              echo "::error::${name} is required for R2 deployment and post-deploy asset audit"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
       - name: Upload plugin assets
         run: |
-          test -n "$R2_ENDPOINT_URL"
-          test -n "$R2_BUCKET_NAME"
           aws s3 sync dist "s3://$R2_BUCKET_NAME/plugin" \
             --endpoint-url "$R2_ENDPOINT_URL" \
             --delete \
@@ -111,8 +150,8 @@ jobs:
           fi
 
       - name: Verify upload
+        working-directory: _external/ThatzFit-BE-fastapi
         run: |
-          aws s3 ls "s3://$R2_BUCKET_NAME/plugin/" \
-            --endpoint-url "$R2_ENDPOINT_URL" \
-            --recursive \
-            --summarize
+          uv run python scripts/check_r2_assets.py \
+            --manifest-path ../../dist/asset-manifest.json \
+            --require-company-assets
