@@ -38,6 +38,7 @@ export const FittingClothingCaptureScreen = () => {
         }
       }}
       className={cn(isFittingDialogOpen && 'hidden')}
+      style={isFittingDialogOpen ? { display: 'none' } : undefined}
     >
       <div
         className={cn(
@@ -45,6 +46,18 @@ export const FittingClothingCaptureScreen = () => {
           isCapturing && 'cursor-crosshair',
         )}
         style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          zIndex: 1000000,
+          display: 'block',
+          width: '100vw',
+          height: '100vh',
+          borderStyle: 'solid',
+          borderColor: '#000000',
+          opacity: 0.3,
+          cursor: 'crosshair',
+          boxSizing: 'border-box',
           borderWidth: isCapturing ? `0 0 ${window.innerHeight}px 0` : 0,
         }}
         onMouseDown={handleCroppedStart}
@@ -54,12 +67,46 @@ export const FittingClothingCaptureScreen = () => {
       >
         <div
           className="fixed z-[10001] h-full w-full border-r-[1px] border-b-[1px] before:absolute before:top-[-100%] before:left-[-100%] before:border-solid before:border-red-500 before:content-['']"
+          style={{
+            position: 'fixed',
+            zIndex: 1000001,
+            width: '100vw',
+            height: '100vh',
+            borderRight: '1px solid #ef4444',
+            borderBottom: '1px solid #ef4444',
+            boxSizing: 'border-box',
+            pointerEvents: 'none',
+          }}
           ref={screenshotAreaRef}
         ></div>
       </div>
       {!isDragging && (
-        <div className='fixed top-20 left-1/2 z-[10000] w-2xl -translate-x-1/2 rounded-lg bg-white py-3 text-center'>
-          <span className='text-grey-01 text-heading1'>
+        <div
+          className='fixed top-20 left-1/2 z-[10000] w-2xl -translate-x-1/2 rounded-lg bg-white py-3 text-center'
+          style={{
+            position: 'fixed',
+            top: '80px',
+            left: '50%',
+            zIndex: 1000002,
+            width: '42rem',
+            maxWidth: 'calc(100vw - 32px)',
+            transform: 'translateX(-50%)',
+            borderRadius: '8px',
+            background: '#ffffff',
+            padding: '12px 16px',
+            textAlign: 'center',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+          }}
+        >
+          <span
+            className='text-grey-01 text-heading1'
+            style={{
+              color: '#181a1b',
+              fontSize: '17px',
+              fontWeight: 700,
+              lineHeight: 1.5,
+            }}
+          >
             입어보고 싶은 옷의 사진 부분을 드래그해 주세요.
           </span>
         </div>

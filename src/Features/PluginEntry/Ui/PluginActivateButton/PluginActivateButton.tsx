@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useState } from 'react';
 
 import { usePluginStore } from '@/Entities/Plugin';
@@ -8,11 +9,13 @@ import { cn } from '@/Shared/Lib';
 
 interface PluginActivateButtonProps {
   className?: string;
+  style?: CSSProperties;
   onClick: () => void;
 }
 
 export const PluginActivateButton = ({
   className,
+  style,
   onClick,
 }: PluginActivateButtonProps) => {
   const entryWrapper = usePluginEntryStore((state) => state.entryWrapper);
@@ -34,6 +37,10 @@ export const PluginActivateButton = ({
     <Button
       variant='ghost'
       className={cn('p-0', className, isImageLoadComplete ? 'block' : 'hidden')}
+      style={{
+        ...style,
+        display: isImageLoadComplete ? style?.display : 'none',
+      }}
       onClick={onClick}
     >
       <img
@@ -41,6 +48,13 @@ export const PluginActivateButton = ({
         alt='플러그인 진입 버튼 로고'
         onLoad={handleImageLoad}
         className='object-fit h-full w-full rounded-lg'
+        style={{
+          display: 'block',
+          width: '100%',
+          height: '100%',
+          borderRadius: '12px',
+          objectFit: 'fill',
+        }}
       />
     </Button>
   );

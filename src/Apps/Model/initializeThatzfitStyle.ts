@@ -1,23 +1,35 @@
 export const initializeThatzfitStyle = () => {
   const parentDocument = window.parent.document;
-  const existingStyle = parentDocument.getElementById('thatzfit-runtime-style');
-
-  if (existingStyle) {
-    return;
-  }
-
-  const style = parentDocument.createElement('style');
+  const style =
+    parentDocument.getElementById('thatzfit-runtime-style') ??
+    parentDocument.createElement('style');
   style.id = 'thatzfit-runtime-style';
   style.textContent = `
+    #thatzfit-plugin {
+      position: static !important;
+      display: block !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    #thatzfit-entry {
+      position: static !important;
+      display: block !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
     .thatzfit-desktop {
-      position: fixed;
-      bottom: 90px;
-      right: 24px;
-      width: 15rem;
-      height: 570px;
-      background-color: transparent;
-      border-radius: 0.75rem;
-      box-shadow: 0 0 41.711px 0 rgba(0, 0, 0, 0.15);
+      position: fixed !important;
+      bottom: 90px !important;
+      right: 24px !important;
+      width: 15rem !important;
+      height: 570px !important;
+      z-index: 999999 !important;
+      display: block !important;
+      background-color: transparent !important;
+      border-radius: 0.75rem !important;
+      box-shadow: 0 0 41.711px 0 rgba(0, 0, 0, 0.15) !important;
     }
 
     #thatzfit-iframe {
@@ -29,7 +41,8 @@ export const initializeThatzfitStyle = () => {
     }
 
     .thatzfit-hidden {
-      visibility: hidden;
+      visibility: hidden !important;
+      pointer-events: none !important;
     }
 
     @keyframes thatzfit-desktop-animation {
@@ -38,10 +51,13 @@ export const initializeThatzfitStyle = () => {
     }
 
     .thatzfit-visible {
-      visibility: visible;
+      visibility: visible !important;
+      pointer-events: auto !important;
       animation: thatzfit-desktop-animation 0.3s ease-in-out;
     }
   `;
 
-  parentDocument.head.appendChild(style);
+  if (!style.parentNode) {
+    parentDocument.head.appendChild(style);
+  }
 };
