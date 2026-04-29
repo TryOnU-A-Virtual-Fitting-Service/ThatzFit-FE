@@ -5,7 +5,15 @@ on:
   push:
     branches:
       - main
-      - codex/r2-asset-automation
+    paths:
+      - .github/workflows/deploy-r2-assets.yml
+      - assets/r2/**
+      - index.html
+      - package.json
+      - pnpm-lock.yaml
+      - src/**
+      - tsconfig*.json
+      - vite.config.ts
 
 concurrency:
   group: deploy-fe-assets-r2-${{ github.ref }}
