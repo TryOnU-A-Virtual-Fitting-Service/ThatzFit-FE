@@ -47,7 +47,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: TryOnU-A-Virtual-Fitting-Service/thatzfit-sdk-injector
-          ref: main
+          ref: ${{ github.ref_name }}
           token: ${{ secrets.CI_REPO_TOKEN || github.token }}
           path: _external/thatzfit-sdk-injector
 
@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: TryOnU-A-Virtual-Fitting-Service/Thatzfit-loader
-          ref: main
+          ref: ${{ github.ref_name }}
           token: ${{ secrets.CI_REPO_TOKEN || github.token }}
           path: _external/Thatzfit-loader
 
