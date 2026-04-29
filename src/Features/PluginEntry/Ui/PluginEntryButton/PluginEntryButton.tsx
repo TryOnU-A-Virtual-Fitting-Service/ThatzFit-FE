@@ -13,23 +13,23 @@ import { PluginDeactivateButton } from '../PluginDeactivateButton';
 
 const entryButtonStyle: CSSProperties = {
   position: 'fixed',
-  right: '20px',
-  bottom: '20px',
+  right: '24px',
+  bottom: '24px',
   zIndex: 999999,
-  width: '48px',
-  height: '48px',
+  width: '64px',
+  height: '64px',
   padding: 0,
   border: 0,
-  borderRadius: '12px',
+  borderRadius: '16px',
   background: 'transparent',
   cursor: 'pointer',
 };
 
 const closeButtonStyle: CSSProperties = {
   ...entryButtonStyle,
-  width: '40px',
-  height: '40px',
-  padding: '10px',
+  width: '48px',
+  height: '48px',
+  padding: '12px',
   background: '#ffffff',
   color: '#636364',
 };
