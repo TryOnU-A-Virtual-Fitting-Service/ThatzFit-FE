@@ -26,10 +26,12 @@ export const createPluginEntryWrapper = () => {
   tailwind.src = 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4';
   shadowRoot.appendChild(tailwind);
 
-  const style = document.createElement('link');
-  style.rel = 'stylesheet';
-  style.href = './src/Apps/index.css';
-  shadowRoot.appendChild(style);
+  if (import.meta.env.DEV) {
+    const style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.href = '/src/Apps/index.css';
+    shadowRoot.appendChild(style);
+  }
 
   const pluginEntry = document.createElement('div');
   pluginEntry.id = 'thatzfit-plugin-entry-wrapper';

@@ -28,8 +28,8 @@ const ToastStateContext = createContext<ToastState>({
 
 const ToastActionContext = createContext<ToastAction>({
   toast: {
-    success: (_message: string, _toastOptions?: ToastOptions) => {},
-    error: (_message: string, _toastOptions?: ToastOptions) => {},
+    success: () => {},
+    error: () => {},
   },
 });
 

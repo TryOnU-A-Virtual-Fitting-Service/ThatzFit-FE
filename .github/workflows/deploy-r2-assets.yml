@@ -33,6 +33,7 @@ jobs:
       R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
       CDN_BASE_URL: ${{ vars.CDN_BASE_URL || secrets.CDN_BASE_URL || vars.VITE_CDN_HOST }}
       VITE_CDN_HOST: ${{ vars.VITE_CDN_HOST || secrets.CDN_BASE_URL }}
+      VITE_PROD_SERVER: ${{ vars.VITE_PROD_SERVER || secrets.VITE_PROD_SERVER || 'https://stage-thatzfit.attentionplease.build' }}
       DATABASE_URL: ${{ secrets.R2_ASSET_AUDIT_DATABASE_URL }}
     steps:
       - name: Checkout FE
@@ -162,7 +163,8 @@ jobs:
               --manifest-path ../../dist/asset-manifest.json \
               --require-company-assets
           else
-            uv run python scripts/check_r2_assets.py \
+            DATABASE_URL=sqlite+aiosqlite:///./data/thatzfit.db \
+              uv run python scripts/check_r2_assets.py \
               --manifest-path ../../dist/asset-manifest.json \
               --skip-company-assets
           fi
