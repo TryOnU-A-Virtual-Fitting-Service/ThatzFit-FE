@@ -7,6 +7,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import svgr from 'vite-plugin-svgr';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const ASSET_VERSION = 'v2';
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -17,12 +18,17 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss(), tsconfigPaths(), svgr()],
     build: {
+      manifest: 'asset-manifest.json',
       rollupOptions: {
         input: resolve(__dirname, 'src/Apps/main.tsx'),
         output: {
-          entryFileNames: isDev ? 'index.js' : 'index.[hash].js',
-          chunkFileNames: isDev ? 'index-vendor.js' : 'index-vendor.[hash].js',
-          assetFileNames: isDev ? 'index.[ext]' : 'index.[hash].[ext]',
+          entryFileNames: isDev ? 'index.js' : `index.[hash].${ASSET_VERSION}.js`,
+          chunkFileNames: isDev
+            ? 'index-vendor.js'
+            : `index-vendor.[hash].${ASSET_VERSION}.js`,
+          assetFileNames: isDev
+            ? 'index.[ext]'
+            : `index.[hash].${ASSET_VERSION}.[ext]`,
           manualChunks: (id) => {
             if (id.includes('node_modules')) {
               return 'index-vendor';

@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
@@ -9,6 +10,29 @@ import { cn } from '@/Shared/Lib';
 
 import { PluginActivateButton } from '../PluginActivateButton';
 import { PluginDeactivateButton } from '../PluginDeactivateButton';
+
+const entryButtonStyle: CSSProperties = {
+  position: 'fixed',
+  right: '24px',
+  bottom: '24px',
+  zIndex: 999999,
+  width: '64px',
+  height: '64px',
+  padding: 0,
+  border: 0,
+  borderRadius: '16px',
+  background: 'transparent',
+  cursor: 'pointer',
+};
+
+const closeButtonStyle: CSSProperties = {
+  ...entryButtonStyle,
+  width: '48px',
+  height: '48px',
+  padding: '12px',
+  background: '#ffffff',
+  color: '#636364',
+};
 
 export const PluginEntryButton = () => {
   const entryWrapper = usePluginEntryStore((state) => state.entryWrapper);
@@ -42,6 +66,7 @@ export const PluginEntryButton = () => {
     isPluginOpen ? (
       <PluginDeactivateButton
         className='fixed right-5 bottom-5 z-[9999] h-10 w-10 cursor-pointer bg-white p-2.5 text-[#636364] hover:bg-white'
+        style={closeButtonStyle}
         onClick={handleClickEntryButton}
       />
     ) : (
@@ -50,6 +75,10 @@ export const PluginEntryButton = () => {
           'fixed right-5 bottom-5 z-[9999] h-12 w-12 cursor-pointer transition-opacity duration-300 ease-in-out',
           isPluginOpen ? 'opacity-0' : 'opacity-100',
         )}
+        style={{
+          ...entryButtonStyle,
+          display: isPluginOpen ? 'none' : undefined,
+        }}
         onClick={handleClickEntryButton}
       />
     ),

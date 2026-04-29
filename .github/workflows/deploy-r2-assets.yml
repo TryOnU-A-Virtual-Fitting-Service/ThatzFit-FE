@@ -1,0 +1,170 @@
+name: Deploy plugin assets to R2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/deploy-r2-assets.yml
+      - assets/r2/**
+      - index.html
+      - package.json
+      - pnpm-lock.yaml
+      - src/**
+      - tsconfig*.json
+      - vite.config.ts
+
+concurrency:
+  group: deploy-fe-assets-r2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_REGION: auto
+      AWS_DEFAULT_REGION: auto
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+      R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      CDN_BASE_URL: ${{ vars.CDN_BASE_URL || secrets.CDN_BASE_URL || vars.VITE_CDN_HOST }}
+      VITE_CDN_HOST: ${{ vars.VITE_CDN_HOST || secrets.CDN_BASE_URL }}
+      VITE_PROD_SERVER: ${{ vars.VITE_PROD_SERVER || secrets.VITE_PROD_SERVER || 'https://stage-thatzfit.attentionplease.build' }}
+      DATABASE_URL: ${{ secrets.R2_ASSET_AUDIT_DATABASE_URL }}
+    steps:
+      - name: Checkout FE
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Checkout SDK injector
+        uses: actions/checkout@v4
+        with:
+          repository: TryOnU-A-Virtual-Fitting-Service/thatzfit-sdk-injector
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.CI_REPO_TOKEN || github.token }}
+          path: _external/thatzfit-sdk-injector
+
+      - name: Checkout loader
+        uses: actions/checkout@v4
+        with:
+          repository: TryOnU-A-Virtual-Fitting-Service/Thatzfit-loader
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.CI_REPO_TOKEN || github.token }}
+          path: _external/Thatzfit-loader
+
+      - name: Checkout R2 asset audit
+        uses: actions/checkout@v4
+        with:
+          repository: TryOnU-A-Virtual-Fitting-Service/ThatzFit-BE-fastapi
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.CI_REPO_TOKEN || github.token }}
+          path: _external/ThatzFit-BE-fastapi
+
+      - name: Build SDK injector
+        working-directory: _external/thatzfit-sdk-injector
+        env:
+          THATZFIT_FE_MANIFEST_PATH: ../../dist/asset-manifest.json
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Build loader
+        working-directory: _external/Thatzfit-loader
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install R2 audit dependencies
+        working-directory: _external/ThatzFit-BE-fastapi
+        run: |
+          python -m pip install --upgrade pip uv
+          uv sync --frozen --no-dev
+
+      - name: Smoke test R2 audit script
+        working-directory: _external/ThatzFit-BE-fastapi
+        env:
+          DATABASE_URL: sqlite+aiosqlite:///./data/thatzfit.db
+        run: |
+          test -f ../../dist/asset-manifest.json
+          uv run python -m py_compile scripts/check_r2_assets.py
+          uv run python scripts/check_r2_assets.py --help
+
+      - name: Validate deploy and audit env
+        run: |
+          missing=0
+          for name in R2_ENDPOINT_URL R2_BUCKET_NAME R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::${name} is required for R2 deployment and post-deploy asset audit"
+              missing=1
+            fi
+          done
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::warning::R2_ASSET_AUDIT_DATABASE_URL is not configured; skipping active company asset DB audit"
+          fi
+          exit "$missing"
+
+      - name: Upload plugin assets
+        run: |
+          aws s3 sync dist "s3://$R2_BUCKET_NAME/plugin" \
+            --endpoint-url "$R2_ENDPOINT_URL" \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "asset-manifest.json" \
+            --exclude "ThatzfitSDKInjector.js" \
+            --exclude "ThatzfitService.js"
+          aws s3 cp dist/asset-manifest.json "s3://$R2_BUCKET_NAME/plugin/asset-manifest.json" \
+            --endpoint-url "$R2_ENDPOINT_URL" \
+            --cache-control "public, max-age=60"
+          aws s3 cp _external/thatzfit-sdk-injector/dist/ThatzfitSDKInjector.js "s3://$R2_BUCKET_NAME/plugin/ThatzfitSDKInjector.js" \
+            --endpoint-url "$R2_ENDPOINT_URL" \
+            --cache-control "public, max-age=60"
+          aws s3 cp _external/Thatzfit-loader/dist/ThatzfitService.js "s3://$R2_BUCKET_NAME/plugin/ThatzfitService.js" \
+            --endpoint-url "$R2_ENDPOINT_URL" \
+            --cache-control "public, max-age=60"
+
+      - name: Upload default R2 assets
+        run: |
+          if [ -d assets/r2 ]; then
+            aws s3 sync assets/r2 "s3://$R2_BUCKET_NAME" \
+              --endpoint-url "$R2_ENDPOINT_URL" \
+              --cache-control "public, max-age=31536000, immutable"
+          fi
+
+      - name: Verify upload
+        working-directory: _external/ThatzFit-BE-fastapi
+        run: |
+          if [ -n "$DATABASE_URL" ]; then
+            uv run python scripts/check_r2_assets.py \
+              --manifest-path ../../dist/asset-manifest.json \
+              --require-company-assets
+          else
+            DATABASE_URL=sqlite+aiosqlite:///./data/thatzfit.db \
+              uv run python scripts/check_r2_assets.py \
+              --manifest-path ../../dist/asset-manifest.json \
+              --skip-company-assets
+          fi

@@ -46,7 +46,7 @@ export const App = () => {
     <TanstackQueryProvider>
       <ToastProvider>
         {isUserInitialized ? <PluginRouter /> : null}
-        <PluginEntryButton />
+        {isUserInitialized ? <PluginEntryButton /> : null}
         <Toast />
       </ToastProvider>
     </TanstackQueryProvider>
