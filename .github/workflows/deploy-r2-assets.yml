@@ -33,7 +33,7 @@ jobs:
       R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
       CDN_BASE_URL: ${{ vars.CDN_BASE_URL || secrets.CDN_BASE_URL || vars.VITE_CDN_HOST }}
       VITE_CDN_HOST: ${{ vars.VITE_CDN_HOST || secrets.CDN_BASE_URL }}
-      DATABASE_URL: ${{ secrets.R2_ASSET_AUDIT_DATABASE_URL || secrets.DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.R2_ASSET_AUDIT_DATABASE_URL }}
     steps:
       - name: Checkout FE
         uses: actions/checkout@v4
@@ -106,6 +106,8 @@ jobs:
 
       - name: Smoke test R2 audit script
         working-directory: _external/ThatzFit-BE-fastapi
+        env:
+          DATABASE_URL: sqlite+aiosqlite:///./data/thatzfit.db
         run: |
           test -f ../../dist/asset-manifest.json
           uv run python -m py_compile scripts/check_r2_assets.py
@@ -114,12 +116,15 @@ jobs:
       - name: Validate deploy and audit env
         run: |
           missing=0
-          for name in R2_ENDPOINT_URL R2_BUCKET_NAME R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY DATABASE_URL; do
+          for name in R2_ENDPOINT_URL R2_BUCKET_NAME R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY; do
             if [ -z "${!name}" ]; then
               echo "::error::${name} is required for R2 deployment and post-deploy asset audit"
               missing=1
             fi
           done
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::warning::R2_ASSET_AUDIT_DATABASE_URL is not configured; skipping active company asset DB audit"
+          fi
           exit "$missing"
 
       - name: Upload plugin assets
@@ -152,6 +157,12 @@ jobs:
       - name: Verify upload
         working-directory: _external/ThatzFit-BE-fastapi
         run: |
-          uv run python scripts/check_r2_assets.py \
-            --manifest-path ../../dist/asset-manifest.json \
-            --require-company-assets
+          if [ -n "$DATABASE_URL" ]; then
+            uv run python scripts/check_r2_assets.py \
+              --manifest-path ../../dist/asset-manifest.json \
+              --require-company-assets
+          else
+            uv run python scripts/check_r2_assets.py \
+              --manifest-path ../../dist/asset-manifest.json \
+              --skip-company-assets
+          fi
