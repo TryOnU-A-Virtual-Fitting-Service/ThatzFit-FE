@@ -1,5 +1,7 @@
 import html2canvas from 'html2canvas-pro';
 
+import { BASE_URL } from '@/Shared/Config';
+
 export type CaptureRect = {
   left: number;
   top: number;
@@ -33,6 +35,7 @@ export class CaptureError extends Error {
 
 type CaptureEngineKind = 'html2canvas' | 'display-media';
 
+const IMAGE_PROXY_PATH = '/api/v1/try-on/image/proxy';
 const DEFAULT_CAPTURE_ENGINE: CaptureEngineKind =
   import.meta.env.VITE_CAPTURE_ENGINE === 'display-media'
     ? 'display-media'
@@ -59,6 +62,136 @@ export const getCaptureWindow = (): Window => {
 
   return window;
 };
+
+export const getDefaultImageProxyUrl = (): string => {
+  if (!BASE_URL) {
+    return IMAGE_PROXY_PATH;
+  }
+
+  return `${BASE_URL.replace(/\/$/, '')}${IMAGE_PROXY_PATH}`;
+};
+
+const isThatzfitElement = (element: Element): boolean => {
+  const closest = element.closest?.(
+    '#thatzfit-plugin, #thatzfit-entry, #thatzfit-iframe-wrapper, #thatzfit-iframe, #thatzfit-root, #thatzfit-plugin-wrapper, #thatzfit-plugin-entry-wrapper',
+  );
+
+  return closest !== null;
+};
+
+const isMediaResourceElement = (element: Element): boolean => {
+  const tagName = element.tagName.toLowerCase();
+  return tagName === 'img' || tagName === 'image' || tagName === 'video';
+};
+
+const intersectsViewportRect = (
+  element: Element,
+  rect: CaptureRect,
+): boolean => {
+  const elementRect = element.getBoundingClientRect();
+
+  if (elementRect.width <= 0 || elementRect.height <= 0) {
+    return false;
+  }
+
+  return (
+    elementRect.left < rect.left + rect.width &&
+    elementRect.right > rect.left &&
+    elementRect.top < rect.top + rect.height &&
+    elementRect.bottom > rect.top
+  );
+};
+
+const getImageSource = (image: HTMLImageElement): string | null => {
+  const source = image.currentSrc || image.src;
+  if (!source || source.startsWith('data:') || source.startsWith('blob:')) {
+    return null;
+  }
+
+  return source;
+};
+
+const getSelectedExternalImageUrls = (
+  captureDocument: Document,
+  viewportRect: CaptureRect,
+  captureWindow: Window,
+): string[] => {
+  const selectedUrls = new Set<string>();
+
+  Array.from(captureDocument.images).forEach((image) => {
+    if (
+      isThatzfitElement(image) ||
+      !intersectsViewportRect(image, viewportRect)
+    ) {
+      return;
+    }
+
+    const source = getImageSource(image);
+    if (!source) {
+      return;
+    }
+
+    const url = new URL(source, captureDocument.baseURI);
+    if (url.origin !== captureWindow.location.origin) {
+      selectedUrls.add(url.href);
+    }
+  });
+
+  return Array.from(selectedUrls);
+};
+
+const createImageProxyRequestUrl = (
+  proxyUrl: string,
+  imageUrl: string,
+): string => {
+  const separator = proxyUrl.includes('?') ? '&' : '?';
+  return `${proxyUrl}${separator}url=${encodeURIComponent(imageUrl)}&responseType=blob`;
+};
+
+const assertSelectedImagesProxyable = async (
+  imageUrls: string[],
+  proxyUrl: string,
+): Promise<void> => {
+  if (imageUrls.length === 0) {
+    return;
+  }
+
+  await Promise.all(
+    imageUrls.map(async (imageUrl) => {
+      const response = await fetch(
+        createImageProxyRequestUrl(proxyUrl, imageUrl),
+      );
+
+      if (!response.ok) {
+        throw new CaptureError(
+          'CORS_TAINT',
+          '외부 이미지 보안 정책으로 캡처에 실패했어요.',
+        );
+      }
+
+      const contentType = response.headers.get('content-type') ?? '';
+      if (!contentType.toLowerCase().startsWith('image/')) {
+        throw new CaptureError(
+          'CORS_TAINT',
+          '외부 이미지 보안 정책으로 캡처에 실패했어요.',
+        );
+      }
+    }),
+  );
+};
+
+const createCaptureIgnoreElements =
+  (viewportRect: CaptureRect) =>
+  (element: Element): boolean => {
+    if (isThatzfitElement(element)) {
+      return true;
+    }
+
+    return (
+      isMediaResourceElement(element) &&
+      !intersectsViewportRect(element, viewportRect)
+    );
+  };
 
 const toImageBlob = (canvas: HTMLCanvasElement) =>
   new Promise<Blob>((resolve, reject) => {
@@ -301,7 +434,7 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
   }
 
   async capture(rect: CaptureRect): Promise<Blob> {
-    const proxyUrl = this.options.proxyUrl ?? '/api/v1/try-on/image/proxy';
+    const proxyUrl = this.options.proxyUrl ?? getDefaultImageProxyUrl();
     const captureWindow = getCaptureWindow();
     const captureDocument = captureWindow.document;
     const clampedRect = getClampedViewportRect(rect, captureWindow);
@@ -316,12 +449,22 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
     this.options.setImageProcessing(true);
     try {
       assertCanvasLimit(documentRect.width, documentRect.height, scale);
+      await assertSelectedImagesProxyable(
+        getSelectedExternalImageUrls(
+          captureDocument,
+          clampedRect,
+          captureWindow,
+        ),
+        proxyUrl,
+      );
 
       const canvas = await html2canvas(captureDocument.body, {
         allowTaint: false,
         useCORS: false,
         proxy: proxyUrl,
         backgroundColor: null,
+        ignoreElements: createCaptureIgnoreElements(clampedRect),
+        logging: import.meta.env.DEV,
         scale,
         scrollX: 0,
         scrollY: 0,

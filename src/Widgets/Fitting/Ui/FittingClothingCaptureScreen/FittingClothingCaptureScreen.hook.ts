@@ -228,7 +228,6 @@ export const useExtractCroppedClothing = () => {
     () =>
       createCaptureEngine({
         setImageProcessing: setIsImageProcessing,
-        proxyUrl: '/api/v1/try-on/image/proxy',
         fallbackToDisplayMedia: true,
       }),
     [setIsImageProcessing],
