@@ -148,15 +148,36 @@ const createImageProxyRequestUrl = (
   return `${proxyUrl}${separator}url=${encodeURIComponent(imageUrl)}&responseType=blob`;
 };
 
-const assertSelectedImagesProxyable = async (
+const blobToDataUrl = (blob: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+        return;
+      }
+      reject(
+        new CaptureError(
+          'CORS_TAINT',
+          '외부 이미지 보안 정책으로 캡처에 실패했어요.',
+        ),
+      );
+    });
+    reader.addEventListener('error', () => reject(reader.error));
+    reader.readAsDataURL(blob);
+  });
+
+const loadSelectedImageDataUrls = async (
   imageUrls: string[],
   proxyUrl: string,
-): Promise<void> => {
+): Promise<Map<string, string>> => {
+  const dataUrls = new Map<string, string>();
+
   if (imageUrls.length === 0) {
-    return;
+    return dataUrls;
   }
 
-  await Promise.all(
+  const entries = await Promise.all(
     imageUrls.map(async (imageUrl) => {
       const response = await fetch(
         createImageProxyRequestUrl(proxyUrl, imageUrl),
@@ -176,8 +197,50 @@ const assertSelectedImagesProxyable = async (
           '외부 이미지 보안 정책으로 캡처에 실패했어요.',
         );
       }
+
+      const blob = await response.blob();
+      if (blob.size === 0) {
+        throw new CaptureError(
+          'CORS_TAINT',
+          '외부 이미지 보안 정책으로 캡처에 실패했어요.',
+        );
+      }
+
+      return [imageUrl, await blobToDataUrl(blob)] as const;
     }),
   );
+
+  entries.forEach(([imageUrl, dataUrl]) => {
+    dataUrls.set(imageUrl, dataUrl);
+  });
+
+  return dataUrls;
+};
+
+const inlineSelectedExternalImages = (
+  clonedDocument: Document,
+  imageDataUrls: Map<string, string>,
+): void => {
+  if (imageDataUrls.size === 0) {
+    return;
+  }
+
+  Array.from(clonedDocument.images).forEach((image) => {
+    const source = getImageSource(image);
+    if (!source) {
+      return;
+    }
+
+    const dataUrl = imageDataUrls.get(
+      new URL(source, clonedDocument.baseURI).href,
+    );
+    if (!dataUrl) {
+      return;
+    }
+
+    image.removeAttribute('srcset');
+    image.src = dataUrl;
+  });
 };
 
 const createCaptureIgnoreElements =
@@ -449,7 +512,7 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
     this.options.setImageProcessing(true);
     try {
       assertCanvasLimit(documentRect.width, documentRect.height, scale);
-      await assertSelectedImagesProxyable(
+      const imageDataUrls = await loadSelectedImageDataUrls(
         getSelectedExternalImageUrls(
           captureDocument,
           clampedRect,
@@ -464,6 +527,9 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
         proxy: proxyUrl,
         backgroundColor: null,
         ignoreElements: createCaptureIgnoreElements(clampedRect),
+        onclone: (clonedDocument) => {
+          inlineSelectedExternalImages(clonedDocument, imageDataUrls);
+        },
         logging: import.meta.env.DEV,
         scale,
         scrollX: 0,

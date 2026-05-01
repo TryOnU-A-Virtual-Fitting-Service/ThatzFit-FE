@@ -32,6 +32,7 @@ export const FittingModelAddDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTitle className='sr-only'>모델 추가</DialogTitle>
       <DialogContent
         container={entryWrapper}
         className='!h-[26.875rem] !w-[20.625rem]'

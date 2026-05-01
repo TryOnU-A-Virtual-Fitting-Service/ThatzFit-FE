@@ -33,6 +33,7 @@ export const FittingDialog = () => {
 
   return (
     <Dialog open={isFittingDialogOpen} onOpenChange={setIsFittingDialogOpen}>
+      <DialogTitle className='sr-only'>피팅 실행 Dialog</DialogTitle>
       <DialogContent
         showCloseButton={false}
         overlayClassName='hidden'
