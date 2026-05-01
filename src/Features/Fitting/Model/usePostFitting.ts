@@ -46,14 +46,11 @@ export const usePostFitting = () => {
 
   useEffect(() => {
     if (fittingJobId && capturedClothingImage && currentFittingModel) {
-      const imageExtension = capturedClothingImage.type.includes('webp')
-        ? 'webp'
-        : 'jpg';
       const clothingImageFile = new File(
         [capturedClothingImage],
-        `capturedClothingImage.${imageExtension}`,
+        'capturedClothingImage.png',
         {
-          type: capturedClothingImage.type || 'image/jpeg',
+          type: 'image/png',
         },
       );
 
