@@ -16,12 +16,15 @@ export const FittingClothingCaptureScreen = () => {
   );
   const {
     isDragging,
+    isGuideHovered,
+    captureGuideRef,
     screenshotBackgroundRef,
     screenshotAreaRef,
     handleCroppedStart,
     handleCroppedAreaMove,
     handleCroppedEnd,
     handleCancelCapture,
+    handleGuideMouseOut,
   } = useCroppedClothing();
 
   if (!isCapturing || !pluginEntryWrapper) {
@@ -62,6 +65,7 @@ export const FittingClothingCaptureScreen = () => {
         }}
         onMouseDown={handleCroppedStart}
         onMouseMove={handleCroppedAreaMove}
+        onMouseOut={handleGuideMouseOut}
         onMouseUp={handleCroppedEnd}
         ref={screenshotBackgroundRef}
       >
@@ -82,6 +86,7 @@ export const FittingClothingCaptureScreen = () => {
       </div>
       {!isDragging && (
         <div
+          ref={captureGuideRef}
           className='fixed top-20 left-1/2 z-[10000] w-2xl -translate-x-1/2 rounded-lg bg-white py-3 text-center'
           style={{
             position: 'fixed',
@@ -93,9 +98,12 @@ export const FittingClothingCaptureScreen = () => {
             transform: 'translateX(-50%)',
             borderRadius: '8px',
             background: '#ffffff',
+            opacity: isGuideHovered ? 0.96 : 0.72,
             padding: '12px 16px',
+            pointerEvents: 'none',
             textAlign: 'center',
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+            transition: 'opacity 120ms ease',
           }}
         >
           <span

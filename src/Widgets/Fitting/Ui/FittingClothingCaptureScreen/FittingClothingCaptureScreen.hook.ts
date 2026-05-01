@@ -61,11 +61,13 @@ export const useCroppedClothing = () => {
   const { croppedImageToBlob } = useExtractCroppedClothing();
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isMouseMoving, setIsMouseMoving] = useState<boolean>(false);
+  const [isGuideHovered, setIsGuideHovered] = useState<boolean>(false);
   const [startX, setStartX] = useState<number>(0);
   const [startY, setStartY] = useState<number>(0);
 
   const screenshotBackgroundRef = useRef<HTMLDivElement>(null);
   const screenshotAreaRef = useRef<HTMLDivElement>(null);
+  const captureGuideRef = useRef<HTMLDivElement>(null);
 
   const resetCaptureOverlay = () => {
     if (screenshotBackgroundRef.current) {
@@ -103,13 +105,32 @@ export const useCroppedClothing = () => {
     };
   };
 
+  const updateGuideHoverState = (x: number, y: number) => {
+    const guideElement = captureGuideRef.current;
+    if (!guideElement) {
+      setIsGuideHovered(false);
+      return;
+    }
+
+    const guideRect = guideElement.getBoundingClientRect();
+    setIsGuideHovered(
+      x >= guideRect.left &&
+        x <= guideRect.right &&
+        y >= guideRect.top &&
+        y <= guideRect.bottom,
+    );
+  };
+
   const handleCroppedStart = (event: MouseEvent) => {
+    updateGuideHoverState(event.clientX, event.clientY);
     setIsDragging(true);
     setStartX(event.clientX);
     setStartY(event.clientY);
   };
 
   const handleCroppedAreaMove = (event: MouseEvent) => {
+    updateGuideHoverState(event.clientX, event.clientY);
+
     if (
       !screenshotAreaRef.current ||
       !screenshotBackgroundRef.current ||
@@ -141,6 +162,7 @@ export const useCroppedClothing = () => {
 
     setIsDragging(false);
     setIsMouseMoving(false);
+    setIsGuideHovered(false);
 
     const rect = getViewportSelectionRect(event.clientX, event.clientY);
     if (rect.width < 1 || rect.height < 1) {
@@ -172,6 +194,7 @@ export const useCroppedClothing = () => {
     if (event.key === 'Escape') {
       setIsDragging(false);
       setIsMouseMoving(false);
+      setIsGuideHovered(false);
       setIsFittingDialogOpen(false);
       setIsCapturing(false);
       resetCaptureOverlay();
@@ -182,12 +205,15 @@ export const useCroppedClothing = () => {
   return {
     isDragging,
     isMouseMoving,
+    isGuideHovered,
     screenshotBackgroundRef,
     screenshotAreaRef,
+    captureGuideRef,
     handleCroppedStart,
     handleCroppedAreaMove,
     handleCroppedEnd,
     handleCancelCapture,
+    handleGuideMouseOut: () => setIsGuideHovered(false),
   };
 };
 
