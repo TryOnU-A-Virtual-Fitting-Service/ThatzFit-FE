@@ -1,5 +1,7 @@
 import { createPortal } from 'react-dom';
 
+import { getCaptureWindow } from '@/Features/Fitting/Model/captureEngine';
+
 import { useFittingStore } from '@/Entities/Fitting';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
@@ -31,6 +33,8 @@ export const FittingClothingCaptureScreen = () => {
     return null;
   }
 
+  const captureWindow = getCaptureWindow();
+
   return createPortal(
     <div
       tabIndex={-1}
@@ -61,7 +65,7 @@ export const FittingClothingCaptureScreen = () => {
           opacity: 0.3,
           cursor: 'crosshair',
           boxSizing: 'border-box',
-          borderWidth: isCapturing ? `0 0 ${window.innerHeight}px 0` : 0,
+          borderWidth: isCapturing ? `0 0 ${captureWindow.innerHeight}px 0` : 0,
         }}
         onMouseDown={handleCroppedStart}
         onMouseMove={handleCroppedAreaMove}

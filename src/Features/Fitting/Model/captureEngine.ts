@@ -48,7 +48,7 @@ type Html2CanvasCaptureEngineOptions = {
   fallbackToDisplayMedia?: boolean;
 };
 
-const getCaptureWindow = (): Window => {
+export const getCaptureWindow = (): Window => {
   try {
     if (window.parent?.document?.body) {
       return window.parent as Window;

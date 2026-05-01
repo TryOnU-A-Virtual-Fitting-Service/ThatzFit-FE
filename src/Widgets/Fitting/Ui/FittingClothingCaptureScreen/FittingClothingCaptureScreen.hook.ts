@@ -11,6 +11,7 @@ import {
   CaptureError,
   type CaptureRect,
   createCaptureEngine,
+  getCaptureWindow,
 } from '@/Features/Fitting/Model/captureEngine';
 
 import { useFittingStore } from '@/Entities/Fitting';
@@ -89,8 +90,9 @@ export const useCroppedClothing = () => {
   };
 
   const getViewportSelectionRect = (x: number, y: number): CaptureRect => {
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const captureWindow = getCaptureWindow();
+    const viewportWidth = captureWindow.innerWidth;
+    const viewportHeight = captureWindow.innerHeight;
 
     const left = Math.max(0, Math.min(Math.min(x, startX), viewportWidth));
     const top = Math.max(0, Math.min(Math.min(y, startY), viewportHeight));
@@ -142,11 +144,11 @@ export const useCroppedClothing = () => {
 
     const rect = getViewportSelectionRect(event.clientX, event.clientY);
     const rightBorder = Math.max(
-      window.innerWidth - (rect.left + rect.width),
+      getCaptureWindow().innerWidth - (rect.left + rect.width),
       0,
     );
     const bottomBorder = Math.max(
-      window.innerHeight - (rect.top + rect.height),
+      getCaptureWindow().innerHeight - (rect.top + rect.height),
       0,
     );
 
