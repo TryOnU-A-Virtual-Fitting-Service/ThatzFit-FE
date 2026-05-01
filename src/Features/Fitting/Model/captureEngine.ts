@@ -48,6 +48,18 @@ type Html2CanvasCaptureEngineOptions = {
   fallbackToDisplayMedia?: boolean;
 };
 
+const getCaptureWindow = (): Window => {
+  try {
+    if (window.parent?.document?.body) {
+      return window.parent as Window;
+    }
+  } catch {
+    // Cross-origin parents are not readable. In that case, use the current document.
+  }
+
+  return window;
+};
+
 const toImageBlob = (canvas: HTMLCanvasElement) =>
   new Promise<Blob>((resolve, reject) => {
     try {
@@ -95,9 +107,12 @@ const waitForVideoReady = (video: HTMLVideoElement) =>
     });
   });
 
-const getClampedViewportRect = (rect: CaptureRect): CaptureRect => {
-  const viewportWidth = Math.max(window.innerWidth, 1);
-  const viewportHeight = Math.max(window.innerHeight, 1);
+const getClampedViewportRect = (
+  rect: CaptureRect,
+  viewportWindow = getCaptureWindow(),
+): CaptureRect => {
+  const viewportWidth = Math.max(viewportWindow.innerWidth, 1);
+  const viewportHeight = Math.max(viewportWindow.innerHeight, 1);
 
   const left = Math.max(0, Math.min(rect.left, viewportWidth - 1));
   const top = Math.max(0, Math.min(rect.top, viewportHeight - 1));
@@ -196,7 +211,8 @@ export class DisplayMediaCaptureEngine implements CaptureEngine {
   }
 
   async capture(rect: CaptureRect): Promise<Blob> {
-    const clampedRect = getClampedViewportRect(rect);
+    const captureWindow = getCaptureWindow();
+    const clampedRect = getClampedViewportRect(rect, captureWindow);
     if (!navigator.mediaDevices?.getDisplayMedia) {
       throw new CaptureError(
         'DISPLAY_MEDIA_NOT_SUPPORTED',
@@ -236,8 +252,9 @@ export class DisplayMediaCaptureEngine implements CaptureEngine {
       }
       sourceContext.drawImage(video, 0, 0);
 
-      const scaleX = sourceCanvas.width / Math.max(window.innerWidth, 1);
-      const scaleY = sourceCanvas.height / Math.max(window.innerHeight, 1);
+      const scaleX = sourceCanvas.width / Math.max(captureWindow.innerWidth, 1);
+      const scaleY =
+        sourceCanvas.height / Math.max(captureWindow.innerHeight, 1);
       const sx = Math.max(0, Math.round(clampedRect.left * scaleX));
       const sy = Math.max(0, Math.round(clampedRect.top * scaleY));
       const sWidth = Math.max(1, Math.round(clampedRect.width * scaleX));
@@ -285,40 +302,42 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
 
   async capture(rect: CaptureRect): Promise<Blob> {
     const proxyUrl = this.options.proxyUrl ?? '/api/v1/try-on/image/proxy';
-    const clampedRect = getClampedViewportRect(rect);
+    const captureWindow = getCaptureWindow();
+    const captureDocument = captureWindow.document;
+    const clampedRect = getClampedViewportRect(rect, captureWindow);
     const documentRect = {
-      left: clampedRect.left + window.scrollX,
-      top: clampedRect.top + window.scrollY,
+      left: clampedRect.left + captureWindow.scrollX,
+      top: clampedRect.top + captureWindow.scrollY,
       width: clampedRect.width,
       height: clampedRect.height,
     };
-    const scale = window.devicePixelRatio || 1;
+    const scale = captureWindow.devicePixelRatio || 1;
 
     this.options.setImageProcessing(true);
     try {
       assertCanvasLimit(documentRect.width, documentRect.height, scale);
 
-      const canvas = await html2canvas(document.body, {
+      const canvas = await html2canvas(captureDocument.body, {
         allowTaint: false,
         useCORS: false,
         proxy: proxyUrl,
         backgroundColor: null,
         scale,
-        scrollX: window.scrollX,
-        scrollY: window.scrollY,
+        scrollX: 0,
+        scrollY: 0,
         x: documentRect.left,
         y: documentRect.top,
         width: documentRect.width,
         height: documentRect.height,
         windowWidth: Math.max(
-          document.documentElement.scrollWidth,
-          document.body.scrollWidth,
-          window.innerWidth,
+          captureDocument.documentElement.scrollWidth,
+          captureDocument.body.scrollWidth,
+          captureWindow.innerWidth,
         ),
         windowHeight: Math.max(
-          document.documentElement.scrollHeight,
-          document.body.scrollHeight,
-          window.innerHeight,
+          captureDocument.documentElement.scrollHeight,
+          captureDocument.body.scrollHeight,
+          captureWindow.innerHeight,
         ),
       });
 
