@@ -1,39 +1,34 @@
 import { createPortal } from 'react-dom';
 
-import { getCaptureWindow } from '@/Features/Fitting/Model/captureEngine';
-
 import { useFittingStore } from '@/Entities/Fitting';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
+import { Button } from '@/Shared/Components';
 import { cn } from '@/Shared/Lib';
+import { Spinner } from '@/Shared/Ui';
 
 import { useCroppedClothing } from './FittingClothingCaptureScreen.hook';
 
 export const FittingClothingCaptureScreen = () => {
   const isCapturing = useFittingStore((state) => state.isCapturing);
-
   const pluginEntryWrapper = usePluginEntryStore((state) => state.entryWrapper);
-  const isFittingDialogOpen = useFittingStore(
-    (state) => state.isFittingDialogOpen,
-  );
   const {
+    cropImageUrl,
+    imageRef,
+    selection,
     isDragging,
-    isGuideHovered,
-    captureGuideRef,
-    screenshotBackgroundRef,
-    screenshotAreaRef,
-    handleCroppedStart,
-    handleCroppedAreaMove,
-    handleCroppedEnd,
+    isLoadingImage,
+    handleCropStart,
+    handleCropMove,
+    handleCropEnd,
     handleCancelCapture,
-    handleGuideMouseOut,
+    cancelCapture,
+    cropSelectedImage,
   } = useCroppedClothing();
 
   if (!isCapturing || !pluginEntryWrapper) {
     return null;
   }
-
-  const captureWindow = getCaptureWindow();
 
   return createPortal(
     <div
@@ -44,85 +39,112 @@ export const FittingClothingCaptureScreen = () => {
           element.focus({ preventScroll: true });
         }
       }}
-      className={cn(isFittingDialogOpen && 'hidden')}
-      style={isFittingDialogOpen ? { display: 'none' } : undefined}
+      className='fixed inset-0 z-[1000000] flex items-center justify-center bg-black/60 px-4 py-6'
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0, 0, 0, 0.6)',
+        padding: '24px 16px',
+      }}
     >
       <div
-        className={cn(
-          'fixed top-0 left-0 z-[10000] block h-full w-full border-solid border-black opacity-30',
-          isCapturing && 'cursor-crosshair',
-        )}
+        className='flex max-h-full w-fit max-w-full flex-col gap-3 rounded-lg bg-white p-4 shadow-2xl'
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          zIndex: 1000000,
-          display: 'block',
-          width: '100vw',
-          height: '100vh',
-          borderStyle: 'solid',
-          borderColor: '#000000',
-          opacity: 0.3,
-          cursor: 'crosshair',
-          boxSizing: 'border-box',
-          borderWidth: isCapturing ? `0 0 ${captureWindow.innerHeight}px 0` : 0,
+          maxWidth: 'calc(100vw - 32px)',
+          maxHeight: 'calc(100vh - 48px)',
+          borderRadius: '8px',
+          background: '#ffffff',
+          padding: '16px',
+          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.28)',
         }}
-        onMouseDown={handleCroppedStart}
-        onMouseMove={handleCroppedAreaMove}
-        onMouseOut={handleGuideMouseOut}
-        onMouseUp={handleCroppedEnd}
-        ref={screenshotBackgroundRef}
       >
-        <div
-          className="fixed z-[10001] h-full w-full border-r-[1px] border-b-[1px] before:absolute before:top-[-100%] before:left-[-100%] before:border-solid before:border-red-500 before:content-['']"
-          style={{
-            position: 'fixed',
-            zIndex: 1000001,
-            width: '100vw',
-            height: '100vh',
-            borderRight: '1px solid #ef4444',
-            borderBottom: '1px solid #ef4444',
-            boxSizing: 'border-box',
-            pointerEvents: 'none',
-          }}
-          ref={screenshotAreaRef}
-        ></div>
-      </div>
-      {!isDragging && (
-        <div
-          ref={captureGuideRef}
-          className='fixed top-20 left-1/2 z-[10000] w-2xl -translate-x-1/2 rounded-lg bg-white py-3 text-center'
-          style={{
-            position: 'fixed',
-            top: '80px',
-            left: '50%',
-            zIndex: 1000002,
-            width: '42rem',
-            maxWidth: 'calc(100vw - 32px)',
-            transform: 'translateX(-50%)',
-            borderRadius: '8px',
-            background: '#ffffff',
-            opacity: isGuideHovered ? 0.96 : 0.72,
-            padding: '12px 16px',
-            pointerEvents: 'none',
-            textAlign: 'center',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
-            transition: 'opacity 120ms ease',
-          }}
-        >
-          <span
-            className='text-grey-01 text-heading1'
-            style={{
-              color: '#181a1b',
-              fontSize: '17px',
-              fontWeight: 700,
-              lineHeight: 1.5,
-            }}
-          >
-            입어보고 싶은 옷의 사진 부분을 드래그해 주세요.
+        <div className='flex flex-col gap-1'>
+          <span className='text-heading1-semibold text-grey-01'>
+            입어볼 옷 영역을 선택해 주세요.
+          </span>
+          <span className='text-body2-regular text-grey-04'>
+            이미지 안에서 드래그한 영역만 피팅에 사용돼요.
           </span>
         </div>
-      )}
+
+        <div
+          className='flex min-h-[16rem] min-w-[18rem] items-center justify-center overflow-hidden rounded-md bg-black/5'
+          style={{
+            minWidth: '18rem',
+            minHeight: '16rem',
+            maxWidth: 'calc(100vw - 64px)',
+            maxHeight: 'calc(100vh - 190px)',
+            overflow: 'hidden',
+            borderRadius: '6px',
+            background: 'rgba(0, 0, 0, 0.05)',
+          }}
+          onMouseMove={handleCropMove}
+          onMouseUp={handleCropEnd}
+          onMouseLeave={handleCropEnd}
+        >
+          {isLoadingImage || !cropImageUrl ? (
+            <Spinner />
+          ) : (
+            <div
+              className={cn(
+                'relative max-h-full max-w-full cursor-crosshair select-none',
+                isDragging && 'cursor-crosshair',
+              )}
+              onMouseDown={handleCropStart}
+            >
+              <img
+                ref={imageRef}
+                src={cropImageUrl}
+                alt='crop target clothing'
+                draggable={false}
+                className='block max-h-[calc(100vh-190px)] max-w-[calc(100vw-64px)] object-contain'
+                style={{
+                  display: 'block',
+                  maxWidth: 'calc(100vw - 64px)',
+                  maxHeight: 'calc(100vh - 190px)',
+                  objectFit: 'contain',
+                  userSelect: 'none',
+                }}
+              />
+              {selection && (
+                <div
+                  className='pointer-events-none absolute border-2 border-red-500 bg-red-500/10'
+                  style={{
+                    left: selection.left,
+                    top: selection.top,
+                    width: selection.width,
+                    height: selection.height,
+                    border: '2px solid #ef4444',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className='flex justify-end gap-2'>
+          <Button
+            variant='secondary'
+            className='cursor-pointer'
+            onClick={cancelCapture}
+          >
+            취소
+          </Button>
+          <Button
+            className='cursor-pointer'
+            disabled={isLoadingImage || !cropImageUrl}
+            onClick={() => void cropSelectedImage()}
+          >
+            선택 완료
+          </Button>
+        </div>
+      </div>
     </div>,
     pluginEntryWrapper,
   );

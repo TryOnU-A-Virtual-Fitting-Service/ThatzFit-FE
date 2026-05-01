@@ -1,17 +1,16 @@
 import {
   type KeyboardEvent,
   type MouseEvent,
-  useMemo,
+  useCallback,
+  useEffect,
   useRef,
   useState,
 } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import {
-  CaptureError,
-  type CaptureRect,
-  createCaptureEngine,
   getCaptureWindow,
+  getDefaultImageProxyUrl,
 } from '@/Features/Fitting/Model/captureEngine';
 
 import { useFittingStore } from '@/Entities/Fitting';
@@ -19,37 +18,92 @@ import { usePluginStore } from '@/Entities/Plugin';
 
 import { useToast } from '@/Shared/Model';
 
-const getCaptureErrorMessage = (error: unknown): string => {
-  if (!(error instanceof CaptureError)) {
-    return '옷 캡처에 실패했어요.';
-  }
+const ACTIVE_CAPTURE_SELECTOR = 'img[data-thatzfit-active-capture="true"]';
+const MAX_CROPPED_IMAGE_EDGE = 1600;
+const CROPPED_IMAGE_TYPE = 'image/jpeg';
+const CROPPED_IMAGE_QUALITY = 0.9;
 
-  switch (error.code) {
-    case 'CANVAS_LIMIT_EXCEEDED':
-      return '선택 영역이 너무 커서 캡처할 수 없어요. 영역을 조금 줄여주세요.';
-    case 'CORS_TAINT':
-      return '외부 이미지 보안 정책으로 캡처에 실패했어요. 다시 시도해 주세요.';
-    case 'DISPLAY_MEDIA_DENIED':
-      return '화면 공유 권한을 허용해 주세요. 권한 허용 후 다시 시도해 주세요.';
-    case 'DISPLAY_MEDIA_NOT_SUPPORTED':
-      return '현재 브라우저에서 화면 공유 캡처를 지원하지 않아요.';
-    case 'EMPTY_IMAGE_BLOB':
-      return '캡처 이미지 생성에 실패했어요. 다시 시도해 주세요.';
-    default:
-      return '옷 캡처에 실패했어요.';
-  }
+type CropRect = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
 };
 
-export const useCroppedClothing = () => {
-  const { setIsCapturing, setCapturedClothingImage, setIsFittingDialogOpen } =
-    useFittingStore(
-      useShallow((state) => ({
-        isCapturing: state.isCapturing,
-        setIsCapturing: state.setIsCapturing,
-        setCapturedClothingImage: state.setCapturedClothingImage,
-        setIsFittingDialogOpen: state.setIsFittingDialogOpen,
-      })),
+const createImageProxyRequestUrl = (
+  proxyUrl: string,
+  imageUrl: string,
+): string => {
+  const separator = proxyUrl.includes('?') ? '&' : '?';
+  return `${proxyUrl}${separator}url=${encodeURIComponent(imageUrl)}&responseType=blob`;
+};
+
+const getActiveCaptureImage = (): HTMLImageElement | null => {
+  return getCaptureWindow().document.querySelector<HTMLImageElement>(
+    ACTIVE_CAPTURE_SELECTOR,
+  );
+};
+
+const getImageSource = (image: HTMLImageElement): string | null => {
+  return image.currentSrc || image.src || null;
+};
+
+const fetchProxiedImageBlob = async (source: string): Promise<Blob> => {
+  const proxyUrl = getDefaultImageProxyUrl();
+  const response = await fetch(createImageProxyRequestUrl(proxyUrl, source));
+
+  if (!response.ok) {
+    throw new Error(`Image proxy failed with ${response.status}`);
+  }
+
+  const contentType = response.headers.get('content-type') ?? '';
+  if (!contentType.toLowerCase().startsWith('image/')) {
+    throw new Error(`Unsupported proxied content type: ${contentType}`);
+  }
+
+  const blob = await response.blob();
+  if (blob.size === 0) {
+    throw new Error('Proxied image is empty');
+  }
+
+  return blob;
+};
+
+const toImageBlob = (
+  canvas: HTMLCanvasElement,
+  type = CROPPED_IMAGE_TYPE,
+  quality = CROPPED_IMAGE_QUALITY,
+) =>
+  new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error('Failed to create cropped image'));
+          return;
+        }
+        resolve(blob);
+      },
+      type,
+      quality,
     );
+  });
+
+export const useCroppedClothing = () => {
+  const {
+    isCapturing,
+    setIsCapturing,
+    setCapturedClothingImage,
+    setIsFittingDialogOpen,
+    setIsImageProcessing,
+  } = useFittingStore(
+    useShallow((state) => ({
+      isCapturing: state.isCapturing,
+      setIsCapturing: state.setIsCapturing,
+      setCapturedClothingImage: state.setCapturedClothingImage,
+      setIsFittingDialogOpen: state.setIsFittingDialogOpen,
+      setIsImageProcessing: state.setIsImageProcessing,
+    })),
+  );
 
   const { pluginWrapper, setIsPluginOpen } = usePluginStore(
     useShallow((state) => ({
@@ -59,183 +113,247 @@ export const useCroppedClothing = () => {
   );
 
   const { toast } = useToast();
-  const { croppedImageToBlob } = useExtractCroppedClothing();
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [isMouseMoving, setIsMouseMoving] = useState<boolean>(false);
-  const [isGuideHovered, setIsGuideHovered] = useState<boolean>(false);
-  const [startX, setStartX] = useState<number>(0);
-  const [startY, setStartY] = useState<number>(0);
+  const toastRef = useRef(toast);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const cropStartRef = useRef<{ x: number; y: number } | null>(null);
+  const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
+  const [selection, setSelection] = useState<CropRect | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isLoadingImage, setIsLoadingImage] = useState(false);
 
-  const screenshotBackgroundRef = useRef<HTMLDivElement>(null);
-  const screenshotAreaRef = useRef<HTMLDivElement>(null);
-  const captureGuideRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    toastRef.current = toast;
+  }, [toast]);
 
-  const resetCaptureOverlay = () => {
-    if (screenshotBackgroundRef.current) {
-      screenshotBackgroundRef.current.style.borderWidth = '0';
-    }
-    if (screenshotAreaRef.current) {
-      screenshotAreaRef.current.style.top = '0';
-      screenshotAreaRef.current.style.left = '0';
-    }
-  };
+  const clearActiveCaptureImages = useCallback(() => {
+    getCaptureWindow()
+      .document.querySelectorAll(ACTIVE_CAPTURE_SELECTOR)
+      .forEach((element) => {
+        element.removeAttribute('data-thatzfit-active-capture');
+      });
+  }, []);
 
-  const restorePluginVisibility = () => {
+  const restorePluginVisibility = useCallback(() => {
     if (!pluginWrapper) {
       return;
     }
     setIsPluginOpen(true);
     pluginWrapper.classList.toggle('thatzfit-visible', true);
     pluginWrapper.classList.toggle('thatzfit-hidden', false);
-  };
+  }, [pluginWrapper, setIsPluginOpen]);
 
-  const getViewportSelectionRect = (x: number, y: number): CaptureRect => {
-    const captureWindow = getCaptureWindow();
-    const viewportWidth = captureWindow.innerWidth;
-    const viewportHeight = captureWindow.innerHeight;
+  const finishCaptureMode = useCallback(() => {
+    cropStartRef.current = null;
+    setSelection(null);
+    setIsDragging(false);
+    setIsCapturing(false);
+    setIsImageProcessing(false);
+    clearActiveCaptureImages();
+    restorePluginVisibility();
+  }, [
+    clearActiveCaptureImages,
+    restorePluginVisibility,
+    setIsCapturing,
+    setIsImageProcessing,
+  ]);
 
-    const left = Math.max(0, Math.min(Math.min(x, startX), viewportWidth));
-    const top = Math.max(0, Math.min(Math.min(y, startY), viewportHeight));
-    const right = Math.max(0, Math.min(Math.max(x, startX), viewportWidth));
-    const bottom = Math.max(0, Math.min(Math.max(y, startY), viewportHeight));
+  const cancelCapture = useCallback(() => {
+    setIsFittingDialogOpen(false);
+    setCapturedClothingImage(null);
+    finishCaptureMode();
+  }, [finishCaptureMode, setCapturedClothingImage, setIsFittingDialogOpen]);
 
+  useEffect(() => {
+    if (!isCapturing) {
+      return;
+    }
+
+    let isMounted = true;
+    let objectUrl: string | null = null;
+
+    const loadActiveImage = async () => {
+      const activeImage = getActiveCaptureImage();
+      const source = activeImage ? getImageSource(activeImage) : null;
+      if (!source) {
+        toastRef.current.error('입어볼 옷 이미지를 찾지 못했어요.');
+        finishCaptureMode();
+        return;
+      }
+
+      setIsLoadingImage(true);
+      setIsImageProcessing(true);
+      try {
+        const imageBlob = await fetchProxiedImageBlob(source);
+        objectUrl = URL.createObjectURL(imageBlob);
+        if (isMounted) {
+          setCropImageUrl(objectUrl);
+        }
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('[capture] image proxy failed', error);
+        }
+        toastRef.current.error(
+          '옷 이미지를 불러오지 못했어요. 다시 시도해 주세요.',
+        );
+        finishCaptureMode();
+      } finally {
+        if (isMounted) {
+          setIsLoadingImage(false);
+          setIsImageProcessing(false);
+        }
+      }
+    };
+
+    void loadActiveImage();
+
+    return () => {
+      isMounted = false;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+      setCropImageUrl(null);
+    };
+  }, [finishCaptureMode, isCapturing, setIsImageProcessing]);
+
+  const getImageLocalPoint = (event: MouseEvent): { x: number; y: number } => {
+    const image = imageRef.current;
+    if (!image) {
+      return { x: 0, y: 0 };
+    }
+
+    const rect = image.getBoundingClientRect();
     return {
-      left,
-      top,
-      width: Math.max(right - left, 0),
-      height: Math.max(bottom - top, 0),
+      x: Math.max(0, Math.min(event.clientX - rect.left, rect.width)),
+      y: Math.max(0, Math.min(event.clientY - rect.top, rect.height)),
     };
   };
 
-  const updateGuideHoverState = (x: number, y: number) => {
-    const guideElement = captureGuideRef.current;
-    if (!guideElement) {
-      setIsGuideHovered(false);
+  const updateSelection = (event: MouseEvent) => {
+    const start = cropStartRef.current;
+    if (!start) {
       return;
     }
 
-    const guideRect = guideElement.getBoundingClientRect();
-    setIsGuideHovered(
-      x >= guideRect.left &&
-        x <= guideRect.right &&
-        y >= guideRect.top &&
-        y <= guideRect.bottom,
-    );
+    const point = getImageLocalPoint(event);
+    const left = Math.min(start.x, point.x);
+    const top = Math.min(start.y, point.y);
+    const right = Math.max(start.x, point.x);
+    const bottom = Math.max(start.y, point.y);
+
+    setSelection({
+      left,
+      top,
+      width: right - left,
+      height: bottom - top,
+    });
   };
 
-  const handleCroppedStart = (event: MouseEvent) => {
-    updateGuideHoverState(event.clientX, event.clientY);
+  const handleCropStart = (event: MouseEvent) => {
+    event.preventDefault();
+    const point = getImageLocalPoint(event);
+    cropStartRef.current = point;
+    setSelection({ left: point.x, top: point.y, width: 0, height: 0 });
     setIsDragging(true);
-    setStartX(event.clientX);
-    setStartY(event.clientY);
   };
 
-  const handleCroppedAreaMove = (event: MouseEvent) => {
-    updateGuideHoverState(event.clientX, event.clientY);
-
-    if (
-      !screenshotAreaRef.current ||
-      !screenshotBackgroundRef.current ||
-      !isDragging
-    ) {
-      return;
-    }
-    setIsMouseMoving(true);
-
-    const rect = getViewportSelectionRect(event.clientX, event.clientY);
-    const rightBorder = Math.max(
-      getCaptureWindow().innerWidth - (rect.left + rect.width),
-      0,
-    );
-    const bottomBorder = Math.max(
-      getCaptureWindow().innerHeight - (rect.top + rect.height),
-      0,
-    );
-
-    screenshotAreaRef.current.style.top = `${rect.top}px`;
-    screenshotAreaRef.current.style.left = `${rect.left}px`;
-    screenshotBackgroundRef.current.style.borderWidth = `${rect.top}px ${rightBorder}px ${bottomBorder}px ${rect.left}px`;
-  };
-
-  const handleCroppedEnd = async (event: MouseEvent) => {
+  const handleCropMove = (event: MouseEvent) => {
     if (!isDragging) {
       return;
     }
+    updateSelection(event);
+  };
 
+  const handleCropEnd = (event: MouseEvent) => {
+    if (!isDragging) {
+      return;
+    }
+    updateSelection(event);
     setIsDragging(false);
-    setIsMouseMoving(false);
-    setIsGuideHovered(false);
+    cropStartRef.current = null;
+  };
 
-    const rect = getViewportSelectionRect(event.clientX, event.clientY);
-    if (rect.width < 1 || rect.height < 1) {
-      setIsFittingDialogOpen(false);
-      setIsCapturing(false);
-      resetCaptureOverlay();
-      restorePluginVisibility();
+  const cropSelectedImage = async () => {
+    const image = imageRef.current;
+    if (!image || !selection || selection.width < 4 || selection.height < 4) {
+      toast.error('옷 영역을 드래그해서 선택해 주세요.');
       return;
     }
 
-    setIsFittingDialogOpen(true);
+    const imageRect = image.getBoundingClientRect();
+    const sourceLeft = Math.round(
+      (selection.left / imageRect.width) * image.naturalWidth,
+    );
+    const sourceTop = Math.round(
+      (selection.top / imageRect.height) * image.naturalHeight,
+    );
+    const sourceWidth = Math.round(
+      (selection.width / imageRect.width) * image.naturalWidth,
+    );
+    const sourceHeight = Math.round(
+      (selection.height / imageRect.height) * image.naturalHeight,
+    );
+    const scale = Math.min(
+      1,
+      MAX_CROPPED_IMAGE_EDGE / Math.max(sourceWidth, sourceHeight),
+    );
+    const outputWidth = Math.max(1, Math.round(sourceWidth * scale));
+    const outputHeight = Math.max(1, Math.round(sourceHeight * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      toast.error('캡처 이미지를 만들지 못했어요. 다시 시도해 주세요.');
+      return;
+    }
+
+    setIsImageProcessing(true);
     try {
-      const capturedBlob = await croppedImageToBlob(rect);
-      setCapturedClothingImage(capturedBlob);
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, outputWidth, outputHeight);
+      context.drawImage(
+        image,
+        sourceLeft,
+        sourceTop,
+        sourceWidth,
+        sourceHeight,
+        0,
+        0,
+        outputWidth,
+        outputHeight,
+      );
+      const croppedBlob = await toImageBlob(canvas);
+      setCapturedClothingImage(croppedBlob);
+      setIsFittingDialogOpen(true);
+      finishCaptureMode();
     } catch (error) {
       if (import.meta.env.DEV) {
-        console.warn('[capture] capture failed', error);
+        console.warn('[capture] crop failed', error);
       }
-      toast.error(getCaptureErrorMessage(error));
-      setIsFittingDialogOpen(false);
+      toast.error('옷 캡처에 실패했어요. 다시 시도해 주세요.');
     } finally {
-      setIsCapturing(false);
-      resetCaptureOverlay();
-      restorePluginVisibility();
+      setIsImageProcessing(false);
     }
   };
 
   const handleCancelCapture = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      setIsDragging(false);
-      setIsMouseMoving(false);
-      setIsGuideHovered(false);
-      setIsFittingDialogOpen(false);
-      setIsCapturing(false);
-      resetCaptureOverlay();
-      restorePluginVisibility();
+      cancelCapture();
     }
   };
 
   return {
+    cropImageUrl,
+    imageRef,
+    selection,
     isDragging,
-    isMouseMoving,
-    isGuideHovered,
-    screenshotBackgroundRef,
-    screenshotAreaRef,
-    captureGuideRef,
-    handleCroppedStart,
-    handleCroppedAreaMove,
-    handleCroppedEnd,
+    isLoadingImage,
+    handleCropStart,
+    handleCropMove,
+    handleCropEnd,
     handleCancelCapture,
-    handleGuideMouseOut: () => setIsGuideHovered(false),
+    cancelCapture,
+    cropSelectedImage,
   };
-};
-
-export const useExtractCroppedClothing = () => {
-  const setIsImageProcessing = useFittingStore(
-    (state) => state.setIsImageProcessing,
-  );
-
-  const captureEngine = useMemo(
-    () =>
-      createCaptureEngine({
-        setImageProcessing: setIsImageProcessing,
-        fallbackToDisplayMedia: true,
-      }),
-    [setIsImageProcessing],
-  );
-
-  const croppedImageToBlob = (rect: CaptureRect) => {
-    return captureEngine.capture(rect);
-  };
-
-  return { croppedImageToBlob };
 };
