@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import {
@@ -18,8 +18,80 @@ import { usePluginEntryStore } from '@/Entities/PluginEntry';
 import { Dialog, DialogContent, DialogTitle } from '@/Shared/Components';
 import { Spinner } from '@/Shared/Ui';
 
+const getElementDebugDetails = (element: HTMLElement | null) => {
+  if (!element) {
+    return null;
+  }
+
+  const rect = element.getBoundingClientRect();
+  const style = window.getComputedStyle(element);
+  const rootNode = element.getRootNode();
+
+  return {
+    tagName: element.tagName,
+    id: element.id || undefined,
+    className:
+      typeof element.className === 'string' ? element.className : undefined,
+    isConnected: element.isConnected,
+    rootNodeName:
+      rootNode instanceof ShadowRoot ? 'ShadowRoot' : rootNode.nodeName,
+    parent: element.parentElement
+      ? {
+          tagName: element.parentElement.tagName,
+          id: element.parentElement.id || undefined,
+          className:
+            typeof element.parentElement.className === 'string'
+              ? element.parentElement.className
+              : undefined,
+        }
+      : null,
+    rect: {
+      top: Math.round(rect.top),
+      left: Math.round(rect.left),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      bottom: Math.round(rect.bottom),
+      right: Math.round(rect.right),
+    },
+    computedStyle: {
+      display: style.display,
+      visibility: style.visibility,
+      opacity: style.opacity,
+      position: style.position,
+      zIndex: style.zIndex,
+      pointerEvents: style.pointerEvents,
+      transform: style.transform,
+      top: style.top,
+      left: style.left,
+      width: style.width,
+      height: style.height,
+      overflow: style.overflow,
+    },
+  };
+};
+
+const getElementStackAtViewportCenter = () => {
+  const x = Math.round(window.innerWidth / 2);
+  const y = Math.round(window.innerHeight / 2);
+
+  return {
+    x,
+    y,
+    elements: document
+      .elementsFromPoint(x, y)
+      .slice(0, 8)
+      .map((element) => ({
+        tagName: element.tagName,
+        id: element.id || undefined,
+        className:
+          typeof element.className === 'string' ? element.className : undefined,
+      })),
+  };
+};
+
 export const FittingDialog = () => {
   const pluginEntryWrapper = usePluginEntryStore((state) => state.entryWrapper);
+  const dialogContentRef = useRef<HTMLDivElement>(null);
   const {
     capturedClothingImage,
     isCapturing,
@@ -79,6 +151,33 @@ export const FittingDialog = () => {
     pluginEntryWrapper,
   ]);
 
+  useEffect(() => {
+    if (!isFittingDialogOpen || !capturedClothingImage || !pluginEntryWrapper) {
+      return;
+    }
+
+    const animationFrameId = window.requestAnimationFrame(() => {
+      captureDebugInfo(debugTraceId, 'dialog.dom_visibility_check', {
+        viewport: {
+          width: window.innerWidth,
+          height: window.innerHeight,
+          scrollX: window.scrollX,
+          scrollY: window.scrollY,
+        },
+        content: getElementDebugDetails(dialogContentRef.current),
+        portalContainer: getElementDebugDetails(pluginEntryWrapper),
+        viewportCenterStack: getElementStackAtViewportCenter(),
+      });
+    });
+
+    return () => window.cancelAnimationFrame(animationFrameId);
+  }, [
+    capturedClothingImage,
+    debugTraceId,
+    isFittingDialogOpen,
+    pluginEntryWrapper,
+  ]);
+
   const handleOpenChange = (nextOpen: boolean) => {
     captureDebugInfo(debugTraceId, 'dialog.open_change', {
       previousOpen: isFittingDialogOpen,
@@ -96,6 +195,7 @@ export const FittingDialog = () => {
     <Dialog open={isFittingDialogOpen} onOpenChange={handleOpenChange}>
       <DialogTitle className='sr-only'>피팅 실행 Dialog</DialogTitle>
       <DialogContent
+        ref={dialogContentRef}
         showCloseButton={false}
         overlayClassName='hidden'
         className='w-fit border-none p-5'
