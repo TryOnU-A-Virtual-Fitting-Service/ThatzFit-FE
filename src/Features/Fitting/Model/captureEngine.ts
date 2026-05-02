@@ -79,6 +79,10 @@ export const getDefaultImageProxyUrl = (): string => {
 };
 
 const isThatzfitElement = (element: Element): boolean => {
+  if (element.closest?.('[data-thatzfit-capture-ui="true"]')) {
+    return true;
+  }
+
   const closest = element.closest?.(
     '#thatzfit-plugin, #thatzfit-entry, #thatzfit-iframe-wrapper, #thatzfit-iframe, #thatzfit-root, #thatzfit-plugin-wrapper, #thatzfit-plugin-entry-wrapper',
   );
@@ -771,8 +775,8 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
         },
         logging: import.meta.env.DEV,
         scale,
-        scrollX: 0,
-        scrollY: 0,
+        scrollX: captureWindow.scrollX,
+        scrollY: captureWindow.scrollY,
         x: documentRect.left,
         y: documentRect.top,
         width: documentRect.width,
