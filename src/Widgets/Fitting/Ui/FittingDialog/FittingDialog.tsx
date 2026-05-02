@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 
+import { usePostFittingJob } from '@/Features/Fitting';
 import {
-  FittingCancelButton,
-  FittingExecutionButton,
-} from '@/Features/Fitting';
-import {
+  captureDebugError,
   captureDebugInfo,
   captureDebugWarn,
   getBlobDebugDetails,
@@ -15,8 +14,23 @@ import {
 import { useFittingStore } from '@/Entities/Fitting';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
-import { Dialog, DialogContent, DialogTitle } from '@/Shared/Components';
-import { Spinner } from '@/Shared/Ui';
+import { useToast } from '@/Shared/Model';
+
+const FITTING_FAILED_MESSAGE = '피팅에 실패했어요.';
+
+const getDialogWindow = (): Window => {
+  try {
+    if (window.parent?.document?.body) {
+      return window.parent as Window;
+    }
+  } catch {
+    // Cross-origin parents are not readable. Fall back to the plugin frame.
+  }
+
+  return window;
+};
+
+const getDialogPortalContainer = () => getDialogWindow().document.body;
 
 const getElementDebugDetails = (element: HTMLElement | null) => {
   if (!element) {
@@ -24,7 +38,8 @@ const getElementDebugDetails = (element: HTMLElement | null) => {
   }
 
   const rect = element.getBoundingClientRect();
-  const style = window.getComputedStyle(element);
+  const elementWindow = element.ownerDocument.defaultView ?? window;
+  const style = elementWindow.getComputedStyle(element);
   const rootNode = element.getRootNode();
 
   return {
@@ -70,14 +85,14 @@ const getElementDebugDetails = (element: HTMLElement | null) => {
   };
 };
 
-const getElementStackAtViewportCenter = () => {
-  const x = Math.round(window.innerWidth / 2);
-  const y = Math.round(window.innerHeight / 2);
+const getElementStackAtViewportCenter = (targetWindow: Window) => {
+  const x = Math.round(targetWindow.innerWidth / 2);
+  const y = Math.round(targetWindow.innerHeight / 2);
 
   return {
     x,
     y,
-    elements: document
+    elements: targetWindow.document
       .elementsFromPoint(x, y)
       .slice(0, 8)
       .map((element) => ({
@@ -92,6 +107,9 @@ const getElementStackAtViewportCenter = () => {
 export const FittingDialog = () => {
   const pluginEntryWrapper = usePluginEntryStore((state) => state.entryWrapper);
   const dialogContentRef = useRef<HTMLDivElement>(null);
+  const { mutateAsync: postFittingJob, isPending: isFittingJobPending } =
+    usePostFittingJob();
+  const { toast } = useToast();
   const {
     capturedClothingImage,
     isCapturing,
@@ -127,7 +145,7 @@ export const FittingDialog = () => {
       isFittingDialogOpen &&
       !isCapturing &&
       !isImageProcessing &&
-      (!capturedClothingImage || !pluginEntryWrapper)
+      !capturedClothingImage
     ) {
       captureDebugWarn(
         debugTraceId,
@@ -152,21 +170,25 @@ export const FittingDialog = () => {
   ]);
 
   useEffect(() => {
-    if (!isFittingDialogOpen || !capturedClothingImage || !pluginEntryWrapper) {
+    if (!isFittingDialogOpen || !capturedClothingImage) {
       return;
     }
 
     const animationFrameId = window.requestAnimationFrame(() => {
+      const dialogWindow = getDialogWindow();
+      const portalContainer = getDialogPortalContainer();
+
       captureDebugInfo(debugTraceId, 'dialog.dom_visibility_check', {
         viewport: {
-          width: window.innerWidth,
-          height: window.innerHeight,
-          scrollX: window.scrollX,
-          scrollY: window.scrollY,
+          width: dialogWindow.innerWidth,
+          height: dialogWindow.innerHeight,
+          scrollX: dialogWindow.scrollX,
+          scrollY: dialogWindow.scrollY,
         },
         content: getElementDebugDetails(dialogContentRef.current),
-        portalContainer: getElementDebugDetails(pluginEntryWrapper),
-        viewportCenterStack: getElementStackAtViewportCenter(),
+        portalContainer: getElementDebugDetails(portalContainer),
+        pluginEntryWrapper: getElementDebugDetails(pluginEntryWrapper),
+        viewportCenterStack: getElementStackAtViewportCenter(dialogWindow),
       });
     });
 
@@ -178,103 +200,239 @@ export const FittingDialog = () => {
     pluginEntryWrapper,
   ]);
 
-  const handleOpenChange = (nextOpen: boolean) => {
-    captureDebugInfo(debugTraceId, 'dialog.open_change', {
-      previousOpen: isFittingDialogOpen,
-      nextOpen,
+  const previewUrl = useMemo(() => {
+    if (!capturedClothingImage) {
+      return null;
+    }
+
+    return URL.createObjectURL(capturedClothingImage);
+  }, [capturedClothingImage]);
+
+  useEffect(() => {
+    if (!previewUrl) {
+      return;
+    }
+
+    return () => {
+      URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  useEffect(() => {
+    if (!isFittingDialogOpen) {
+      return;
+    }
+
+    const dialogWindow = getDialogWindow();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      captureDebugInfo(debugTraceId, 'dialog.escape_key_down');
+      setIsFittingDialogOpen(false);
+    };
+
+    dialogWindow.document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      dialogWindow.document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [debugTraceId, isFittingDialogOpen, setIsFittingDialogOpen]);
+
+  useEffect(() => {
+    captureDebugInfo(debugTraceId, 'dialog.execution_button_render_state', {
+      capturedBlob,
+      isFittingJobPending,
+    });
+  }, [capturedBlob, debugTraceId, isFittingJobPending]);
+
+  const handleClickCancelButton = () => {
+    captureDebugInfo(debugTraceId, 'dialog.cancel_click', {
       capturedBlob,
     });
-    setIsFittingDialogOpen(nextOpen);
+    setIsFittingDialogOpen(false);
   };
 
-  if (!capturedClothingImage || !pluginEntryWrapper) {
+  const handleClickExecutionButton = () => {
+    if (!capturedClothingImage) {
+      return;
+    }
+
+    captureDebugInfo(debugTraceId, 'dialog.confirm_click', {
+      capturedBlob,
+      isFittingJobPending,
+    });
+    postFittingJob(debugTraceId, {
+      onSuccess: ({ data: { tryOnJobId } }) => {
+        captureDebugInfo(debugTraceId, 'dialog.job_created', {
+          tryOnJobId,
+        });
+        captureDebugInfo(debugTraceId, 'dialog.job_id_store_start', {
+          tryOnJobId,
+        });
+        useFittingStore.getState().setFittingJobId(tryOnJobId);
+      },
+      onError: (error) => {
+        captureDebugError(debugTraceId, 'dialog.job_create_failed', {
+          error,
+        });
+        toast.error(FITTING_FAILED_MESSAGE);
+      },
+      onSettled: () => {
+        captureDebugInfo(debugTraceId, 'dialog.close_after_job_request');
+        setIsFittingDialogOpen(false);
+      },
+    });
+  };
+
+  if (!capturedClothingImage || !previewUrl || !isFittingDialogOpen) {
     return null;
   }
 
-  return (
-    <Dialog open={isFittingDialogOpen} onOpenChange={handleOpenChange}>
-      <DialogTitle className='sr-only'>피팅 실행 Dialog</DialogTitle>
-      <DialogContent
-        ref={dialogContentRef}
-        showCloseButton={false}
-        overlayClassName='hidden'
-        className='border-none p-5'
-        container={pluginEntryWrapper}
+  return createPortal(
+    <div
+      ref={dialogContentRef}
+      role='dialog'
+      aria-modal='true'
+      aria-label='피팅 실행 확인'
+      style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        zIndex: 1000004,
+        display: 'flex',
+        width: '20.5rem',
+        maxWidth: '20.5rem',
+        transform: 'translate(-50%, -50%)',
+        boxSizing: 'border-box',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '1.25rem',
+        border: 'none',
+        borderRadius: '0.5rem',
+        background: '#ffffff',
+        padding: '1.25rem',
+        boxShadow:
+          '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+        color: '#181a1b',
+        fontFamily: "'Pretendard Variable', sans-serif",
+        pointerEvents: 'auto',
+      }}
+    >
+      <div
         style={{
-          zIndex: 1000003,
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          width: '20.5rem',
-          maxWidth: '20.5rem',
-          transform: 'translate(-50%, -50%)',
+          display: 'flex',
+          width: '18rem',
+          height: '15.625rem',
+          justifyContent: 'center',
           boxSizing: 'border-box',
-          border: 'none',
-          borderRadius: '0.5rem',
-          background: '#ffffff',
-          padding: '1.25rem',
-          boxShadow:
-            '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-        }}
-        onEscapeKeyDown={() => {
-          captureDebugInfo(debugTraceId, 'dialog.escape_key_down');
-        }}
-        onInteractOutside={(event) => {
-          captureDebugWarn(debugTraceId, 'dialog.interact_outside_prevented', {
-            eventType: event.type,
-          });
-          event.preventDefault();
+          border: '1px solid #9399a1',
+          borderRadius: '0.375rem',
+          paddingInline: '1.25rem',
+          overflow: 'hidden',
         }}
       >
-        <DialogTitle className='sr-only'>피팅 실행 Dialog</DialogTitle>
-        <div
-          className='flex flex-col items-center gap-5'
+        <img
+          src={previewUrl}
+          alt='captured clothing image'
+          onLoad={() => {
+            captureDebugInfo(
+              debugTraceId,
+              'dialog.preview_image_load_success',
+              {
+                capturedBlob,
+              },
+            );
+          }}
+          onError={() => {
+            captureDebugWarn(debugTraceId, 'dialog.preview_image_load_failed', {
+              capturedBlob,
+              previewUrl,
+            });
+          }}
           style={{
-            width: '18rem',
+            display: 'block',
+            height: '100%',
+            maxWidth: '100%',
+            objectFit: 'contain',
+          }}
+        />
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '0.25rem',
+        }}
+      >
+        <span
+          style={{
+            color: '#000000',
+            fontSize: '1.0625rem',
+            fontWeight: 600,
+            lineHeight: 1.5,
           }}
         >
-          <div
-            className='flex justify-center rounded-md border-[1px]'
-            style={{
-              width: '18rem',
-              height: '15.625rem',
-              borderColor: '#9399a1',
-              paddingInline: '1.25rem',
-              boxSizing: 'border-box',
-            }}
-          >
-            {isImageProcessing ? (
-              <div className='flex h-full w-full items-center justify-center'>
-                <Spinner />
-              </div>
-            ) : (
-              <img
-                src={URL.createObjectURL(capturedClothingImage)}
-                alt='captured clothing image'
-                className='mx-5 h-full object-contain'
-              />
-            )}
-          </div>
-          <div className='flex flex-col items-center gap-1'>
-            <span
-              className='text-heading1-semibold text-black'
-              style={{ color: '#000000' }}
-            >
-              이 옷을 입어볼까요?
-            </span>
-            <span
-              className='text-body1-regular text-grey-04'
-              style={{ color: '#9399a1' }}
-            >
-              상/하의만 입어볼 수 있어요.
-            </span>
-          </div>
-          <div className='flex w-full gap-2'>
-            <FittingCancelButton />
-            <FittingExecutionButton />
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+          이 옷을 입어볼까요?
+        </span>
+        <span
+          style={{
+            color: '#9399a1',
+            fontSize: '0.75rem',
+            fontWeight: 400,
+            lineHeight: 1.5,
+          }}
+        >
+          상/하의만 입어볼 수 있어요.
+        </span>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          gap: '0.5rem',
+        }}
+      >
+        <button
+          type='button'
+          onClick={handleClickCancelButton}
+          style={{
+            flexGrow: 1,
+            height: '2.5rem',
+            cursor: 'pointer',
+            border: 'none',
+            borderRadius: '0.375rem',
+            background: '#f1f2f3',
+            color: '#181a1b',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+          }}
+        >
+          취소
+        </button>
+        <button
+          type='button'
+          disabled={isFittingJobPending}
+          onClick={handleClickExecutionButton}
+          style={{
+            flexGrow: 1,
+            height: '2.5rem',
+            cursor: isFittingJobPending ? 'not-allowed' : 'pointer',
+            border: 'none',
+            borderRadius: '0.375rem',
+            background: '#181a1b',
+            color: '#ffffff',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            opacity: isFittingJobPending ? 0.7 : 1,
+          }}
+        >
+          확인
+        </button>
+      </div>
+    </div>,
+    getDialogPortalContainer(),
   );
 };
