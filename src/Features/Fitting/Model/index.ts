@@ -1,6 +1,7 @@
 export {
   type CaptureEngine,
   type CaptureRect,
+  ChromeExtensionCaptureEngine,
   createCaptureEngine,
   DisplayMediaCaptureEngine,
   Html2CanvasCaptureEngine,

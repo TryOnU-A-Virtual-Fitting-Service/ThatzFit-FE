@@ -26,6 +26,7 @@ export type CaptureErrorCode =
   | 'DISPLAY_MEDIA_DENIED'
   | 'DISPLAY_MEDIA_NOT_SUPPORTED'
   | 'EMPTY_IMAGE_BLOB'
+  | 'EXTENSION_CAPTURE_UNAVAILABLE'
   | 'UNKNOWN';
 
 export class CaptureError extends Error {
@@ -40,23 +41,60 @@ export class CaptureError extends Error {
   }
 }
 
-type CaptureEngineKind = 'html2canvas' | 'display-media';
+type CaptureEngineKind = 'html2canvas' | 'display-media' | 'chrome-extension';
 
 const IMAGE_PROXY_PATH = '/api/v1/try-on/image/proxy';
 const DEFAULT_CAPTURE_ENGINE: CaptureEngineKind =
-  import.meta.env.VITE_CAPTURE_ENGINE === 'display-media'
-    ? 'display-media'
+  import.meta.env.VITE_CAPTURE_ENGINE === 'display-media' ||
+  import.meta.env.VITE_CAPTURE_ENGINE === 'chrome-extension'
+    ? import.meta.env.VITE_CAPTURE_ENGINE
     : 'html2canvas';
 const ENABLE_DISPLAY_MEDIA_FALLBACK =
   import.meta.env.VITE_CAPTURE_FALLBACK_DISPLAY_MEDIA !== 'false';
 const MAX_CANVAS_EDGE_PX = 32767;
 const MAX_CANVAS_AREA_PX = 268_435_456;
+const CAPTURE_EXTENSION_REQUEST_TYPE = 'THATZFIT_CAPTURE_VISIBLE_TAB_REQUEST';
+const CAPTURE_EXTENSION_RESPONSE_TYPE = 'THATZFIT_CAPTURE_VISIBLE_TAB_RESPONSE';
+const CAPTURE_EXTENSION_RESPONSE_TIMEOUT_MS = 5000;
 
 type Html2CanvasCaptureEngineOptions = {
   setImageProcessing: (isProcessing: boolean) => void;
   proxyUrl?: string;
   fallbackToDisplayMedia?: boolean;
 };
+
+type ChromeExtensionCaptureRequest = {
+  type: typeof CAPTURE_EXTENSION_REQUEST_TYPE;
+  requestId: string;
+  debugTraceId?: string;
+  rect: CaptureRect;
+  viewport: {
+    width: number;
+    height: number;
+    scrollX: number;
+    scrollY: number;
+    devicePixelRatio: number;
+  };
+  format: 'png';
+};
+
+type ChromeExtensionCaptureResponse = {
+  type: typeof CAPTURE_EXTENSION_RESPONSE_TYPE;
+  requestId: string;
+  ok: boolean;
+  dataUrl?: string;
+  error?: string;
+};
+
+type ChromeExtensionCaptureBridge = (
+  request: ChromeExtensionCaptureRequest,
+) => Promise<ChromeExtensionCaptureResponse | string>;
+
+declare global {
+  interface Window {
+    __THATZFIT_CAPTURE_VISIBLE_TAB__?: ChromeExtensionCaptureBridge;
+  }
+}
 
 export const getCaptureWindow = (): Window => {
   try {
@@ -212,6 +250,19 @@ const blobToDataUrl = (blob: Blob) =>
     });
     reader.addEventListener('error', () => reject(reader.error));
     reader.readAsDataURL(blob);
+  });
+
+const loadImageElement = (source: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener('load', () => resolve(image), { once: true });
+    image.addEventListener(
+      'error',
+      () =>
+        reject(new CaptureError('UNKNOWN', '캡처 이미지를 불러오지 못했어요.')),
+      { once: true },
+    );
+    image.src = source;
   });
 
 const loadSelectedImageDataUrls = async (
@@ -726,6 +777,212 @@ export class DisplayMediaCaptureEngine implements CaptureEngine {
   }
 }
 
+const createExtensionCaptureRequestId = () =>
+  `tf-ext-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const normalizeExtensionCaptureResponse = (
+  requestId: string,
+  response: ChromeExtensionCaptureResponse | string,
+): ChromeExtensionCaptureResponse => {
+  if (typeof response === 'string') {
+    return {
+      type: CAPTURE_EXTENSION_RESPONSE_TYPE,
+      requestId,
+      ok: true,
+      dataUrl: response,
+    };
+  }
+
+  return response;
+};
+
+const getExtensionCaptureBridge = (
+  captureWindow: Window,
+): ChromeExtensionCaptureBridge | undefined => {
+  if (typeof window.__THATZFIT_CAPTURE_VISIBLE_TAB__ === 'function') {
+    return window.__THATZFIT_CAPTURE_VISIBLE_TAB__;
+  }
+
+  try {
+    if (typeof captureWindow.__THATZFIT_CAPTURE_VISIBLE_TAB__ === 'function') {
+      return captureWindow.__THATZFIT_CAPTURE_VISIBLE_TAB__;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+};
+
+const requestCaptureViaPostMessage = (
+  captureWindow: Window,
+  request: ChromeExtensionCaptureRequest,
+  debugTraceId?: string,
+): Promise<ChromeExtensionCaptureResponse> =>
+  new Promise((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      window.removeEventListener('message', handleMessage);
+      captureDebugWarn(debugTraceId, 'chrome_extension.post_message_timeout', {
+        requestId: request.requestId,
+        timeoutMs: CAPTURE_EXTENSION_RESPONSE_TIMEOUT_MS,
+      });
+      reject(
+        new CaptureError(
+          'EXTENSION_CAPTURE_UNAVAILABLE',
+          'Chrome 확장 캡처 브릿지 응답 시간이 초과됐어요.',
+        ),
+      );
+    }, CAPTURE_EXTENSION_RESPONSE_TIMEOUT_MS);
+
+    function handleMessage(event: MessageEvent) {
+      const data = event.data as Partial<ChromeExtensionCaptureResponse> | null;
+      if (
+        !data ||
+        data.type !== CAPTURE_EXTENSION_RESPONSE_TYPE ||
+        data.requestId !== request.requestId
+      ) {
+        return;
+      }
+
+      window.clearTimeout(timeoutId);
+      window.removeEventListener('message', handleMessage);
+      resolve(data as ChromeExtensionCaptureResponse);
+    }
+
+    window.addEventListener('message', handleMessage);
+    captureWindow.postMessage(request, '*');
+  });
+
+export class ChromeExtensionCaptureEngine implements CaptureEngine {
+  private readonly options: Pick<
+    Html2CanvasCaptureEngineOptions,
+    'setImageProcessing'
+  >;
+
+  constructor(
+    options: Pick<Html2CanvasCaptureEngineOptions, 'setImageProcessing'>,
+  ) {
+    this.options = options;
+  }
+
+  async capture(rect: CaptureRect, debugTraceId?: string): Promise<Blob> {
+    const captureWindow = getCaptureWindow();
+    const clampedRect = getClampedViewportRect(rect, captureWindow);
+    const request: ChromeExtensionCaptureRequest = {
+      type: CAPTURE_EXTENSION_REQUEST_TYPE,
+      requestId: createExtensionCaptureRequestId(),
+      debugTraceId,
+      rect: clampedRect,
+      viewport: {
+        width: captureWindow.innerWidth,
+        height: captureWindow.innerHeight,
+        scrollX: captureWindow.scrollX,
+        scrollY: captureWindow.scrollY,
+        devicePixelRatio: captureWindow.devicePixelRatio || 1,
+      },
+      format: 'png',
+    };
+
+    captureDebugInfo(debugTraceId, 'chrome_extension.capture_start', {
+      requestId: request.requestId,
+      requestedRect: rect,
+      clampedRect,
+      viewport: request.viewport,
+      hasFunctionBridge: Boolean(getExtensionCaptureBridge(captureWindow)),
+    });
+
+    this.options.setImageProcessing(true);
+    try {
+      const bridge = getExtensionCaptureBridge(captureWindow);
+      const response = bridge
+        ? normalizeExtensionCaptureResponse(
+            request.requestId,
+            await bridge(request),
+          )
+        : await requestCaptureViaPostMessage(
+            captureWindow,
+            request,
+            debugTraceId,
+          );
+
+      captureDebugInfo(debugTraceId, 'chrome_extension.response_received', {
+        requestId: request.requestId,
+        ok: response.ok,
+        hasDataUrl: Boolean(response.dataUrl),
+        dataUrlLength: response.dataUrl?.length,
+        error: response.error,
+      });
+
+      if (!response.ok || !response.dataUrl) {
+        throw new CaptureError(
+          'EXTENSION_CAPTURE_UNAVAILABLE',
+          response.error ?? 'Chrome 확장 캡처 브릿지 응답이 유효하지 않아요.',
+        );
+      }
+
+      const image = await loadImageElement(response.dataUrl);
+      const scaleX = image.naturalWidth / Math.max(captureWindow.innerWidth, 1);
+      const scaleY =
+        image.naturalHeight / Math.max(captureWindow.innerHeight, 1);
+      const sx = Math.max(0, Math.round(clampedRect.left * scaleX));
+      const sy = Math.max(0, Math.round(clampedRect.top * scaleY));
+      const sWidth = Math.max(1, Math.round(clampedRect.width * scaleX));
+      const sHeight = Math.max(1, Math.round(clampedRect.height * scaleY));
+
+      const cropCanvas = document.createElement('canvas');
+      cropCanvas.width = Math.min(sWidth, image.naturalWidth - sx);
+      cropCanvas.height = Math.min(sHeight, image.naturalHeight - sy);
+      captureDebugInfo(debugTraceId, 'chrome_extension.crop_canvas_ready', {
+        sourceImage: {
+          width: image.naturalWidth,
+          height: image.naturalHeight,
+        },
+        crop: { sx, sy, sWidth, sHeight },
+        cropCanvas: {
+          width: cropCanvas.width,
+          height: cropCanvas.height,
+        },
+        scale: { x: scaleX, y: scaleY },
+      });
+
+      const cropContext = cropCanvas.getContext('2d');
+      if (!cropContext) {
+        throw new CaptureError(
+          'UNKNOWN',
+          'Chrome 확장 캡처 컨텍스트를 만들 수 없어요.',
+        );
+      }
+
+      cropContext.drawImage(
+        image,
+        sx,
+        sy,
+        cropCanvas.width,
+        cropCanvas.height,
+        0,
+        0,
+        cropCanvas.width,
+        cropCanvas.height,
+      );
+
+      const blob = await toImageBlob(cropCanvas);
+      captureDebugInfo(debugTraceId, 'chrome_extension.capture_success', {
+        blobSize: blob.size,
+        blobType: blob.type,
+      });
+      return blob;
+    } catch (error) {
+      captureDebugError(debugTraceId, 'chrome_extension.capture_failed', {
+        error,
+      });
+      throw toCaptureError(error);
+    } finally {
+      this.options.setImageProcessing(false);
+      captureDebugInfo(debugTraceId, 'chrome_extension.capture_cleanup');
+    }
+  }
+}
+
 export class Html2CanvasCaptureEngine implements CaptureEngine {
   private readonly options: Html2CanvasCaptureEngineOptions;
 
@@ -930,6 +1187,7 @@ class FallbackCaptureEngine implements CaptureEngine {
       if (
         captureError.code !== 'CORS_TAINT' &&
         captureError.code !== 'EMPTY_IMAGE_BLOB' &&
+        captureError.code !== 'EXTENSION_CAPTURE_UNAVAILABLE' &&
         captureError.code !== 'UNKNOWN'
       ) {
         captureDebugWarn(debugTraceId, 'fallback.not_allowed_for_error', {
@@ -939,7 +1197,7 @@ class FallbackCaptureEngine implements CaptureEngine {
         throw captureError;
       }
 
-      captureDebugWarn(debugTraceId, 'fallback.display_media_start', {
+      captureDebugWarn(debugTraceId, 'fallback.secondary_start', {
         code: captureError.code,
         message: captureError.message,
       });
@@ -960,9 +1218,21 @@ export const createCaptureEngine = (
   }
 
   const htmlEngine = new Html2CanvasCaptureEngine(options);
-  return new FallbackCaptureEngine(
+  const htmlWithDisplayMediaFallback = new FallbackCaptureEngine(
     htmlEngine,
     displayMediaEngine,
     options.fallbackToDisplayMedia ?? ENABLE_DISPLAY_MEDIA_FALLBACK,
   );
+
+  if (DEFAULT_CAPTURE_ENGINE === 'chrome-extension') {
+    return new FallbackCaptureEngine(
+      new ChromeExtensionCaptureEngine({
+        setImageProcessing: options.setImageProcessing,
+      }),
+      htmlWithDisplayMediaFallback,
+      true,
+    );
+  }
+
+  return htmlWithDisplayMediaFallback;
 };
