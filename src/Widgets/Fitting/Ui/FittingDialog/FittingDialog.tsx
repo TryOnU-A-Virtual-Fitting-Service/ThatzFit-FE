@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import {
@@ -6,7 +7,9 @@ import {
 } from '@/Features/Fitting';
 import {
   captureDebugInfo,
+  captureDebugWarn,
   getBlobDebugDetails,
+  getBlobDebugTraceId,
 } from '@/Features/Fitting/Model/debug';
 
 import { useFittingStore } from '@/Entities/Fitting';
@@ -31,28 +34,47 @@ export const FittingDialog = () => {
     })),
   );
 
+  const debugTraceId = getBlobDebugTraceId(capturedClothingImage);
+  const capturedBlob = getBlobDebugDetails(capturedClothingImage);
+
+  useEffect(() => {
+    captureDebugInfo(debugTraceId, 'dialog.render_state', {
+      isFittingDialogOpen,
+      isImageProcessing,
+      capturedBlob,
+    });
+  }, [capturedBlob, debugTraceId, isFittingDialogOpen, isImageProcessing]);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    captureDebugInfo(debugTraceId, 'dialog.open_change', {
+      previousOpen: isFittingDialogOpen,
+      nextOpen,
+      capturedBlob,
+    });
+    setIsFittingDialogOpen(nextOpen);
+  };
+
   if (!capturedClothingImage || !pluginEntryWrapper) {
     return null;
   }
 
-  captureDebugInfo(
-    getBlobDebugDetails(capturedClothingImage)?.debugTraceId,
-    'dialog.render',
-    {
-      isFittingDialogOpen,
-      isImageProcessing,
-      capturedBlob: getBlobDebugDetails(capturedClothingImage),
-    },
-  );
-
   return (
-    <Dialog open={isFittingDialogOpen} onOpenChange={setIsFittingDialogOpen}>
+    <Dialog open={isFittingDialogOpen} onOpenChange={handleOpenChange}>
       <DialogTitle className='sr-only'>피팅 실행 Dialog</DialogTitle>
       <DialogContent
         showCloseButton={false}
         overlayClassName='hidden'
         className='w-fit border-none p-5'
         container={pluginEntryWrapper}
+        onEscapeKeyDown={() => {
+          captureDebugInfo(debugTraceId, 'dialog.escape_key_down');
+        }}
+        onInteractOutside={(event) => {
+          captureDebugWarn(debugTraceId, 'dialog.interact_outside_prevented', {
+            eventType: event.type,
+          });
+          event.preventDefault();
+        }}
       >
         <DialogTitle className='sr-only'>피팅 실행 Dialog</DialogTitle>
         <div className='flex w-[18rem] flex-col items-center gap-5'>
