@@ -11,24 +11,31 @@ import { cn } from '@/Shared/Lib';
 import { PluginActivateButton } from '../PluginActivateButton';
 import { PluginDeactivateButton } from '../PluginDeactivateButton';
 
-const entryButtonStyle: CSSProperties = {
+const entryButtonPositionStyle: CSSProperties = {
   position: 'fixed',
   right: '24px',
   bottom: '24px',
   zIndex: 999999,
-  width: '64px',
-  height: '64px',
+  width: '48px',
+  height: '48px',
+};
+
+const entryButtonBaseStyle: CSSProperties = {
   padding: 0,
   border: 0,
   borderRadius: '16px',
-  background: 'transparent',
   cursor: 'pointer',
 };
 
+const entryButtonStyle: CSSProperties = {
+  ...entryButtonPositionStyle,
+  ...entryButtonBaseStyle,
+  background: 'transparent',
+};
+
 const closeButtonStyle: CSSProperties = {
-  ...entryButtonStyle,
-  width: '48px',
-  height: '48px',
+  ...entryButtonPositionStyle,
+  ...entryButtonBaseStyle,
   padding: '12px',
   background: '#ffffff',
   color: '#636364',
@@ -65,14 +72,14 @@ export const PluginEntryButton = () => {
   return createPortal(
     isPluginOpen ? (
       <PluginDeactivateButton
-        className='fixed right-5 bottom-5 z-[9999] h-10 w-10 cursor-pointer bg-white p-2.5 text-[#636364] hover:bg-white'
+        className='cursor-pointer hover:bg-white'
         style={closeButtonStyle}
         onClick={handleClickEntryButton}
       />
     ) : (
       <PluginActivateButton
         className={cn(
-          'fixed right-5 bottom-5 z-[9999] h-12 w-12 cursor-pointer transition-opacity duration-300 ease-in-out',
+          'cursor-pointer transition-opacity duration-300 ease-in-out',
           isPluginOpen ? 'opacity-0' : 'opacity-100',
         )}
         style={{
