@@ -21,10 +21,17 @@ Load it in Chrome:
 3. Click "Load unpacked".
 4. Select `tools/chrome-capture-extension`.
 5. Open or reload `https://demo.thatz.fit`.
+6. Click the ThatzFit extension icon in the Chrome toolbar.
 
-The frontend bundle must also be built with
+The extension icon creates the same host anchors as the SDK loader
+(`#thatzfit-plugin`, `#thatzfit-entry`, `#thatzfit-iframe-wrapper`,
+`#thatzfit-iframe`), loads the current CDN plugin bundle into the iframe, and
+clicks the existing ThatzFit entry button.
+
+For capture testing, the frontend bundle must also be built with
 `VITE_CAPTURE_ENGINE=chrome-extension`; otherwise the existing html2canvas
-engine remains active.
+engine remains active. The included extension shell currently loads the CDN
+bundle from `https://cdn.thatz.fit/plugin`.
 
 Useful success logs:
 
