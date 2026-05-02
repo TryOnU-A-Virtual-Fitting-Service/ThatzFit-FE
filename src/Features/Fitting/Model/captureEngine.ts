@@ -310,6 +310,33 @@ const createCaptureIgnoreElements =
     );
   };
 
+const getViewportPointElementStack = (
+  captureDocument: Document,
+  x: number,
+  y: number,
+) =>
+  captureDocument
+    .elementsFromPoint(x, y)
+    .slice(0, 8)
+    .map((element) => {
+      const rect = element.getBoundingClientRect();
+
+      return {
+        tagName: element.tagName,
+        id: element.id || undefined,
+        className:
+          typeof element.className === 'string' ? element.className : undefined,
+        rect: {
+          top: Math.round(rect.top),
+          left: Math.round(rect.left),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          right: Math.round(rect.right),
+          bottom: Math.round(rect.bottom),
+        },
+      };
+    });
+
 const toImageBlob = (canvas: HTMLCanvasElement) =>
   new Promise<Blob>((resolve, reject) => {
     try {
@@ -682,6 +709,11 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
       requestedRect: rect,
       clampedRect,
       documentRect,
+      rectCenterStack: getViewportPointElementStack(
+        captureDocument,
+        Math.round(clampedRect.left + clampedRect.width / 2),
+        Math.round(clampedRect.top + clampedRect.height / 2),
+      ),
       scale,
       proxyUrl: summarizeUrl(proxyUrl),
       captureWindowLocation: summarizeUrl(captureWindow.location.href),

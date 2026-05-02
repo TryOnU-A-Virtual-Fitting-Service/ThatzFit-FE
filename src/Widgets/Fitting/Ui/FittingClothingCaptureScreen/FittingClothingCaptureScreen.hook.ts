@@ -19,6 +19,7 @@ import {
   captureDebugWarn,
   createCaptureDebugTraceId,
   setBlobDebugTraceId,
+  summarizeUrl,
 } from '@/Features/Fitting/Model/debug';
 
 import { useFittingStore } from '@/Entities/Fitting';
@@ -45,6 +46,92 @@ const getCaptureErrorMessage = (error: unknown): string => {
     default:
       return '옷 캡처에 실패했어요.';
   }
+};
+
+const getElementDebugDetails = (element: Element | null) => {
+  if (!element) {
+    return null;
+  }
+
+  const rect = element.getBoundingClientRect();
+
+  return {
+    tagName: element.tagName,
+    id: element.id || undefined,
+    className:
+      typeof element.className === 'string' ? element.className : undefined,
+    rect: {
+      top: Math.round(rect.top),
+      left: Math.round(rect.left),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      right: Math.round(rect.right),
+      bottom: Math.round(rect.bottom),
+    },
+  };
+};
+
+const getPointElementStack = (x: number, y: number) => {
+  const captureWindow = getCaptureWindow();
+
+  return captureWindow.document
+    .elementsFromPoint(x, y)
+    .slice(0, 8)
+    .map((element) => ({
+      tagName: element.tagName,
+      id: element.id || undefined,
+      className:
+        typeof element.className === 'string' ? element.className : undefined,
+    }));
+};
+
+const getMouseEventDebugDetails = (event: MouseEvent) => {
+  const captureWindow = getCaptureWindow();
+  const target = event.target instanceof Element ? event.target : null;
+  const currentTarget =
+    event.currentTarget instanceof Element ? event.currentTarget : null;
+  const eventWindow = event.view as unknown as Window | null;
+
+  return {
+    client: {
+      x: event.clientX,
+      y: event.clientY,
+    },
+    page: {
+      x: event.pageX,
+      y: event.pageY,
+    },
+    screen: {
+      x: event.screenX,
+      y: event.screenY,
+    },
+    captureWindow: {
+      width: captureWindow.innerWidth,
+      height: captureWindow.innerHeight,
+      scrollX: captureWindow.scrollX,
+      scrollY: captureWindow.scrollY,
+      location: summarizeUrl(captureWindow.location.href),
+    },
+    iframeWindow: {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      location: summarizeUrl(window.location.href),
+    },
+    eventView: eventWindow
+      ? {
+          width: eventWindow.innerWidth,
+          height: eventWindow.innerHeight,
+          scrollX: eventWindow.scrollX,
+          scrollY: eventWindow.scrollY,
+          location: summarizeUrl(eventWindow.location.href),
+        }
+      : null,
+    target: getElementDebugDetails(target),
+    currentTarget: getElementDebugDetails(currentTarget),
+    pointStack: getPointElementStack(event.clientX, event.clientY),
+  };
 };
 
 export const useCroppedClothing = () => {
@@ -147,10 +234,7 @@ export const useCroppedClothing = () => {
     captureDebugInfo(undefined, 'selection.start', {
       x: event.clientX,
       y: event.clientY,
-      captureWindow: {
-        width: getCaptureWindow().innerWidth,
-        height: getCaptureWindow().innerHeight,
-      },
+      event: getMouseEventDebugDetails(event),
     });
   };
 
@@ -209,6 +293,7 @@ export const useCroppedClothing = () => {
       rect,
       x: event.clientX,
       y: event.clientY,
+      event: getMouseEventDebugDetails(event),
     });
     setIsFittingDialogOpen(true);
     try {

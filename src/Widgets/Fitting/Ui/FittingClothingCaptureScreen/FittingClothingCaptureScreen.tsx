@@ -34,6 +34,7 @@ export const FittingClothingCaptureScreen = () => {
   }
 
   const captureWindow = getCaptureWindow();
+  const capturePortalContainer = captureWindow.document.body;
 
   return createPortal(
     <div
@@ -124,6 +125,6 @@ export const FittingClothingCaptureScreen = () => {
         </div>
       )}
     </div>,
-    pluginEntryWrapper,
+    capturePortalContainer,
   );
 };
