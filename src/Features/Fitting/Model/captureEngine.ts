@@ -151,6 +151,38 @@ const getSelectedExternalImageUrls = (
   return Array.from(selectedUrls);
 };
 
+const getSelectedMediaDebugDetails = (
+  captureDocument: Document,
+  viewportRect: CaptureRect,
+): Array<Record<string, unknown>> =>
+  Array.from(captureDocument.images)
+    .filter(
+      (image) =>
+        !isThatzfitElement(image) &&
+        intersectsViewportRect(image, viewportRect),
+    )
+    .slice(0, 10)
+    .map((image) => {
+      const rect = image.getBoundingClientRect();
+
+      return {
+        tagName: image.tagName,
+        className:
+          typeof image.className === 'string' ? image.className : undefined,
+        source: summarizeUrl(getImageSource(image)),
+        currentSrc: summarizeUrl(image.currentSrc),
+        src: summarizeUrl(image.src),
+        rect: {
+          top: Math.round(rect.top),
+          left: Math.round(rect.left),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          right: Math.round(rect.right),
+          bottom: Math.round(rect.bottom),
+        },
+      };
+    });
+
 const createImageProxyRequestUrl = (
   proxyUrl: string,
   imageUrl: string,
@@ -278,10 +310,12 @@ const loadSelectedImageDataUrls = async (
 const inlineSelectedExternalImages = (
   clonedDocument: Document,
   imageDataUrls: Map<string, string>,
-): void => {
+): number => {
   if (imageDataUrls.size === 0) {
-    return;
+    return 0;
   }
+
+  let inlinedImageCount = 0;
 
   Array.from(clonedDocument.images).forEach((image) => {
     const source = getImageSource(image);
@@ -298,7 +332,10 @@ const inlineSelectedExternalImages = (
 
     image.removeAttribute('srcset');
     image.src = dataUrl;
+    inlinedImageCount += 1;
   });
+
+  return inlinedImageCount;
 };
 
 const createCaptureIgnoreElements =
@@ -754,6 +791,10 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
       captureDebugInfo(debugTraceId, 'html2canvas.external_images_selected', {
         imageCount: selectedExternalImageUrls.length,
         imageUrls: selectedExternalImageUrls.map(summarizeUrl),
+        selectedMedia: getSelectedMediaDebugDetails(
+          captureDocument,
+          clampedRect,
+        ),
       });
       const imageDataUrls = await loadSelectedImageDataUrls(
         selectedExternalImageUrls,
@@ -771,7 +812,16 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
         backgroundColor: null,
         ignoreElements: createCaptureIgnoreElements(clampedRect),
         onclone: (clonedDocument) => {
-          inlineSelectedExternalImages(clonedDocument, imageDataUrls);
+          const inlinedCloneImageCount = inlineSelectedExternalImages(
+            clonedDocument,
+            imageDataUrls,
+          );
+          captureDebugInfo(debugTraceId, 'html2canvas.clone_prepared', {
+            inlinedCloneImageCount,
+            remainingCaptureUiCount: clonedDocument.querySelectorAll(
+              '[data-thatzfit-capture-ui="true"]',
+            ).length,
+          });
         },
         logging: import.meta.env.DEV,
         scale,

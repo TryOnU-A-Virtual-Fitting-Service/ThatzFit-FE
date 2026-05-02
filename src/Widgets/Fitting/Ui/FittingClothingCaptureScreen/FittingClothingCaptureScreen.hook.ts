@@ -167,12 +167,37 @@ export const useCroppedClothing = () => {
   const resetCaptureOverlay = () => {
     captureDebugInfo(undefined, 'overlay.reset');
     if (screenshotBackgroundRef.current) {
+      screenshotBackgroundRef.current.style.display = 'block';
       screenshotBackgroundRef.current.style.borderWidth = '0';
     }
     if (screenshotAreaRef.current) {
+      screenshotAreaRef.current.style.display = 'block';
       screenshotAreaRef.current.style.top = '0';
       screenshotAreaRef.current.style.left = '0';
     }
+  };
+
+  const hideCaptureOverlayForCapture = (debugTraceId: string) => {
+    captureDebugInfo(debugTraceId, 'overlay.hide_for_capture_start', {
+      screenshotBackground: getElementDebugDetails(
+        screenshotBackgroundRef.current,
+      ),
+      screenshotArea: getElementDebugDetails(screenshotAreaRef.current),
+    });
+
+    if (screenshotBackgroundRef.current) {
+      screenshotBackgroundRef.current.style.display = 'none';
+    }
+    if (screenshotAreaRef.current) {
+      screenshotAreaRef.current.style.display = 'none';
+    }
+
+    captureDebugInfo(debugTraceId, 'overlay.hide_for_capture_done', {
+      screenshotBackground: getElementDebugDetails(
+        screenshotBackgroundRef.current,
+      ),
+      screenshotArea: getElementDebugDetails(screenshotAreaRef.current),
+    });
   };
 
   const restorePluginVisibility = () => {
@@ -297,6 +322,7 @@ export const useCroppedClothing = () => {
     });
     setIsFittingDialogOpen(true);
     try {
+      hideCaptureOverlayForCapture(debugTraceId);
       const capturedBlob = await croppedImageToBlob(rect, debugTraceId);
       setBlobDebugTraceId(capturedBlob, debugTraceId);
       captureDebugInfo(debugTraceId, 'selection.capture_blob_stored', {
