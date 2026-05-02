@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import {
@@ -35,7 +35,10 @@ export const FittingDialog = () => {
   );
 
   const debugTraceId = getBlobDebugTraceId(capturedClothingImage);
-  const capturedBlob = getBlobDebugDetails(capturedClothingImage);
+  const capturedBlob = useMemo(
+    () => getBlobDebugDetails(capturedClothingImage),
+    [capturedClothingImage],
+  );
 
   useEffect(() => {
     captureDebugInfo(debugTraceId, 'dialog.render_state', {

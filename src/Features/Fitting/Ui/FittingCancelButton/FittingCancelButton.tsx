@@ -1,3 +1,5 @@
+import { useShallow } from 'zustand/react/shallow';
+
 import { useFittingStore } from '@/Entities/Fitting';
 
 import { Button } from '@/Shared/Components';
@@ -10,10 +12,10 @@ import {
 
 export const FittingCancelButton = () => {
   const { capturedClothingImage, setIsFittingDialogOpen } = useFittingStore(
-    (state) => ({
+    useShallow((state) => ({
       capturedClothingImage: state.capturedClothingImage,
       setIsFittingDialogOpen: state.setIsFittingDialogOpen,
-    }),
+    })),
   );
 
   const handleClickCancelButton = () => {
