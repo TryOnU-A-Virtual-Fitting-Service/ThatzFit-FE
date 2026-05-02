@@ -11,6 +11,14 @@ import { useToast } from '@/Shared/Model';
 import { postFitting } from '../Api';
 import type { PostFittingRequestDto } from '../Type';
 
+import {
+  captureDebugError,
+  captureDebugInfo,
+  getBlobDebugDetails,
+  getBlobDebugTraceId,
+  summarizeUrl,
+} from './debug';
+
 const FITTING_FAILED_MESSAGE = '피팅에 실패했어요.';
 
 export const usePostFitting = () => {
@@ -45,7 +53,28 @@ export const usePostFitting = () => {
   });
 
   useEffect(() => {
+    captureDebugInfo(
+      getBlobDebugTraceId(capturedClothingImage),
+      'fitting.effect_check',
+      {
+        hasFittingJobId: Boolean(fittingJobId),
+        hasCapturedClothingImage: Boolean(capturedClothingImage),
+        hasCurrentFittingModel: Boolean(currentFittingModel),
+        capturedBlob: getBlobDebugDetails(capturedClothingImage),
+        currentFittingModel: currentFittingModel
+          ? {
+              defaultModelId: currentFittingModel.defaultModelId,
+              defaultModelUrl: summarizeUrl(
+                currentFittingModel.defaultModelUrl,
+              ),
+              modelName: currentFittingModel.modelName,
+            }
+          : null,
+      },
+    );
+
     if (fittingJobId && capturedClothingImage && currentFittingModel) {
+      const debugTraceId = getBlobDebugTraceId(capturedClothingImage);
       const clothingImageFile = new File(
         [capturedClothingImage],
         'capturedClothingImage.png',
@@ -54,17 +83,33 @@ export const usePostFitting = () => {
         },
       );
 
+      captureDebugInfo(debugTraceId, 'fitting.execute_start', {
+        fittingJobId,
+        file: {
+          name: clothingImageFile.name,
+          size: clothingImageFile.size,
+          type: clothingImageFile.type,
+        },
+      });
+
       executeFitting(
         {
           request: {
             tryOnJobId: fittingJobId,
             modelUrl: currentFittingModel.defaultModelUrl,
             defaultModelId: currentFittingModel.defaultModelId,
+            debugTraceId,
           },
           file: clothingImageFile,
         },
         {
           onSuccess: ({ data }) => {
+            captureDebugInfo(debugTraceId, 'fitting.execute_success', {
+              tryOnJobId: data.tryOnJobId,
+              tryOnResultUrl: summarizeUrl(data.tryOnResultUrl),
+              defaultModelId: data.defaultModelId,
+              modelName: data.modelName,
+            });
             toast.success('피팅을 완료했어요.');
             queryClient.invalidateQueries({
               queryKey: fittingHistoryKeys.list(),
@@ -74,10 +119,17 @@ export const usePostFitting = () => {
               defaultModelUrl: data.tryOnResultUrl,
             });
           },
-          onError: () => {
+          onError: (error) => {
+            captureDebugError(debugTraceId, 'fitting.execute_failed', {
+              error,
+            });
             toast.error(FITTING_FAILED_MESSAGE);
           },
           onSettled: () => {
+            captureDebugInfo(
+              debugTraceId,
+              'fitting.execute_settled_clear_state',
+            );
             setFittingJobId(null);
             setCapturedClothingImage(null);
           },

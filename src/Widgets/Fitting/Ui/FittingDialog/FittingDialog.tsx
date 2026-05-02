@@ -4,6 +4,10 @@ import {
   FittingCancelButton,
   FittingExecutionButton,
 } from '@/Features/Fitting';
+import {
+  captureDebugInfo,
+  getBlobDebugDetails,
+} from '@/Features/Fitting/Model/debug';
 
 import { useFittingStore } from '@/Entities/Fitting';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
@@ -30,6 +34,16 @@ export const FittingDialog = () => {
   if (!capturedClothingImage || !pluginEntryWrapper) {
     return null;
   }
+
+  captureDebugInfo(
+    getBlobDebugDetails(capturedClothingImage)?.debugTraceId,
+    'dialog.render',
+    {
+      isFittingDialogOpen,
+      isImageProcessing,
+      capturedBlob: getBlobDebugDetails(capturedClothingImage),
+    },
+  );
 
   return (
     <Dialog open={isFittingDialogOpen} onOpenChange={setIsFittingDialogOpen}>

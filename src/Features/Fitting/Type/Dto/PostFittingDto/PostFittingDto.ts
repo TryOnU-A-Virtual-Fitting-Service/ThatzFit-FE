@@ -4,6 +4,7 @@ export type PostFittingRequestDto = {
     modelUrl: Schema.FittingModel['defaultModelUrl'];
     defaultModelId: Schema.FittingModel['defaultModelId'];
     productPageUrl?: string;
+    debugTraceId?: string;
   };
   file: File;
 };

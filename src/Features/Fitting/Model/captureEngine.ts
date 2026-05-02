@@ -2,6 +2,13 @@ import html2canvas from 'html2canvas-pro';
 
 import { BASE_URL } from '@/Shared/Config';
 
+import {
+  captureDebugError,
+  captureDebugInfo,
+  captureDebugWarn,
+  summarizeUrl,
+} from './debug';
+
 export type CaptureRect = {
   left: number;
   top: number;
@@ -10,7 +17,7 @@ export type CaptureRect = {
 };
 
 export interface CaptureEngine {
-  capture(rect: CaptureRect): Promise<Blob>;
+  capture(rect: CaptureRect, debugTraceId?: string): Promise<Blob>;
 }
 
 export type CaptureErrorCode =
@@ -143,9 +150,13 @@ const getSelectedExternalImageUrls = (
 const createImageProxyRequestUrl = (
   proxyUrl: string,
   imageUrl: string,
+  debugTraceId?: string,
 ): string => {
   const separator = proxyUrl.includes('?') ? '&' : '?';
-  return `${proxyUrl}${separator}url=${encodeURIComponent(imageUrl)}&responseType=blob`;
+  const traceQuery = debugTraceId
+    ? `&debugTraceId=${encodeURIComponent(debugTraceId)}`
+    : '';
+  return `${proxyUrl}${separator}url=${encodeURIComponent(imageUrl)}&responseType=blob${traceQuery}`;
 };
 
 const blobToDataUrl = (blob: Blob) =>
@@ -170,20 +181,41 @@ const blobToDataUrl = (blob: Blob) =>
 const loadSelectedImageDataUrls = async (
   imageUrls: string[],
   proxyUrl: string,
+  debugTraceId?: string,
 ): Promise<Map<string, string>> => {
   const dataUrls = new Map<string, string>();
 
   if (imageUrls.length === 0) {
+    captureDebugInfo(debugTraceId, 'html2canvas.proxy.skip_no_external_images');
     return dataUrls;
   }
 
+  captureDebugInfo(debugTraceId, 'html2canvas.proxy.batch_start', {
+    proxyUrl: summarizeUrl(proxyUrl),
+    imageCount: imageUrls.length,
+    imageUrls: imageUrls.map(summarizeUrl),
+  });
+
   const entries = await Promise.all(
     imageUrls.map(async (imageUrl) => {
-      const response = await fetch(
-        createImageProxyRequestUrl(proxyUrl, imageUrl),
+      const requestUrl = createImageProxyRequestUrl(
+        proxyUrl,
+        imageUrl,
+        debugTraceId,
       );
+      captureDebugInfo(debugTraceId, 'html2canvas.proxy.fetch_start', {
+        imageUrl: summarizeUrl(imageUrl),
+        requestUrl: summarizeUrl(requestUrl),
+      });
+
+      const response = await fetch(requestUrl);
 
       if (!response.ok) {
+        captureDebugWarn(debugTraceId, 'html2canvas.proxy.fetch_bad_status', {
+          imageUrl: summarizeUrl(imageUrl),
+          status: response.status,
+          statusText: response.statusText,
+        });
         throw new CaptureError(
           'CORS_TAINT',
           '외부 이미지 보안 정책으로 캡처에 실패했어요.',
@@ -192,6 +224,14 @@ const loadSelectedImageDataUrls = async (
 
       const contentType = response.headers.get('content-type') ?? '';
       if (!contentType.toLowerCase().startsWith('image/')) {
+        captureDebugWarn(
+          debugTraceId,
+          'html2canvas.proxy.invalid_content_type',
+          {
+            imageUrl: summarizeUrl(imageUrl),
+            contentType,
+          },
+        );
         throw new CaptureError(
           'CORS_TAINT',
           '외부 이미지 보안 정책으로 캡처에 실패했어요.',
@@ -200,11 +240,21 @@ const loadSelectedImageDataUrls = async (
 
       const blob = await response.blob();
       if (blob.size === 0) {
+        captureDebugWarn(debugTraceId, 'html2canvas.proxy.empty_blob', {
+          imageUrl: summarizeUrl(imageUrl),
+          contentType,
+        });
         throw new CaptureError(
           'CORS_TAINT',
           '외부 이미지 보안 정책으로 캡처에 실패했어요.',
         );
       }
+
+      captureDebugInfo(debugTraceId, 'html2canvas.proxy.fetch_success', {
+        imageUrl: summarizeUrl(imageUrl),
+        contentType,
+        blobSize: blob.size,
+      });
 
       return [imageUrl, await blobToDataUrl(blob)] as const;
     }),
@@ -212,6 +262,10 @@ const loadSelectedImageDataUrls = async (
 
   entries.forEach(([imageUrl, dataUrl]) => {
     dataUrls.set(imageUrl, dataUrl);
+  });
+
+  captureDebugInfo(debugTraceId, 'html2canvas.proxy.batch_success', {
+    dataUrlCount: dataUrls.size,
   });
 
   return dataUrls;
@@ -406,9 +460,19 @@ export class DisplayMediaCaptureEngine implements CaptureEngine {
     this.options = options;
   }
 
-  async capture(rect: CaptureRect): Promise<Blob> {
+  async capture(rect: CaptureRect, debugTraceId?: string): Promise<Blob> {
     const captureWindow = getCaptureWindow();
     const clampedRect = getClampedViewportRect(rect, captureWindow);
+    captureDebugInfo(debugTraceId, 'display_media.capture_start', {
+      requestedRect: rect,
+      clampedRect,
+      viewport: {
+        width: captureWindow.innerWidth,
+        height: captureWindow.innerHeight,
+      },
+      hasGetDisplayMedia: Boolean(navigator.mediaDevices?.getDisplayMedia),
+    });
+
     if (!navigator.mediaDevices?.getDisplayMedia) {
       throw new CaptureError(
         'DISPLAY_MEDIA_NOT_SUPPORTED',
@@ -419,6 +483,7 @@ export class DisplayMediaCaptureEngine implements CaptureEngine {
     let stream: MediaStream | null = null;
     this.options.setImageProcessing(true);
     try {
+      captureDebugInfo(debugTraceId, 'display_media.permission_prompt_start');
       stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           displaySurface: 'browser',
@@ -426,6 +491,10 @@ export class DisplayMediaCaptureEngine implements CaptureEngine {
           ...({ preferCurrentTab: true } as MediaTrackConstraints),
         },
         audio: false,
+      });
+      captureDebugInfo(debugTraceId, 'display_media.stream_acquired', {
+        trackCount: stream.getTracks().length,
+        videoTrackCount: stream.getVideoTracks().length,
       });
 
       const video = document.createElement('video');
@@ -435,6 +504,10 @@ export class DisplayMediaCaptureEngine implements CaptureEngine {
 
       await waitForVideoReady(video);
       await video.play();
+      captureDebugInfo(debugTraceId, 'display_media.video_ready', {
+        videoWidth: video.videoWidth,
+        videoHeight: video.videoHeight,
+      });
 
       const sourceCanvas = document.createElement('canvas');
       sourceCanvas.width = video.videoWidth;
@@ -459,6 +532,17 @@ export class DisplayMediaCaptureEngine implements CaptureEngine {
       const cropCanvas = document.createElement('canvas');
       cropCanvas.width = Math.min(sWidth, sourceCanvas.width - sx);
       cropCanvas.height = Math.min(sHeight, sourceCanvas.height - sy);
+      captureDebugInfo(debugTraceId, 'display_media.crop_canvas_ready', {
+        sourceCanvas: {
+          width: sourceCanvas.width,
+          height: sourceCanvas.height,
+        },
+        crop: { sx, sy, sWidth, sHeight },
+        cropCanvas: {
+          width: cropCanvas.width,
+          height: cropCanvas.height,
+        },
+      });
       const cropContext = cropCanvas.getContext('2d');
       if (!cropContext) {
         throw new CaptureError(
@@ -479,12 +563,21 @@ export class DisplayMediaCaptureEngine implements CaptureEngine {
         cropCanvas.height,
       );
 
-      return await toImageBlob(cropCanvas);
+      const blob = await toImageBlob(cropCanvas);
+      captureDebugInfo(debugTraceId, 'display_media.capture_success', {
+        blobSize: blob.size,
+        blobType: blob.type,
+      });
+      return blob;
     } catch (error) {
+      captureDebugError(debugTraceId, 'display_media.capture_failed', {
+        error,
+      });
       throw toCaptureError(error);
     } finally {
       stream?.getTracks().forEach((track) => track.stop());
       this.options.setImageProcessing(false);
+      captureDebugInfo(debugTraceId, 'display_media.capture_cleanup');
     }
   }
 }
@@ -496,7 +589,7 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
     this.options = options;
   }
 
-  async capture(rect: CaptureRect): Promise<Blob> {
+  async capture(rect: CaptureRect, debugTraceId?: string): Promise<Blob> {
     const proxyUrl = this.options.proxyUrl ?? getDefaultImageProxyUrl();
     const captureWindow = getCaptureWindow();
     const captureDocument = captureWindow.document;
@@ -509,18 +602,56 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
     };
     const scale = captureWindow.devicePixelRatio || 1;
 
+    captureDebugInfo(debugTraceId, 'html2canvas.capture_start', {
+      requestedRect: rect,
+      clampedRect,
+      documentRect,
+      scale,
+      proxyUrl: summarizeUrl(proxyUrl),
+      captureWindowLocation: summarizeUrl(captureWindow.location.href),
+      documentBaseUri: summarizeUrl(captureDocument.baseURI),
+      viewport: {
+        width: captureWindow.innerWidth,
+        height: captureWindow.innerHeight,
+        scrollX: captureWindow.scrollX,
+        scrollY: captureWindow.scrollY,
+      },
+      documentSize: {
+        width: Math.max(
+          captureDocument.documentElement.scrollWidth,
+          captureDocument.body.scrollWidth,
+          captureWindow.innerWidth,
+        ),
+        height: Math.max(
+          captureDocument.documentElement.scrollHeight,
+          captureDocument.body.scrollHeight,
+          captureWindow.innerHeight,
+        ),
+      },
+    });
+
     this.options.setImageProcessing(true);
     try {
       assertCanvasLimit(documentRect.width, documentRect.height, scale);
+      captureDebugInfo(debugTraceId, 'html2canvas.canvas_limit_passed');
+      const selectedExternalImageUrls = getSelectedExternalImageUrls(
+        captureDocument,
+        clampedRect,
+        captureWindow,
+      );
+      captureDebugInfo(debugTraceId, 'html2canvas.external_images_selected', {
+        imageCount: selectedExternalImageUrls.length,
+        imageUrls: selectedExternalImageUrls.map(summarizeUrl),
+      });
       const imageDataUrls = await loadSelectedImageDataUrls(
-        getSelectedExternalImageUrls(
-          captureDocument,
-          clampedRect,
-          captureWindow,
-        ),
+        selectedExternalImageUrls,
         proxyUrl,
+        debugTraceId,
       );
 
+      captureDebugInfo(debugTraceId, 'html2canvas.render_start', {
+        inlinedImageCount: imageDataUrls.size,
+      });
       const canvas = await html2canvas(captureDocument.body, {
         allowTaint: false,
         useCORS: false,
@@ -549,10 +680,18 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
           captureWindow.innerHeight,
         ),
       });
+      captureDebugInfo(debugTraceId, 'html2canvas.render_success', {
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height,
+      });
 
       try {
         canvas.toDataURL('image/png');
+        captureDebugInfo(debugTraceId, 'html2canvas.to_data_url_success');
       } catch (error) {
+        captureDebugWarn(debugTraceId, 'html2canvas.to_data_url_failed', {
+          error,
+        });
         throw new CaptureError(
           'CORS_TAINT',
           '외부 이미지 보안 정책으로 캡처에 실패했어요.',
@@ -560,11 +699,20 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
         );
       }
 
-      return await toImageBlob(canvas);
+      const blob = await toImageBlob(canvas);
+      captureDebugInfo(debugTraceId, 'html2canvas.to_blob_success', {
+        blobSize: blob.size,
+        blobType: blob.type,
+      });
+      return blob;
     } catch (error) {
+      captureDebugError(debugTraceId, 'html2canvas.capture_failed', {
+        error,
+      });
       throw toCaptureError(error);
     } finally {
       this.options.setImageProcessing(false);
+      captureDebugInfo(debugTraceId, 'html2canvas.capture_cleanup');
     }
   }
 }
@@ -584,12 +732,21 @@ class FallbackCaptureEngine implements CaptureEngine {
     this.enabled = enabled;
   }
 
-  async capture(rect: CaptureRect): Promise<Blob> {
+  async capture(rect: CaptureRect, debugTraceId?: string): Promise<Blob> {
     try {
-      return await this.primary.capture(rect);
+      captureDebugInfo(debugTraceId, 'fallback.primary_start', {
+        enabled: this.enabled,
+      });
+      const blob = await this.primary.capture(rect, debugTraceId);
+      captureDebugInfo(debugTraceId, 'fallback.primary_success');
+      return blob;
     } catch (error) {
       const captureError = toCaptureError(error);
       if (!this.enabled) {
+        captureDebugWarn(debugTraceId, 'fallback.disabled', {
+          code: captureError.code,
+          message: captureError.message,
+        });
         throw captureError;
       }
 
@@ -598,20 +755,19 @@ class FallbackCaptureEngine implements CaptureEngine {
         captureError.code !== 'EMPTY_IMAGE_BLOB' &&
         captureError.code !== 'UNKNOWN'
       ) {
+        captureDebugWarn(debugTraceId, 'fallback.not_allowed_for_error', {
+          code: captureError.code,
+          message: captureError.message,
+        });
         throw captureError;
       }
 
-      if (import.meta.env.DEV) {
-        console.warn(
-          '[capture] html2canvas failed. trying display-media fallback.',
-          {
-            code: captureError.code,
-            message: captureError.message,
-          },
-        );
-      }
+      captureDebugWarn(debugTraceId, 'fallback.display_media_start', {
+        code: captureError.code,
+        message: captureError.message,
+      });
 
-      return this.fallback.capture(rect);
+      return this.fallback.capture(rect, debugTraceId);
     }
   }
 }

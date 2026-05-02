@@ -13,6 +13,13 @@ import {
   createCaptureEngine,
   getCaptureWindow,
 } from '@/Features/Fitting/Model/captureEngine';
+import {
+  captureDebugError,
+  captureDebugInfo,
+  captureDebugWarn,
+  createCaptureDebugTraceId,
+  setBlobDebugTraceId,
+} from '@/Features/Fitting/Model/debug';
 
 import { useFittingStore } from '@/Entities/Fitting';
 import { usePluginStore } from '@/Entities/Plugin';
@@ -71,6 +78,7 @@ export const useCroppedClothing = () => {
   const captureGuideRef = useRef<HTMLDivElement>(null);
 
   const resetCaptureOverlay = () => {
+    captureDebugInfo(undefined, 'overlay.reset');
     if (screenshotBackgroundRef.current) {
       screenshotBackgroundRef.current.style.borderWidth = '0';
     }
@@ -82,11 +90,19 @@ export const useCroppedClothing = () => {
 
   const restorePluginVisibility = () => {
     if (!pluginWrapper) {
+      captureDebugInfo(
+        undefined,
+        'plugin_visibility.restore_skipped_no_wrapper',
+      );
       return;
     }
+    captureDebugInfo(undefined, 'plugin_visibility.restore_start');
     setIsPluginOpen(true);
     pluginWrapper.classList.toggle('thatzfit-visible', true);
     pluginWrapper.classList.toggle('thatzfit-hidden', false);
+    captureDebugInfo(undefined, 'plugin_visibility.restore_done', {
+      className: pluginWrapper.className,
+    });
   };
 
   const getViewportSelectionRect = (x: number, y: number): CaptureRect => {
@@ -128,6 +144,14 @@ export const useCroppedClothing = () => {
     setIsDragging(true);
     setStartX(event.clientX);
     setStartY(event.clientY);
+    captureDebugInfo(undefined, 'selection.start', {
+      x: event.clientX,
+      y: event.clientY,
+      captureWindow: {
+        width: getCaptureWindow().innerWidth,
+        height: getCaptureWindow().innerHeight,
+      },
+    });
   };
 
   const handleCroppedAreaMove = (event: MouseEvent) => {
@@ -168,6 +192,11 @@ export const useCroppedClothing = () => {
 
     const rect = getViewportSelectionRect(event.clientX, event.clientY);
     if (rect.width < 1 || rect.height < 1) {
+      captureDebugWarn(undefined, 'selection.end_ignored_empty_rect', {
+        rect,
+        x: event.clientX,
+        y: event.clientY,
+      });
       setIsFittingDialogOpen(false);
       setIsCapturing(false);
       resetCaptureOverlay();
@@ -175,14 +204,23 @@ export const useCroppedClothing = () => {
       return;
     }
 
+    const debugTraceId = createCaptureDebugTraceId();
+    captureDebugInfo(debugTraceId, 'selection.end_capture_start', {
+      rect,
+      x: event.clientX,
+      y: event.clientY,
+    });
     setIsFittingDialogOpen(true);
     try {
-      const capturedBlob = await croppedImageToBlob(rect);
+      const capturedBlob = await croppedImageToBlob(rect, debugTraceId);
+      setBlobDebugTraceId(capturedBlob, debugTraceId);
+      captureDebugInfo(debugTraceId, 'selection.capture_blob_stored', {
+        blobSize: capturedBlob.size,
+        blobType: capturedBlob.type,
+      });
       setCapturedClothingImage(capturedBlob);
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.warn('[capture] capture failed', error);
-      }
+      captureDebugError(debugTraceId, 'selection.capture_failed', { error });
       toast.error(getCaptureErrorMessage(error));
       setIsFittingDialogOpen(false);
     } finally {
@@ -194,6 +232,7 @@ export const useCroppedClothing = () => {
 
   const handleCancelCapture = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
+      captureDebugInfo(undefined, 'selection.cancel_escape');
       setIsDragging(false);
       setIsMouseMoving(false);
       setIsGuideHovered(false);
@@ -233,8 +272,9 @@ export const useExtractCroppedClothing = () => {
     [setIsImageProcessing],
   );
 
-  const croppedImageToBlob = (rect: CaptureRect) => {
-    return captureEngine.capture(rect);
+  const croppedImageToBlob = (rect: CaptureRect, debugTraceId?: string) => {
+    captureDebugInfo(debugTraceId, 'extract.crop_to_blob_start', { rect });
+    return captureEngine.capture(rect, debugTraceId);
   };
 
   return { croppedImageToBlob };
