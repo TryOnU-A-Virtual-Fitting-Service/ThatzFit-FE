@@ -22,12 +22,14 @@ export const FittingDialog = () => {
   const pluginEntryWrapper = usePluginEntryStore((state) => state.entryWrapper);
   const {
     capturedClothingImage,
+    isCapturing,
     isFittingDialogOpen,
     isImageProcessing,
     setIsFittingDialogOpen,
   } = useFittingStore(
     useShallow((state) => ({
       capturedClothingImage: state.capturedClothingImage,
+      isCapturing: state.isCapturing,
       isFittingDialogOpen: state.isFittingDialogOpen,
       isImageProcessing: state.isImageProcessing,
       setIsFittingDialogOpen: state.setIsFittingDialogOpen,
@@ -43,6 +45,7 @@ export const FittingDialog = () => {
   useEffect(() => {
     captureDebugInfo(debugTraceId, 'dialog.render_state', {
       isFittingDialogOpen,
+      isCapturing,
       isImageProcessing,
       hasPluginEntryWrapper: Boolean(pluginEntryWrapper),
       capturedBlob,
@@ -50,6 +53,7 @@ export const FittingDialog = () => {
 
     if (
       isFittingDialogOpen &&
+      !isCapturing &&
       !isImageProcessing &&
       (!capturedClothingImage || !pluginEntryWrapper)
     ) {
@@ -59,6 +63,8 @@ export const FittingDialog = () => {
         {
           hasCapturedClothingImage: Boolean(capturedClothingImage),
           hasPluginEntryWrapper: Boolean(pluginEntryWrapper),
+          isCapturing,
+          isImageProcessing,
           capturedBlob,
         },
       );
@@ -67,6 +73,7 @@ export const FittingDialog = () => {
     capturedBlob,
     capturedClothingImage,
     debugTraceId,
+    isCapturing,
     isFittingDialogOpen,
     isImageProcessing,
     pluginEntryWrapper,

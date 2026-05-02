@@ -333,15 +333,23 @@ const toImageBlob = (canvas: HTMLCanvasElement) =>
 const roundRatio = (value: number) => Math.round(value * 10000) / 10000;
 
 const getCanvasPixelSample = (canvas: HTMLCanvasElement) => {
-  const context = canvas.getContext('2d', { willReadFrequently: true });
-  if (!context) {
+  const columns = Math.min(32, Math.max(canvas.width, 1));
+  const rows = Math.min(32, Math.max(canvas.height, 1));
+  const sampleCanvas = document.createElement('canvas');
+  sampleCanvas.width = columns;
+  sampleCanvas.height = rows;
+
+  const sampleContext = sampleCanvas.getContext('2d', {
+    willReadFrequently: true,
+  });
+  if (!sampleContext) {
     return {
-      sampleUnavailableReason: 'missing_2d_context',
+      sampleUnavailableReason: 'missing_sample_2d_context',
     };
   }
 
-  const columns = Math.min(32, Math.max(canvas.width, 1));
-  const rows = Math.min(32, Math.max(canvas.height, 1));
+  sampleContext.drawImage(canvas, 0, 0, columns, rows);
+  const pixels = sampleContext.getImageData(0, 0, columns, rows).data;
   const sampleCount = columns * rows;
   let transparentCount = 0;
   let nearWhiteCount = 0;
@@ -352,17 +360,12 @@ const getCanvasPixelSample = (canvas: HTMLCanvasElement) => {
   let blueTotal = 0;
 
   for (let row = 0; row < rows; row += 1) {
-    const y = Math.min(
-      canvas.height - 1,
-      Math.floor((row / Math.max(rows - 1, 1)) * (canvas.height - 1)),
-    );
-
     for (let column = 0; column < columns; column += 1) {
-      const x = Math.min(
-        canvas.width - 1,
-        Math.floor((column / Math.max(columns - 1, 1)) * (canvas.width - 1)),
-      );
-      const [red, green, blue, alpha] = context.getImageData(x, y, 1, 1).data;
+      const pixelIndex = (row * columns + column) * 4;
+      const red = pixels[pixelIndex] ?? 0;
+      const green = pixels[pixelIndex + 1] ?? 0;
+      const blue = pixels[pixelIndex + 2] ?? 0;
+      const alpha = pixels[pixelIndex + 3] ?? 0;
 
       redTotal += red;
       greenTotal += green;
