@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "ThatzFit Capture Bridge Dev",
+  "description": "Development bridge for ThatzFit visible-tab capture experiments.",
+  "version": "0.1.0",
+  "permissions": ["activeTab", "tabs"],
+  "host_permissions": ["https://demo.thatz.fit/*", "http://localhost/*", "http://127.0.0.1/*"],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://demo.thatz.fit/*", "http://localhost/*", "http://127.0.0.1/*"],
+      "js": ["content-script.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
+}

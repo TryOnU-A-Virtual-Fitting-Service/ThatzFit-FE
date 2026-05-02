@@ -6,6 +6,38 @@ This branch adds an experimental capture engine enabled by:
 VITE_CAPTURE_ENGINE=chrome-extension
 ```
 
+## Local unpacked extension
+
+A minimal development extension is included at:
+
+```text
+tools/chrome-capture-extension
+```
+
+Load it in Chrome:
+
+1. Open `chrome://extensions`.
+2. Enable Developer mode.
+3. Click "Load unpacked".
+4. Select `tools/chrome-capture-extension`.
+5. Open or reload `https://demo.thatz.fit`.
+
+The frontend bundle must also be built with
+`VITE_CAPTURE_ENGINE=chrome-extension`; otherwise the existing html2canvas
+engine remains active.
+
+Useful success logs:
+
+```text
+chrome_extension.capture_start
+chrome_extension.response_received
+chrome_extension.crop_canvas_ready
+chrome_extension.capture_success
+```
+
+If Chrome reports that `captureVisibleTab` needs permission, click the
+extension icon once on the tab to grant `activeTab`, then retry capture.
+
 The frontend cannot call `chrome.tabs.captureVisibleTab()` from a normal web
 page or iframe. A Chrome extension/content script must provide a bridge that
 returns a visible-tab screenshot data URL.
