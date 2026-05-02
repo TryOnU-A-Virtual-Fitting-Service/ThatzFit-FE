@@ -198,9 +198,24 @@ export const FittingDialog = () => {
         ref={dialogContentRef}
         showCloseButton={false}
         overlayClassName='hidden'
-        className='w-fit border-none p-5'
+        className='border-none p-5'
         container={pluginEntryWrapper}
-        style={{ zIndex: 1000003 }}
+        style={{
+          zIndex: 1000003,
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          width: '20.5rem',
+          maxWidth: '20.5rem',
+          transform: 'translate(-50%, -50%)',
+          boxSizing: 'border-box',
+          border: 'none',
+          borderRadius: '0.5rem',
+          background: '#ffffff',
+          padding: '1.25rem',
+          boxShadow:
+            '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+        }}
         onEscapeKeyDown={() => {
           captureDebugInfo(debugTraceId, 'dialog.escape_key_down');
         }}
@@ -212,8 +227,22 @@ export const FittingDialog = () => {
         }}
       >
         <DialogTitle className='sr-only'>피팅 실행 Dialog</DialogTitle>
-        <div className='flex w-[18rem] flex-col items-center gap-5'>
-          <div className='!border-grey-04 flex h-[15.625rem] w-[18rem] justify-center rounded-md border-[1px] px-5'>
+        <div
+          className='flex flex-col items-center gap-5'
+          style={{
+            width: '18rem',
+          }}
+        >
+          <div
+            className='flex justify-center rounded-md border-[1px]'
+            style={{
+              width: '18rem',
+              height: '15.625rem',
+              borderColor: '#9399a1',
+              paddingInline: '1.25rem',
+              boxSizing: 'border-box',
+            }}
+          >
             {isImageProcessing ? (
               <div className='flex h-full w-full items-center justify-center'>
                 <Spinner />
@@ -227,10 +256,16 @@ export const FittingDialog = () => {
             )}
           </div>
           <div className='flex flex-col items-center gap-1'>
-            <span className='text-heading1-semibold text-black'>
+            <span
+              className='text-heading1-semibold text-black'
+              style={{ color: '#000000' }}
+            >
               이 옷을 입어볼까요?
             </span>
-            <span className='text-body1-regular text-grey-04'>
+            <span
+              className='text-body1-regular text-grey-04'
+              style={{ color: '#9399a1' }}
+            >
               상/하의만 입어볼 수 있어요.
             </span>
           </div>
