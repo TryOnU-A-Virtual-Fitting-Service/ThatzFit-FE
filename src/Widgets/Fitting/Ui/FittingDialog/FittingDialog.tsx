@@ -69,6 +69,7 @@ export const FittingDialog = () => {
         overlayClassName='hidden'
         className='w-fit border-none p-5'
         container={pluginEntryWrapper}
+        style={{ zIndex: 1000003 }}
         onEscapeKeyDown={() => {
           captureDebugInfo(debugTraceId, 'dialog.escape_key_down');
         }}
