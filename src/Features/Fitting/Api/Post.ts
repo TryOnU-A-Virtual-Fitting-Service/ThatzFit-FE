@@ -1,3 +1,4 @@
+import { BASE_URL } from '@/Shared/Config';
 import { post } from '@/Shared/Model';
 
 import {
@@ -12,18 +13,21 @@ import type {
   PostFittingRequestDto,
   PostFittingResponseDto,
 } from '../Type';
-export const postFittingJob = async () => {
-  captureDebugInfo(undefined, 'api.post_fitting_job.request_start');
+export const postFittingJob = async (debugTraceId?: string) => {
+  captureDebugInfo(debugTraceId, 'api.post_fitting_job.request_start', {
+    baseUrl: BASE_URL,
+    path: '/api/v1/try-on/job',
+  });
   try {
     const response =
       await post<PostFittingJobResponseDto>('/api/v1/try-on/job');
     const json = await response.json();
-    captureDebugInfo(undefined, 'api.post_fitting_job.request_success', {
+    captureDebugInfo(debugTraceId, 'api.post_fitting_job.request_success', {
       tryOnJobId: json.data.tryOnJobId,
     });
     return json;
   } catch (error) {
-    captureDebugError(undefined, 'api.post_fitting_job.request_failed', {
+    captureDebugError(debugTraceId, 'api.post_fitting_job.request_failed', {
       error,
     });
     throw error;

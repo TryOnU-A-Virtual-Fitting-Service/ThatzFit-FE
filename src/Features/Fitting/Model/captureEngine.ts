@@ -330,6 +330,79 @@ const toImageBlob = (canvas: HTMLCanvasElement) =>
     }
   });
 
+const roundRatio = (value: number) => Math.round(value * 10000) / 10000;
+
+const getCanvasPixelSample = (canvas: HTMLCanvasElement) => {
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  if (!context) {
+    return {
+      sampleUnavailableReason: 'missing_2d_context',
+    };
+  }
+
+  const columns = Math.min(32, Math.max(canvas.width, 1));
+  const rows = Math.min(32, Math.max(canvas.height, 1));
+  const sampleCount = columns * rows;
+  let transparentCount = 0;
+  let nearWhiteCount = 0;
+  let nearBlackCount = 0;
+  let alphaTotal = 0;
+  let redTotal = 0;
+  let greenTotal = 0;
+  let blueTotal = 0;
+
+  for (let row = 0; row < rows; row += 1) {
+    const y = Math.min(
+      canvas.height - 1,
+      Math.floor((row / Math.max(rows - 1, 1)) * (canvas.height - 1)),
+    );
+
+    for (let column = 0; column < columns; column += 1) {
+      const x = Math.min(
+        canvas.width - 1,
+        Math.floor((column / Math.max(columns - 1, 1)) * (canvas.width - 1)),
+      );
+      const [red, green, blue, alpha] = context.getImageData(x, y, 1, 1).data;
+
+      redTotal += red;
+      greenTotal += green;
+      blueTotal += blue;
+      alphaTotal += alpha;
+
+      if (alpha <= 5) {
+        transparentCount += 1;
+      }
+      if (alpha > 5 && red >= 245 && green >= 245 && blue >= 245) {
+        nearWhiteCount += 1;
+      }
+      if (alpha > 5 && red <= 10 && green <= 10 && blue <= 10) {
+        nearBlackCount += 1;
+      }
+    }
+  }
+
+  const transparentRatio = transparentCount / sampleCount;
+  const nearWhiteRatio = nearWhiteCount / sampleCount;
+  const nearBlackRatio = nearBlackCount / sampleCount;
+
+  return {
+    sampleCount,
+    transparentRatio: roundRatio(transparentRatio),
+    nearWhiteRatio: roundRatio(nearWhiteRatio),
+    nearBlackRatio: roundRatio(nearBlackRatio),
+    averageAlpha: Math.round(alphaTotal / sampleCount),
+    averageRgb: {
+      red: Math.round(redTotal / sampleCount),
+      green: Math.round(greenTotal / sampleCount),
+      blue: Math.round(blueTotal / sampleCount),
+    },
+    isLikelyBlank:
+      transparentRatio >= 0.98 ||
+      nearWhiteRatio >= 0.98 ||
+      nearBlackRatio >= 0.98,
+  };
+};
+
 const waitForVideoReady = (video: HTMLVideoElement) =>
   new Promise<void>((resolve, reject) => {
     const timeout = window.setTimeout(() => {
@@ -684,6 +757,21 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
         canvasWidth: canvas.width,
         canvasHeight: canvas.height,
       });
+      try {
+        captureDebugInfo(
+          debugTraceId,
+          'html2canvas.canvas_pixel_sample',
+          getCanvasPixelSample(canvas),
+        );
+      } catch (error) {
+        captureDebugWarn(
+          debugTraceId,
+          'html2canvas.canvas_pixel_sample_failed',
+          {
+            error,
+          },
+        );
+      }
 
       try {
         canvas.toDataURL('image/png');

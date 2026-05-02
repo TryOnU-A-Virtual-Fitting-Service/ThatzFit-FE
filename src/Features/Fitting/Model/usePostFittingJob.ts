@@ -4,6 +4,6 @@ import { postFittingJob } from '../Api';
 
 export const usePostFittingJob = () => {
   return useMutation({
-    mutationFn: () => postFittingJob(),
+    mutationFn: (debugTraceId?: string) => postFittingJob(debugTraceId),
   });
 };

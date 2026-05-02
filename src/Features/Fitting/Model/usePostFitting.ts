@@ -75,6 +75,9 @@ export const usePostFitting = () => {
 
     if (fittingJobId && capturedClothingImage && currentFittingModel) {
       const debugTraceId = getBlobDebugTraceId(capturedClothingImage);
+      captureDebugInfo(debugTraceId, 'fitting.effect_conditions_met', {
+        fittingJobId,
+      });
       const clothingImageFile = new File(
         [capturedClothingImage],
         'capturedClothingImage.png',

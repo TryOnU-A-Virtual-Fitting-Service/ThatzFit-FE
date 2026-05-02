@@ -44,9 +44,33 @@ export const FittingDialog = () => {
     captureDebugInfo(debugTraceId, 'dialog.render_state', {
       isFittingDialogOpen,
       isImageProcessing,
+      hasPluginEntryWrapper: Boolean(pluginEntryWrapper),
       capturedBlob,
     });
-  }, [capturedBlob, debugTraceId, isFittingDialogOpen, isImageProcessing]);
+
+    if (
+      isFittingDialogOpen &&
+      !isImageProcessing &&
+      (!capturedClothingImage || !pluginEntryWrapper)
+    ) {
+      captureDebugWarn(
+        debugTraceId,
+        'dialog.open_without_render_prerequisite',
+        {
+          hasCapturedClothingImage: Boolean(capturedClothingImage),
+          hasPluginEntryWrapper: Boolean(pluginEntryWrapper),
+          capturedBlob,
+        },
+      );
+    }
+  }, [
+    capturedBlob,
+    capturedClothingImage,
+    debugTraceId,
+    isFittingDialogOpen,
+    isImageProcessing,
+    pluginEntryWrapper,
+  ]);
 
   const handleOpenChange = (nextOpen: boolean) => {
     captureDebugInfo(debugTraceId, 'dialog.open_change', {

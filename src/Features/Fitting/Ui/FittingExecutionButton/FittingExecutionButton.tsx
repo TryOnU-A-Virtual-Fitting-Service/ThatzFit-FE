@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { useFittingStore } from '@/Entities/Fitting';
@@ -16,7 +17,8 @@ import {
 const FITTING_FAILED_MESSAGE = '피팅에 실패했어요.';
 
 export const FittingExecutionButton = () => {
-  const { mutateAsync: postFittingJob } = usePostFittingJob();
+  const { mutateAsync: postFittingJob, isPending: isFittingJobPending } =
+    usePostFittingJob();
 
   const { capturedClothingImage, setIsFittingDialogOpen, setFittingJobId } =
     useFittingStore(
@@ -30,6 +32,17 @@ export const FittingExecutionButton = () => {
 
   const { toast } = useToast();
 
+  useEffect(() => {
+    captureDebugInfo(
+      getBlobDebugTraceId(capturedClothingImage),
+      'dialog.execution_button_render_state',
+      {
+        capturedBlob: getBlobDebugDetails(capturedClothingImage),
+        isFittingJobPending,
+      },
+    );
+  }, [capturedClothingImage, isFittingJobPending]);
+
   if (!capturedClothingImage) {
     return null;
   }
@@ -38,10 +51,14 @@ export const FittingExecutionButton = () => {
     const debugTraceId = getBlobDebugTraceId(capturedClothingImage);
     captureDebugInfo(debugTraceId, 'dialog.confirm_click', {
       capturedBlob: getBlobDebugDetails(capturedClothingImage),
+      isFittingJobPending,
     });
-    postFittingJob(undefined, {
+    postFittingJob(debugTraceId, {
       onSuccess: ({ data: { tryOnJobId } }) => {
         captureDebugInfo(debugTraceId, 'dialog.job_created', {
+          tryOnJobId,
+        });
+        captureDebugInfo(debugTraceId, 'dialog.job_id_store_start', {
           tryOnJobId,
         });
         setFittingJobId(tryOnJobId);
