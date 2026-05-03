@@ -831,16 +831,8 @@ export class Html2CanvasCaptureEngine implements CaptureEngine {
         y: documentRect.top,
         width: documentRect.width,
         height: documentRect.height,
-        windowWidth: Math.max(
-          captureDocument.documentElement.scrollWidth,
-          captureDocument.body.scrollWidth,
-          captureWindow.innerWidth,
-        ),
-        windowHeight: Math.max(
-          captureDocument.documentElement.scrollHeight,
-          captureDocument.body.scrollHeight,
-          captureWindow.innerHeight,
-        ),
+        windowWidth: captureWindow.innerWidth,
+        windowHeight: captureWindow.innerHeight,
       });
       captureDebugInfo(debugTraceId, 'html2canvas.render_success', {
         canvasWidth: canvas.width,
