@@ -57,7 +57,7 @@ export const FittingModelView = () => {
         <FittingModelImage
           src={currentFittingModel.defaultModelUrl}
           imageFileName={currentFittingModel.imageName}
-          className='h-[110%] max-w-none self-center object-contain'
+          className='h-[105%] max-w-none translate-y-1 self-center object-contain'
         />
       )}
       {/* TODO: 사이즈 추천 기능 완성 시 추가 */}

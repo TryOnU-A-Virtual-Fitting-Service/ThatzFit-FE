@@ -39,6 +39,9 @@ export const ModelZoomDialogContent = () => {
           width: 'min(30.3125rem, calc(100vw - 2rem))',
           maxWidth: 'calc(100vw - 2rem)',
           transform: 'translate(-50%, -50%)',
+          background: '#ffffff',
+          borderRadius: '12px',
+          boxShadow: '0 18px 60px rgba(0, 0, 0, 0.18)',
         }}
       >
         <DialogTitle className='sr-only'>모델 확대</DialogTitle>
