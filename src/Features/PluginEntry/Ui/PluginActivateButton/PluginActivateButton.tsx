@@ -40,6 +40,7 @@ export const PluginActivateButton = ({
       style={{
         ...style,
         display: isImageLoadComplete ? style?.display : 'none',
+        overflow: 'hidden',
       }}
       onClick={onClick}
     >
@@ -47,13 +48,15 @@ export const PluginActivateButton = ({
         src={pluginButtonImageUrl}
         alt='플러그인 진입 버튼 로고'
         onLoad={handleImageLoad}
-        className='object-fit h-full w-full rounded-lg'
+        className='h-full w-full'
         style={{
           display: 'block',
           width: '100%',
           height: '100%',
           borderRadius: '16px',
           objectFit: 'fill',
+          transform: 'scale(2.04)',
+          transformOrigin: 'center',
         }}
       />
     </Button>
