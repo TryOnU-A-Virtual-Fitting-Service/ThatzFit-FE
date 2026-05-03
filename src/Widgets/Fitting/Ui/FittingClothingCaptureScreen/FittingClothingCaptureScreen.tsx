@@ -96,23 +96,23 @@ export const FittingClothingCaptureScreen = () => {
         <div
           data-thatzfit-capture-ui='true'
           ref={captureGuideRef}
-          className='fixed top-20 left-1/2 z-[10000] w-2xl -translate-x-1/2 rounded-lg bg-white py-3 text-center'
+          className='fixed top-20 z-[10000] rounded-lg bg-white py-3 text-center'
           style={{
             position: 'fixed',
             top: '80px',
-            left: '50%',
+            left: '50vw',
             zIndex: 1000002,
-            width: '42rem',
-            maxWidth: 'calc(100vw - 32px)',
+            width: 'min(42rem, calc(100vw - 32px))',
             transform: 'translateX(-50%)',
             borderRadius: '8px',
             background: '#ffffff',
-            opacity: isGuideHovered ? 0.96 : 0.72,
+            opacity: isGuideHovered ? 0.48 : 1,
             padding: '12px 16px',
             pointerEvents: 'none',
             textAlign: 'center',
+            boxSizing: 'border-box',
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
-            transition: 'opacity 120ms ease',
+            transition: 'opacity 160ms ease',
           }}
         >
           <span
