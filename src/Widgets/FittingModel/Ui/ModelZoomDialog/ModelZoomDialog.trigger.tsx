@@ -15,6 +15,7 @@ export const ModelZoomDialogTrigger = ({
     <DialogTrigger asChild>
       <Button
         size='icon'
+        aria-label='모델 확대'
         className={cn(
           'text-grey-03 hover:bg-grey-07 hover:text-grey-01 h-5 w-5 cursor-pointer rounded-[0.3125rem] bg-white p-1',
           dialogTriggerClassName,

@@ -45,7 +45,7 @@ export const FittingModelView = () => {
   }, [fittingModelList, currentFittingModel, setCurrentFittingModel]);
 
   return (
-    <div className='bg-grey-08 relative flex h-[18.75rem] w-full justify-center rounded-[0.375rem] p-[0.5625rem] select-none'>
+    <div className='bg-grey-08 relative flex h-[18.75rem] w-full justify-center overflow-visible rounded-[0.375rem] p-[0.5625rem] select-none'>
       <FittingModelActionDialog dialogTriggerClassName='absolute top-2 left-2' />
       {isPostFittingPending && (
         <FittingLoadingView isLoading={isPostFittingPending} />
@@ -57,7 +57,7 @@ export const FittingModelView = () => {
         <FittingModelImage
           src={currentFittingModel.defaultModelUrl}
           imageFileName={currentFittingModel.imageName}
-          className='object-contain'
+          className='h-[110%] max-w-none self-center object-contain'
         />
       )}
       {/* TODO: 사이즈 추천 기능 완성 시 추가 */}
