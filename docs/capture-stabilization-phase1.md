@@ -28,6 +28,79 @@ Phase 2 stub:
 
 - `DisplayMediaCaptureEngine` (not implemented in this phase)
 
+## Current Fix Notes
+
+The working `html2canvas` path depends on keeping one coordinate system from
+selection through render:
+
+1. Selection start/end use `MouseEvent.clientX/clientY`.
+2. The selection rectangle is clamped to `getCaptureWindow()` viewport bounds.
+3. `Html2CanvasCaptureEngine` converts the viewport rectangle to a document
+   rectangle only once:
+   - `x = rect.left + captureWindow.scrollX`
+   - `y = rect.top + captureWindow.scrollY`
+4. `html2canvas` renders `captureDocument.body` with the same
+   `captureWindow.scrollX/scrollY`, `windowWidth`, and `windowHeight`.
+5. Elements marked as ThatzFit capture UI are excluded from the cloned capture
+   tree so the overlay, selection frame, iframe wrapper, plugin panel, and entry
+   button do not contaminate the captured image.
+6. The capture overlay is hidden immediately before rendering and restored in
+   `finally`, so success, failure, and cancel paths all return the plugin to a
+   visible state.
+
+The original offset/blank-looking captures were caused by mixing iframe and host
+window coordinates and by leaving capture UI in the render tree. A non-null blob
+with normal pixel samples meant the image was not empty; the selected document
+region was wrong or visually contaminated.
+
+## Capture Debug Logging
+
+Capture logs are disabled by default. Keep them off in normal development and
+demo sessions because they are noisy and include runtime capture state such as
+selection rectangles, viewport sizes, URLs, blob details, and DOM visibility.
+
+Debug logs use this prefix:
+
+```text
+[ThatzFit-FE][capture-debug]
+```
+
+The toggle covers `captureDebugInfo`, `captureDebugWarn`, `captureDebugError`,
+and plugin-entry stylesheet diagnostics.
+
+To re-enable logs persistently in the browser:
+
+```js
+localStorage.setItem('THATZFIT_CAPTURE_DEBUG', 'true');
+location.reload();
+```
+
+To turn them off again:
+
+```js
+localStorage.removeItem('THATZFIT_CAPTURE_DEBUG');
+location.reload();
+```
+
+To enable logs for the current runtime only:
+
+```js
+window.__THATZFIT_CAPTURE_DEBUG__ = true;
+```
+
+This runtime flag is not persisted. Set it in the same frame/context where the
+ThatzFit FE bundle is executing before reproducing the capture flow.
+
+To enable logs from the dev/build environment:
+
+```sh
+VITE_THATZFIT_CAPTURE_DEBUG=true pnpm dev
+```
+
+For the demo site iframe, select the `thatzfit-iframe` context in DevTools
+before setting the runtime flag. If the FE bundle is executing in the host
+window instead, set the flag or localStorage value from the host context.
+
 ## Playwright Validation Scenarios (Chrome Desktop)
 
 > The plugin currently depends on app runtime state and API auth, so run these after backend and frontend are ready.
