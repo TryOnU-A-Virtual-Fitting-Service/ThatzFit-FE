@@ -29,7 +29,7 @@ export const PluginActivateButton = ({
     setIsImageLoadComplete(true);
   };
 
-  if (!entryWrapper) {
+  if (!entryWrapper || !pluginButtonImageUrl) {
     return null;
   }
 

@@ -26,7 +26,7 @@ export const App = () => {
 
       try {
         await initUserInfo();
-        void initialCompanyInfo();
+        await initialCompanyInfo();
         if (isMounted) {
           setIsUserInitialized(true);
         }

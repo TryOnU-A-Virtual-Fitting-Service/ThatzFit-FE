@@ -1,7 +1,28 @@
 const DEBUG_PREFIX = '[ThatzFit-FE][capture-debug]';
+const DEBUG_STORAGE_KEY = 'THATZFIT_CAPTURE_DEBUG';
 const blobDebugTraceIds = new WeakMap<Blob, string>();
 
 type DebugDetails = Record<string, unknown>;
+
+type DebugGlobal = typeof globalThis & {
+  __THATZFIT_CAPTURE_DEBUG__?: boolean;
+};
+
+export const isCaptureDebugEnabled = () => {
+  if (import.meta.env.VITE_THATZFIT_CAPTURE_DEBUG === 'true') {
+    return true;
+  }
+
+  try {
+    const debugGlobal = globalThis as DebugGlobal;
+    return (
+      debugGlobal.__THATZFIT_CAPTURE_DEBUG__ === true ||
+      globalThis.localStorage?.getItem(DEBUG_STORAGE_KEY) === 'true'
+    );
+  } catch {
+    return false;
+  }
+};
 
 export const createCaptureDebugTraceId = () =>
   `tf-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -11,6 +32,10 @@ export const captureDebugInfo = (
   step: string,
   details: DebugDetails = {},
 ) => {
+  if (!isCaptureDebugEnabled()) {
+    return;
+  }
+
   console.info(DEBUG_PREFIX, {
     debugTraceId,
     step,
@@ -23,6 +48,10 @@ export const captureDebugWarn = (
   step: string,
   details: DebugDetails = {},
 ) => {
+  if (!isCaptureDebugEnabled()) {
+    return;
+  }
+
   console.warn(DEBUG_PREFIX, {
     debugTraceId,
     step,
@@ -35,6 +64,10 @@ export const captureDebugError = (
   step: string,
   details: DebugDetails = {},
 ) => {
+  if (!isCaptureDebugEnabled()) {
+    return;
+  }
+
   console.error(DEBUG_PREFIX, {
     debugTraceId,
     step,

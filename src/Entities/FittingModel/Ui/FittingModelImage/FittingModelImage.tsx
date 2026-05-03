@@ -9,5 +9,9 @@ export const FittingModelImage = ({
   imageFileName,
   className,
 }: FittingModelImageProps) => {
+  if (!src) {
+    return null;
+  }
+
   return <img src={src} alt={imageFileName} className={className} />;
 };

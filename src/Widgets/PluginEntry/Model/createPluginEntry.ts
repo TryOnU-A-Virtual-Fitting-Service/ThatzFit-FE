@@ -1,8 +1,11 @@
 import appStylesheetUrl from '@/Apps/index.css?url';
 
-import { usePluginEntryStore } from '@/Entities/PluginEntry';
+import {
+  captureDebugInfo,
+  captureDebugWarn,
+} from '@/Features/Fitting/Model/debug';
 
-const DEBUG_PREFIX = '[ThatzFit-FE][capture-debug]';
+import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
 const getShadowStylesheetUrl = () => {
   if (import.meta.env.DEV) {
@@ -34,21 +37,18 @@ const appendShadowStylesheet = (shadowRoot: ShadowRoot) => {
   style.rel = 'stylesheet';
   style.href = stylesheetUrl;
   style.addEventListener('load', () => {
-    console.info(DEBUG_PREFIX, {
-      step: 'plugin_entry.stylesheet_load_success',
+    captureDebugInfo(undefined, 'plugin_entry.stylesheet_load_success', {
       stylesheetUrl,
     });
   });
   style.addEventListener('error', () => {
-    console.warn(DEBUG_PREFIX, {
-      step: 'plugin_entry.stylesheet_load_failed',
+    captureDebugWarn(undefined, 'plugin_entry.stylesheet_load_failed', {
       stylesheetUrl,
     });
   });
 
   shadowRoot.appendChild(style);
-  console.info(DEBUG_PREFIX, {
-    step: 'plugin_entry.stylesheet_link_appended',
+  captureDebugInfo(undefined, 'plugin_entry.stylesheet_link_appended', {
     stylesheetUrl,
   });
 };
