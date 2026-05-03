@@ -9,6 +9,7 @@ import { useFittingModelStore } from '@/Entities/FittingModel';
 import { useToast } from '@/Shared/Model';
 
 import { postFitting } from '../Api';
+import { IS_VIRTUAL_FITTING_API_DISABLED } from '../Config';
 import type { PostFittingRequestDto } from '../Type';
 
 import {
@@ -75,6 +76,16 @@ export const usePostFitting = () => {
 
     if (fittingJobId && capturedClothingImage && currentFittingModel) {
       const debugTraceId = getBlobDebugTraceId(capturedClothingImage);
+
+      if (IS_VIRTUAL_FITTING_API_DISABLED) {
+        captureDebugInfo(debugTraceId, 'fitting.execute_skipped_api_disabled', {
+          fittingJobId,
+        });
+        setFittingJobId(null);
+        setCapturedClothingImage(null);
+        return;
+      }
+
       captureDebugInfo(debugTraceId, 'fitting.effect_conditions_met', {
         fittingJobId,
       });

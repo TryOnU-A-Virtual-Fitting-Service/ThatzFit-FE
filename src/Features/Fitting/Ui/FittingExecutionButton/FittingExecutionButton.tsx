@@ -6,6 +6,10 @@ import { useFittingStore } from '@/Entities/Fitting';
 import { Button } from '@/Shared/Components';
 import { useToast } from '@/Shared/Model';
 
+import {
+  IS_VIRTUAL_FITTING_API_DISABLED,
+  VIRTUAL_FITTING_API_DISABLED_MESSAGE,
+} from '../../Config';
 import { usePostFittingJob } from '../../Model';
 import {
   captureDebugError,
@@ -20,15 +24,19 @@ export const FittingExecutionButton = () => {
   const { mutateAsync: postFittingJob, isPending: isFittingJobPending } =
     usePostFittingJob();
 
-  const { capturedClothingImage, setIsFittingDialogOpen, setFittingJobId } =
-    useFittingStore(
-      useShallow((state) => ({
-        capturedClothingImage: state.capturedClothingImage,
-        setCapturedClothingImage: state.setCapturedClothingImage,
-        setIsFittingDialogOpen: state.setIsFittingDialogOpen,
-        setFittingJobId: state.setFittingJobId,
-      })),
-    );
+  const {
+    capturedClothingImage,
+    setCapturedClothingImage,
+    setIsFittingDialogOpen,
+    setFittingJobId,
+  } = useFittingStore(
+    useShallow((state) => ({
+      capturedClothingImage: state.capturedClothingImage,
+      setCapturedClothingImage: state.setCapturedClothingImage,
+      setIsFittingDialogOpen: state.setIsFittingDialogOpen,
+      setFittingJobId: state.setFittingJobId,
+    })),
+  );
 
   const { toast } = useToast();
 
@@ -53,6 +61,16 @@ export const FittingExecutionButton = () => {
       capturedBlob: getBlobDebugDetails(capturedClothingImage),
       isFittingJobPending,
     });
+
+    if (IS_VIRTUAL_FITTING_API_DISABLED) {
+      captureDebugInfo(debugTraceId, 'dialog.confirm_skipped_api_disabled');
+      setFittingJobId(null);
+      setCapturedClothingImage(null);
+      setIsFittingDialogOpen(false);
+      toast.success(VIRTUAL_FITTING_API_DISABLED_MESSAGE);
+      return;
+    }
+
     postFittingJob(debugTraceId, {
       onSuccess: ({ data: { tryOnJobId } }) => {
         captureDebugInfo(debugTraceId, 'dialog.job_created', {

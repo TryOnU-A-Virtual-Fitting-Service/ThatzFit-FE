@@ -4,6 +4,10 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { usePostFittingJob } from '@/Features/Fitting';
 import {
+  IS_VIRTUAL_FITTING_API_DISABLED,
+  VIRTUAL_FITTING_API_DISABLED_MESSAGE,
+} from '@/Features/Fitting/Config';
+import {
   captureDebugError,
   captureDebugInfo,
   captureDebugWarn,
@@ -116,6 +120,8 @@ export const FittingDialog = () => {
     isFittingDialogOpen,
     isImageProcessing,
     setIsFittingDialogOpen,
+    setCapturedClothingImage,
+    setFittingJobId,
   } = useFittingStore(
     useShallow((state) => ({
       capturedClothingImage: state.capturedClothingImage,
@@ -123,6 +129,8 @@ export const FittingDialog = () => {
       isFittingDialogOpen: state.isFittingDialogOpen,
       isImageProcessing: state.isImageProcessing,
       setIsFittingDialogOpen: state.setIsFittingDialogOpen,
+      setCapturedClothingImage: state.setCapturedClothingImage,
+      setFittingJobId: state.setFittingJobId,
     })),
   );
 
@@ -263,6 +271,16 @@ export const FittingDialog = () => {
       capturedBlob,
       isFittingJobPending,
     });
+
+    if (IS_VIRTUAL_FITTING_API_DISABLED) {
+      captureDebugInfo(debugTraceId, 'dialog.confirm_skipped_api_disabled');
+      setFittingJobId(null);
+      setCapturedClothingImage(null);
+      setIsFittingDialogOpen(false);
+      toast.success(VIRTUAL_FITTING_API_DISABLED_MESSAGE);
+      return;
+    }
+
     postFittingJob(debugTraceId, {
       onSuccess: ({ data: { tryOnJobId } }) => {
         captureDebugInfo(debugTraceId, 'dialog.job_created', {
