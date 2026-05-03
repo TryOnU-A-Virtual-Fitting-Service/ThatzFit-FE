@@ -76,13 +76,13 @@ export const PluginEntryButton = () => {
       <style>
         {`
           @keyframes thatzfit-entry-hint-float {
-            0%, 100% { transform: translate(-6px, -4px); opacity: 0.9; }
-            50% { transform: translate(4px, 4px); opacity: 1; }
+            0%, 100% { transform: translate(-4px, -4px); opacity: 0.92; }
+            50% { transform: translate(3px, 3px); opacity: 1; }
           }
 
           @keyframes thatzfit-entry-hint-pulse {
-            0%, 100% { opacity: 0.2; transform: scale(0.86); }
-            50% { opacity: 0.42; transform: scale(1.12); }
+            0%, 100% { opacity: 0.18; transform: scale(0.84); }
+            50% { opacity: 0.34; transform: scale(1.08); }
           }
         `}
       </style>
@@ -92,47 +92,44 @@ export const PluginEntryButton = () => {
           data-thatzfit-entry-hint='true'
           style={{
             position: 'fixed',
-            right: '58px',
-            bottom: '66px',
+            right: '56px',
+            bottom: '60px',
             zIndex: 1000000,
-            width: '132px',
-            height: '96px',
+            width: '96px',
+            height: '78px',
             pointerEvents: 'none',
-            animation: 'thatzfit-entry-hint-float 1.05s ease-in-out infinite',
+            animation: 'thatzfit-entry-hint-float 1.1s ease-in-out infinite',
             filter: 'drop-shadow(0 10px 16px rgba(220, 38, 38, 0.28))',
           }}
         >
           <div
             style={{
               position: 'absolute',
-              right: '-8px',
-              bottom: '-8px',
-              width: '74px',
-              height: '74px',
+              right: '-5px',
+              bottom: '-5px',
+              width: '44px',
+              height: '44px',
               borderRadius: '9999px',
               background: '#ef4444',
               animation: 'thatzfit-entry-hint-pulse 1.05s ease-in-out infinite',
             }}
           />
           <svg
-            viewBox='0 0 132 96'
+            viewBox='0 0 96 78'
             role='presentation'
             style={{
               position: 'relative',
               display: 'block',
-              width: '132px',
-              height: '96px',
+              width: '96px',
+              height: '78px',
               overflow: 'visible',
             }}
           >
             <path
-              d='M8 12C40 18 64 38 85 61'
-              fill='none'
-              stroke='#ef4444'
-              strokeWidth='14'
-              strokeLinecap='round'
+              d='M9.45 12.32C36.88 9.1 62.72 24.24 75.41 49.17L85.07 36.72L93.47 76.61L55.7 61.3L70.05 55.16C59.75 34.78 37.58 22.18 11.31 25.26C7.74 25.68 4.5 23.13 4.08 19.56C3.66 15.99 5.88 12.74 9.45 12.32Z'
+              fill='#ef4444'
+              fillRule='evenodd'
             />
-            <path d='M75 50L112 81L65 84Z' fill='#ef4444' />
           </svg>
         </div>
       )}

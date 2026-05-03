@@ -1,9 +1,7 @@
+import type { CSSProperties } from 'react';
 import { Minimize2 } from 'lucide-react';
 
-import {
-  FittingModelImage,
-  useFittingModelStore,
-} from '@/Entities/FittingModel';
+import { useFittingModelStore } from '@/Entities/FittingModel';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
 import {
@@ -12,6 +10,18 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/Shared/Components';
+
+const visuallyHiddenStyle: CSSProperties = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: 0,
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+};
 
 export const ModelZoomDialogContent = () => {
   const entryWrapper = usePluginEntryStore((state) => state.entryWrapper);
@@ -24,44 +34,66 @@ export const ModelZoomDialogContent = () => {
   }
 
   return (
-    <>
-      <DialogTitle className='sr-only'>모델 확대</DialogTitle>
-      <DialogContent
-        className='z-[10000000]'
-        overlayClassName='z-[10000000]'
-        showCloseButton={false}
-        container={entryWrapper}
+    <DialogContent
+      className='z-[10000000]'
+      overlayClassName='z-[10000000]'
+      showCloseButton={false}
+      container={entryWrapper}
+      style={{
+        position: 'fixed',
+        top: '50vh',
+        left: '50vw',
+        zIndex: 10000000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 'min(30.3125rem, calc(100vw - 2rem))',
+        height: 'min(37.75rem, calc(100vh - 4rem))',
+        maxWidth: 'calc(100vw - 2rem)',
+        maxHeight: 'calc(100vh - 4rem)',
+        padding: '32px',
+        transform: 'translate(-50%, -50%)',
+        background: '#ffffff',
+        border: '1px solid rgba(17, 24, 39, 0.08)',
+        borderRadius: '12px',
+        boxSizing: 'border-box',
+        boxShadow: '0 18px 60px rgba(0, 0, 0, 0.18)',
+        overflow: 'hidden',
+      }}
+    >
+      <DialogTitle style={visuallyHiddenStyle}>모델 확대</DialogTitle>
+      <DialogClose asChild>
+        <Button
+          size='icon'
+          aria-label='모델 축소'
+          className='text-grey-03 hover:bg-grey-07 hover:text-grey-01 cursor-pointer bg-white'
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            width: '28px',
+            height: '28px',
+            padding: '6px',
+            borderRadius: '8px',
+            color: '#636364',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
+          }}
+        >
+          <Minimize2 style={{ width: '16px', height: '16px' }} />
+        </Button>
+      </DialogClose>
+      <img
+        src={currentFittingModel.defaultModelUrl}
+        alt={currentFittingModel.imageName}
+        draggable={false}
         style={{
-          position: 'fixed',
-          top: '50vh',
-          left: '50vw',
-          zIndex: 10000000,
-          width: 'min(30.3125rem, calc(100vw - 2rem))',
-          maxWidth: 'calc(100vw - 2rem)',
-          transform: 'translate(-50%, -50%)',
-          background: '#ffffff',
-          borderRadius: '12px',
-          boxShadow: '0 18px 60px rgba(0, 0, 0, 0.18)',
+          display: 'block',
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+          userSelect: 'none',
         }}
-      >
-        <DialogTitle className='sr-only'>모델 확대</DialogTitle>
-        <DialogClose asChild>
-          <Button
-            size='icon'
-            aria-label='모델 축소'
-            className='text-grey-03 hover:bg-grey-07 hover:text-grey-01 absolute top-4 right-4 h-5 w-5 cursor-pointer rounded-[0.3125rem] bg-white p-1'
-          >
-            <Minimize2 className='size-4' />
-          </Button>
-        </DialogClose>
-        <div className='h-[min(37.75rem,calc(100vh-4rem))] w-full select-none'>
-          <FittingModelImage
-            src={currentFittingModel.defaultModelUrl}
-            imageFileName={currentFittingModel.imageName}
-            className='h-full w-full object-contain'
-          />
-        </div>
-      </DialogContent>
-    </>
+      />
+    </DialogContent>
   );
 };
