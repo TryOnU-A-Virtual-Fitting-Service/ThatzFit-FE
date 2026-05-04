@@ -1,4 +1,1 @@
-export {
-  IS_VIRTUAL_FITTING_API_DISABLED,
-  VIRTUAL_FITTING_API_DISABLED_MESSAGE,
-} from './VirtualFittingApi';
+export { VIRTUAL_FITTING_READINESS_FALLBACK_MESSAGE } from './VirtualFittingApi';

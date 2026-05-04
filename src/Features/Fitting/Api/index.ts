@@ -1,1 +1,6 @@
-export { postClothesImageDataUrl, postFitting, postFittingJob } from './Post';
+export {
+  getVirtualFittingReadiness,
+  postClothesImageDataUrl,
+  postFitting,
+  postFittingJob,
+} from './Post';

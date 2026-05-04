@@ -6,11 +6,8 @@ import { useFittingStore } from '@/Entities/Fitting';
 import { Button } from '@/Shared/Components';
 import { useToast } from '@/Shared/Model';
 
-import {
-  IS_VIRTUAL_FITTING_API_DISABLED,
-  VIRTUAL_FITTING_API_DISABLED_MESSAGE,
-} from '../../Config';
-import { usePostFittingJob } from '../../Model';
+import { VIRTUAL_FITTING_READINESS_FALLBACK_MESSAGE } from '../../Config';
+import { usePostFittingJob, useVirtualFittingReadiness } from '../../Model';
 import {
   captureDebugError,
   captureDebugInfo,
@@ -23,6 +20,10 @@ const FITTING_FAILED_MESSAGE = '피팅에 실패했어요.';
 export const FittingExecutionButton = () => {
   const { mutateAsync: postFittingJob, isPending: isFittingJobPending } =
     usePostFittingJob();
+  const {
+    mutateAsync: checkVirtualFittingReadiness,
+    isPending: isReadinessPending,
+  } = useVirtualFittingReadiness();
 
   const {
     capturedClothingImage,
@@ -39,6 +40,7 @@ export const FittingExecutionButton = () => {
   );
 
   const { toast } = useToast();
+  const isExecutionPending = isFittingJobPending || isReadinessPending;
 
   useEffect(() => {
     captureDebugInfo(
@@ -46,28 +48,54 @@ export const FittingExecutionButton = () => {
       'dialog.execution_button_render_state',
       {
         capturedBlob: getBlobDebugDetails(capturedClothingImage),
-        isFittingJobPending,
+        isExecutionPending,
       },
     );
-  }, [capturedClothingImage, isFittingJobPending]);
+  }, [capturedClothingImage, isExecutionPending]);
 
   if (!capturedClothingImage) {
     return null;
   }
 
-  const handleClickExecutionButton = () => {
+  const handleClickExecutionButton = async () => {
     const debugTraceId = getBlobDebugTraceId(capturedClothingImage);
     captureDebugInfo(debugTraceId, 'dialog.confirm_click', {
       capturedBlob: getBlobDebugDetails(capturedClothingImage),
-      isFittingJobPending,
+      isExecutionPending,
     });
 
-    if (IS_VIRTUAL_FITTING_API_DISABLED) {
-      captureDebugInfo(debugTraceId, 'dialog.confirm_skipped_api_disabled');
+    if (isExecutionPending) {
+      return;
+    }
+
+    try {
+      const { data: readiness } =
+        await checkVirtualFittingReadiness(debugTraceId);
+      captureDebugInfo(debugTraceId, 'dialog.readiness_check_success', {
+        ready: readiness.ready,
+        paused: readiness.paused,
+        provider: readiness.provider,
+        reason: readiness.reason,
+      });
+
+      if (!readiness.ready) {
+        captureDebugInfo(debugTraceId, 'dialog.confirm_skipped_not_ready', {
+          reason: readiness.reason,
+        });
+        setFittingJobId(null);
+        setCapturedClothingImage(null);
+        setIsFittingDialogOpen(false);
+        toast.error(readiness.message);
+        return;
+      }
+    } catch (error) {
+      captureDebugError(debugTraceId, 'dialog.readiness_check_failed', {
+        error,
+      });
       setFittingJobId(null);
       setCapturedClothingImage(null);
       setIsFittingDialogOpen(false);
-      toast.success(VIRTUAL_FITTING_API_DISABLED_MESSAGE);
+      toast.error(VIRTUAL_FITTING_READINESS_FALLBACK_MESSAGE);
       return;
     }
 
@@ -99,6 +127,7 @@ export const FittingExecutionButton = () => {
       size='lg'
       className='!grow cursor-pointer'
       onClick={handleClickExecutionButton}
+      disabled={isExecutionPending}
     >
       확인
     </Button>

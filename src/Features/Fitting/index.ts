@@ -1,4 +1,8 @@
-export { usePostClothesImageDataUrl, usePostFittingJob } from './Model';
+export {
+  usePostClothesImageDataUrl,
+  usePostFittingJob,
+  useVirtualFittingReadiness,
+} from './Model';
 export {
   FittingButton,
   FittingCancelButton,

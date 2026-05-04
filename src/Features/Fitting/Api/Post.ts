@@ -1,10 +1,6 @@
 import { BASE_URL } from '@/Shared/Config';
-import { post } from '@/Shared/Model';
+import { get, post } from '@/Shared/Model';
 
-import {
-  IS_VIRTUAL_FITTING_API_DISABLED,
-  VIRTUAL_FITTING_API_DISABLED_MESSAGE,
-} from '../Config';
 import {
   captureDebugError,
   captureDebugInfo,
@@ -16,13 +12,45 @@ import type {
   PostFittingJobResponseDto,
   PostFittingRequestDto,
   PostFittingResponseDto,
+  VirtualFittingReadinessResponseDto,
 } from '../Type';
-export const postFittingJob = async (debugTraceId?: string) => {
-  if (IS_VIRTUAL_FITTING_API_DISABLED) {
-    captureDebugInfo(debugTraceId, 'api.post_fitting_job.disabled');
-    throw new Error(VIRTUAL_FITTING_API_DISABLED_MESSAGE);
-  }
 
+export const getVirtualFittingReadiness = async (debugTraceId?: string) => {
+  captureDebugInfo(
+    debugTraceId,
+    'api.virtual_fitting_readiness.request_start',
+    {
+      baseUrl: BASE_URL,
+      path: '/api/v1/try-on/readiness',
+    },
+  );
+  try {
+    const response = await get<VirtualFittingReadinessResponseDto>(
+      '/api/v1/try-on/readiness',
+    );
+    const json = await response.json();
+    captureDebugInfo(
+      debugTraceId,
+      'api.virtual_fitting_readiness.request_success',
+      {
+        ready: json.data.ready,
+        paused: json.data.paused,
+        provider: json.data.provider,
+        reason: json.data.reason,
+      },
+    );
+    return json;
+  } catch (error) {
+    captureDebugError(
+      debugTraceId,
+      'api.virtual_fitting_readiness.request_failed',
+      { error },
+    );
+    throw error;
+  }
+};
+
+export const postFittingJob = async (debugTraceId?: string) => {
   captureDebugInfo(debugTraceId, 'api.post_fitting_job.request_start', {
     baseUrl: BASE_URL,
     path: '/api/v1/try-on/job',
@@ -45,14 +73,6 @@ export const postFittingJob = async (debugTraceId?: string) => {
 
 export const postFitting = async (dto: PostFittingRequestDto) => {
   const debugTraceId = dto.request.debugTraceId;
-
-  if (IS_VIRTUAL_FITTING_API_DISABLED) {
-    captureDebugInfo(debugTraceId, 'api.post_fitting.disabled', {
-      tryOnJobId: dto.request.tryOnJobId,
-      defaultModelId: dto.request.defaultModelId,
-    });
-    throw new Error(VIRTUAL_FITTING_API_DISABLED_MESSAGE);
-  }
 
   const formData = new FormData();
   formData.append('file', dto.file);

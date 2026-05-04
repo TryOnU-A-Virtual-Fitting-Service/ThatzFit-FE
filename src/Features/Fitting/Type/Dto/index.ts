@@ -7,3 +7,7 @@ export type {
   PostFittingResponseDto,
 } from './PostFittingDto';
 export type { PostFittingJobResponseDto } from './PostFittingJobDto';
+export type {
+  VirtualFittingReadinessReason,
+  VirtualFittingReadinessResponseDto,
+} from './VirtualFittingReadinessDto';

@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 
-import { usePostFittingJob } from '@/Features/Fitting';
 import {
-  IS_VIRTUAL_FITTING_API_DISABLED,
-  VIRTUAL_FITTING_API_DISABLED_MESSAGE,
-} from '@/Features/Fitting/Config';
+  usePostFittingJob,
+  useVirtualFittingReadiness,
+} from '@/Features/Fitting';
+import { VIRTUAL_FITTING_READINESS_FALLBACK_MESSAGE } from '@/Features/Fitting/Config';
 import {
   captureDebugError,
   captureDebugInfo,
@@ -113,6 +113,10 @@ export const FittingDialog = () => {
   const dialogContentRef = useRef<HTMLDivElement>(null);
   const { mutateAsync: postFittingJob, isPending: isFittingJobPending } =
     usePostFittingJob();
+  const {
+    mutateAsync: checkVirtualFittingReadiness,
+    isPending: isReadinessPending,
+  } = useVirtualFittingReadiness();
   const { toast } = useToast();
   const {
     capturedClothingImage,
@@ -135,6 +139,7 @@ export const FittingDialog = () => {
   );
 
   const debugTraceId = getBlobDebugTraceId(capturedClothingImage);
+  const isExecutionPending = isFittingJobPending || isReadinessPending;
   const capturedBlob = useMemo(
     () => getBlobDebugDetails(capturedClothingImage),
     [capturedClothingImage],
@@ -251,9 +256,9 @@ export const FittingDialog = () => {
   useEffect(() => {
     captureDebugInfo(debugTraceId, 'dialog.execution_button_render_state', {
       capturedBlob,
-      isFittingJobPending,
+      isExecutionPending,
     });
-  }, [capturedBlob, debugTraceId, isFittingJobPending]);
+  }, [capturedBlob, debugTraceId, isExecutionPending]);
 
   const handleClickCancelButton = () => {
     captureDebugInfo(debugTraceId, 'dialog.cancel_click', {
@@ -262,22 +267,44 @@ export const FittingDialog = () => {
     setIsFittingDialogOpen(false);
   };
 
-  const handleClickExecutionButton = () => {
-    if (!capturedClothingImage) {
+  const handleClickExecutionButton = async () => {
+    if (!capturedClothingImage || isExecutionPending) {
       return;
     }
 
     captureDebugInfo(debugTraceId, 'dialog.confirm_click', {
       capturedBlob,
-      isFittingJobPending,
+      isExecutionPending,
     });
 
-    if (IS_VIRTUAL_FITTING_API_DISABLED) {
-      captureDebugInfo(debugTraceId, 'dialog.confirm_skipped_api_disabled');
+    try {
+      const { data: readiness } =
+        await checkVirtualFittingReadiness(debugTraceId);
+      captureDebugInfo(debugTraceId, 'dialog.readiness_check_success', {
+        ready: readiness.ready,
+        paused: readiness.paused,
+        provider: readiness.provider,
+        reason: readiness.reason,
+      });
+
+      if (!readiness.ready) {
+        captureDebugInfo(debugTraceId, 'dialog.confirm_skipped_not_ready', {
+          reason: readiness.reason,
+        });
+        setFittingJobId(null);
+        setCapturedClothingImage(null);
+        setIsFittingDialogOpen(false);
+        toast.error(readiness.message);
+        return;
+      }
+    } catch (error) {
+      captureDebugError(debugTraceId, 'dialog.readiness_check_failed', {
+        error,
+      });
       setFittingJobId(null);
       setCapturedClothingImage(null);
       setIsFittingDialogOpen(false);
-      toast.success(VIRTUAL_FITTING_API_DISABLED_MESSAGE);
+      toast.error(VIRTUAL_FITTING_READINESS_FALLBACK_MESSAGE);
       return;
     }
 
@@ -432,19 +459,19 @@ export const FittingDialog = () => {
         </button>
         <button
           type='button'
-          disabled={isFittingJobPending}
+          disabled={isExecutionPending}
           onClick={handleClickExecutionButton}
           style={{
             flexGrow: 1,
             height: '2.5rem',
-            cursor: isFittingJobPending ? 'not-allowed' : 'pointer',
+            cursor: isExecutionPending ? 'not-allowed' : 'pointer',
             border: 'none',
             borderRadius: '0.375rem',
             background: '#181a1b',
             color: '#ffffff',
             fontSize: '0.875rem',
             fontWeight: 500,
-            opacity: isFittingJobPending ? 0.7 : 1,
+            opacity: isExecutionPending ? 0.7 : 1,
           }}
         >
           확인

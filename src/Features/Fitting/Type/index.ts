@@ -4,3 +4,7 @@ export type {
   PostClothesImageDataUrlRequestDto,
   PostClothesImageDataUrlResponseDto,
 } from './Dto';
+export type {
+  VirtualFittingReadinessReason,
+  VirtualFittingReadinessResponseDto,
+} from './Dto';
