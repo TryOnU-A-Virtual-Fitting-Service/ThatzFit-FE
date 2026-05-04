@@ -29,8 +29,9 @@ export const FittingModelListItemButton = ({
   };
 
   return (
-    <DialogClose>
+    <DialogClose asChild>
       <Button
+        type='button'
         variant='ghost'
         className='text-body1 text-grey-01 hover:bg-grey-07 hover:text-grey-01 w-full bg-white'
         onClick={() =>

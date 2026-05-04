@@ -52,6 +52,7 @@ export const ModelZoomDialogContent = () => {
         maxWidth: 'calc(100vw - 2rem)',
         maxHeight: 'calc(100vh - 4rem)',
         padding: '32px',
+        translate: 'none',
         transform: 'translate(-50%, -50%)',
         background: '#ffffff',
         border: '1px solid rgba(17, 24, 39, 0.08)',
