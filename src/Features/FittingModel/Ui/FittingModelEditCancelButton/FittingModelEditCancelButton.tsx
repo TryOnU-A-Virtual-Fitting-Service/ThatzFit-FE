@@ -1,4 +1,5 @@
 import { Button } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 
 type FittingModelEditCancelButtonProps = {
   onClick: () => void;
@@ -7,13 +8,15 @@ type FittingModelEditCancelButtonProps = {
 export const FittingModelEditCancelButton = ({
   onClick,
 }: FittingModelEditCancelButtonProps) => {
+  const copy = getPluginCopy();
+
   return (
     <Button
       variant='ghost'
       className='bg-grey-08 !grow cursor-pointer'
       onClick={onClick}
     >
-      취소
+      {copy.common.cancel}
     </Button>
   );
 };

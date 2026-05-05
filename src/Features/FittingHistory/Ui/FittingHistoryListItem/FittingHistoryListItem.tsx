@@ -1,6 +1,7 @@
 import { useFittingModelStore } from '@/Entities/FittingModel';
 
 import { Button } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 
 type FittingHistoryListItemProps = {
   fittingHistory: Schema.FittingHistory;
@@ -9,6 +10,7 @@ type FittingHistoryListItemProps = {
 export const FittingHistoryListItem = ({
   fittingHistory,
 }: FittingHistoryListItemProps) => {
+  const copy = getPluginCopy();
   const setCurrentFittingModel = useFittingModelStore(
     (state) => state.setCurrentFittingModel,
   );
@@ -31,7 +33,7 @@ export const FittingHistoryListItem = ({
     >
       <img
         src={fittingHistory.tryOnResultUrl}
-        alt='가상 피팅 결과'
+        alt={copy.history.resultAlt}
         className='h-full w-full object-contain'
       />
     </Button>

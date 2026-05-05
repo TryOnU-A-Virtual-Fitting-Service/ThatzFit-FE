@@ -5,6 +5,7 @@ import { usePluginStore } from '@/Entities/Plugin';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
 import { Button } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 import { cn } from '@/Shared/Lib';
 
 interface PluginActivateButtonProps {
@@ -18,6 +19,7 @@ export const PluginActivateButton = ({
   style,
   onClick,
 }: PluginActivateButtonProps) => {
+  const copy = getPluginCopy();
   const entryWrapper = usePluginEntryStore((state) => state.entryWrapper);
   const pluginButtonImageUrl = usePluginStore(
     (state) => state.pluginButtonImageUrl,
@@ -46,7 +48,7 @@ export const PluginActivateButton = ({
     >
       <img
         src={pluginButtonImageUrl}
-        alt='플러그인 진입 버튼 로고'
+        alt={copy.plugin.entryButtonAlt}
         onLoad={handleImageLoad}
         className='h-full w-full'
         style={{

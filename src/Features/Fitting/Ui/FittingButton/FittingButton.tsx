@@ -4,8 +4,10 @@ import { useFittingStore } from '@/Entities/Fitting';
 import { usePluginStore } from '@/Entities/Plugin';
 
 import { Button } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 
 export const FittingButton = () => {
+  const copy = getPluginCopy();
   const setIsCapturing = useFittingStore((state) => state.setIsCapturing);
   const { pluginWrapper, setIsPluginOpen } = usePluginStore(
     useShallow((state) => ({
@@ -43,7 +45,7 @@ export const FittingButton = () => {
       className='bg-grey-02 text-body1 hover:text-grey-07 h-8 w-full cursor-pointer rounded-md text-white select-none hover:bg-black'
       onClick={handleClickFittingButton}
     >
-      입어보기
+      {copy.fitting.button}
     </Button>
   );
 };

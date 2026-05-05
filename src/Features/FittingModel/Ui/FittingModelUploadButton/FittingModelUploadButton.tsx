@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useFittingModelStore } from '@/Entities/FittingModel';
 
 import { Button } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 
 type FittingModelUploadButtonProps = {
   setIsFittingModelAddDialogOpen: (
@@ -15,6 +16,7 @@ export const FittingModelUploadButton = ({
   setIsFittingModelAddDialogOpen,
   setIsModelActionDialogOpen,
 }: FittingModelUploadButtonProps) => {
+  const copy = getPluginCopy();
   const { addedFittingModel, setFittingModelUploadStatus } =
     useFittingModelStore(
       useShallow((state) => ({
@@ -41,7 +43,7 @@ export const FittingModelUploadButton = ({
       className='!grow'
       onClick={handleClickUploadFittingModel}
     >
-      확인
+      {copy.common.confirm}
     </Button>
   );
 };

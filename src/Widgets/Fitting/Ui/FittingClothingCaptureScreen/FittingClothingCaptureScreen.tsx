@@ -5,11 +5,13 @@ import { getCaptureWindow } from '@/Features/Fitting/Model/captureEngine';
 import { useFittingStore } from '@/Entities/Fitting';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
+import { getPluginCopy } from '@/Shared/Config';
 import { cn } from '@/Shared/Lib';
 
 import { useCroppedClothing } from './FittingClothingCaptureScreen.hook';
 
 export const FittingClothingCaptureScreen = () => {
+  const copy = getPluginCopy();
   const isCapturing = useFittingStore((state) => state.isCapturing);
 
   const pluginEntryWrapper = usePluginEntryStore((state) => state.entryWrapper);
@@ -124,7 +126,7 @@ export const FittingClothingCaptureScreen = () => {
               lineHeight: 1.5,
             }}
           >
-            입어보고 싶은 옷의 사진 부분을 드래그해 주세요.
+            {copy.fitting.captureGuide}
           </span>
         </div>
       )}

@@ -1,4 +1,4 @@
 export {
+  getVirtualFittingApiDisabledMessage,
   IS_VIRTUAL_FITTING_API_DISABLED,
-  VIRTUAL_FITTING_API_DISABLED_MESSAGE,
 } from './VirtualFittingApi';

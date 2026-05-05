@@ -4,11 +4,12 @@ import { useShallow } from 'zustand/react/shallow';
 import { useFittingStore } from '@/Entities/Fitting';
 
 import { Button } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
 
 import {
+  getVirtualFittingApiDisabledMessage,
   IS_VIRTUAL_FITTING_API_DISABLED,
-  VIRTUAL_FITTING_API_DISABLED_MESSAGE,
 } from '../../Config';
 import { usePostFittingJob } from '../../Model';
 import {
@@ -18,9 +19,8 @@ import {
   getBlobDebugTraceId,
 } from '../../Model/debug';
 
-const FITTING_FAILED_MESSAGE = '피팅에 실패했어요.';
-
 export const FittingExecutionButton = () => {
+  const copy = getPluginCopy();
   const { mutateAsync: postFittingJob, isPending: isFittingJobPending } =
     usePostFittingJob();
 
@@ -67,7 +67,7 @@ export const FittingExecutionButton = () => {
       setFittingJobId(null);
       setCapturedClothingImage(null);
       setIsFittingDialogOpen(false);
-      toast.success(VIRTUAL_FITTING_API_DISABLED_MESSAGE);
+      toast.success(getVirtualFittingApiDisabledMessage());
       return;
     }
 
@@ -85,7 +85,7 @@ export const FittingExecutionButton = () => {
         captureDebugError(debugTraceId, 'dialog.job_create_failed', {
           error,
         });
-        toast.error(FITTING_FAILED_MESSAGE);
+        toast.error(copy.fitting.failed);
       },
       onSettled: () => {
         captureDebugInfo(debugTraceId, 'dialog.close_after_job_request');
@@ -100,7 +100,7 @@ export const FittingExecutionButton = () => {
       className='!grow cursor-pointer'
       onClick={handleClickExecutionButton}
     >
-      확인
+      {copy.common.confirm}
     </Button>
   );
 };

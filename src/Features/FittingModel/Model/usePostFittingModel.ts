@@ -8,15 +8,14 @@ import {
 } from '@/Entities/FittingModel';
 import { usePluginStore } from '@/Entities/Plugin';
 
-import { isCustomError } from '@/Shared/Config';
+import { getPluginCopy, isCustomError } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
 
 import { postFittingModel } from '../Api';
 import type { PostFittingModelRequestDto } from '../Type';
 
-const UPLOAD_SUCCESS_MESSAGE = '새로운 모델을 추가했어요.';
-
 export const usePostFittingModel = () => {
+  const copy = getPluginCopy();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -64,7 +63,7 @@ export const usePostFittingModel = () => {
               modelName: data.modelName,
               defaultModelId: data.id,
             });
-            toast.success(UPLOAD_SUCCESS_MESSAGE);
+            toast.success(copy.model.uploadSuccess);
           },
           onError: (error) => {
             if (isCustomError(error) || error instanceof Error) {
@@ -88,6 +87,7 @@ export const usePostFittingModel = () => {
     setCurrentFittingModel,
     setFittingModelUploadStatus,
     uploadFittingModel,
+    copy,
   ]);
 
   return { isPending };

@@ -7,6 +7,7 @@ import { PluginEntryButton } from '@/Features/PluginEntry';
 
 import { initialCompanyInfo } from '@/Entities/Plugin';
 
+import { initializeI18n } from '@/Shared/Config';
 import { Toast, ToastProvider } from '@/Shared/Ui';
 
 import { PluginRouter } from './Ui/PluginRouter';
@@ -20,6 +21,7 @@ export const App = () => {
     let isMounted = true;
 
     const bootstrap = async () => {
+      initializeI18n();
       initializeThatzfitStyle();
       createPluginEntry();
       initializePlugin();

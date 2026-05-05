@@ -25,7 +25,7 @@ import {
 } from '@/Entities/FittingModel';
 
 import { DialogTitle } from '@/Shared/Components';
-import { isCustomError } from '@/Shared/Config';
+import { getPluginCopy, isCustomError } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
 
 import { FittingModelEditListItem } from '../FittingModelEditListItem';
@@ -39,6 +39,7 @@ export const FittingModelEditList = ({
   fittingModelList,
   setModelActionMode,
 }: FittingModelEditListProps) => {
+  const copy = getPluginCopy();
   const queryClient = useQueryClient();
   const { mutate: patchFittingModelList } = usePatchFittingModelList();
 
@@ -187,7 +188,7 @@ export const FittingModelEditList = ({
   return (
     <>
       <DialogTitle className='text-center select-none'>
-        피팅 모델 수정
+        {copy.model.editTitle}
       </DialogTitle>
       <div className='flex flex-col gap-3.5'>
         <div className='flex flex-col gap-2'>

@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 
 const visuallyHiddenStyle: CSSProperties = {
   position: 'absolute',
@@ -24,6 +25,7 @@ const visuallyHiddenStyle: CSSProperties = {
 };
 
 export const ModelZoomDialogContent = () => {
+  const copy = getPluginCopy();
   const entryWrapper = usePluginEntryStore((state) => state.entryWrapper);
   const currentFittingModel = useFittingModelStore(
     (state) => state.currentFittingModel,
@@ -62,11 +64,11 @@ export const ModelZoomDialogContent = () => {
         overflow: 'hidden',
       }}
     >
-      <DialogTitle style={visuallyHiddenStyle}>모델 확대</DialogTitle>
+      <DialogTitle style={visuallyHiddenStyle}>{copy.model.zoomIn}</DialogTitle>
       <DialogClose asChild>
         <Button
           size='icon'
-          aria-label='모델 축소'
+          aria-label={copy.model.zoomOut}
           className='text-grey-03 hover:bg-grey-07 hover:text-grey-01 cursor-pointer bg-white'
           style={{
             position: 'absolute',

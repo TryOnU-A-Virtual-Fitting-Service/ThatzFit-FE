@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 
 type FittingModelAddDialogProps = {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export const FittingModelAddDialog = ({
   setIsOpen,
   setIsModelActionDialogOpen,
 }: FittingModelAddDialogProps) => {
+  const copy = getPluginCopy();
   const entryWrapper = usePluginEntryStore((state) => state.entryWrapper);
   const addedFittingModel = useFittingModelStore(
     (state) => state.addedFittingModel,
@@ -32,13 +34,13 @@ export const FittingModelAddDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTitle className='sr-only'>모델 추가</DialogTitle>
+      <DialogTitle className='sr-only'>{copy.model.addTitle}</DialogTitle>
       <DialogContent
         container={entryWrapper}
         className='!h-[26.875rem] !w-[20.625rem]'
         showCloseButton={false}
       >
-        <DialogTitle className='sr-only'>모델 추가</DialogTitle>
+        <DialogTitle className='sr-only'>{copy.model.addTitle}</DialogTitle>
         <div className='flex h-full w-full flex-col items-center gap-4'>
           {addedFittingModel && (
             <FittingModelImage
@@ -49,17 +51,17 @@ export const FittingModelAddDialog = ({
           )}
           <div className='flex flex-col items-center gap-1.5'>
             <span className='text-heading1-semibold font-sans text-black'>
-              이 사진을 모델 메뉴에 추가할까요?
+              {copy.model.addQuestion}
             </span>
             <span className='text-body1-regular text-center text-[#788089]'>
-              단순한 자세의 단독 전신/반신 사진일수록 <br />
-              피팅이 더 자연스럽게 적용돼요!
+              {copy.model.addHelpLine1} <br />
+              {copy.model.addHelpLine2}
             </span>
           </div>
           <div className='flex w-full gap-2'>
             <DialogClose asChild>
               <Button variant='secondary' size='lg' className='!grow'>
-                취소
+                {copy.common.cancel}
               </Button>
             </DialogClose>
             <DialogClose asChild>

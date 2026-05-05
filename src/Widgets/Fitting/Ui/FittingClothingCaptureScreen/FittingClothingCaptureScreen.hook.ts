@@ -25,26 +25,29 @@ import {
 import { useFittingStore } from '@/Entities/Fitting';
 import { usePluginStore } from '@/Entities/Plugin';
 
+import { getPluginCopy } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
 
 const getCaptureErrorMessage = (error: unknown): string => {
+  const copy = getPluginCopy();
+
   if (!(error instanceof CaptureError)) {
-    return '옷 캡처에 실패했어요.';
+    return copy.fitting.captureFailed;
   }
 
   switch (error.code) {
     case 'CANVAS_LIMIT_EXCEEDED':
-      return '선택 영역이 너무 커서 캡처할 수 없어요. 영역을 조금 줄여주세요.';
+      return copy.fitting.captureTooLarge;
     case 'CORS_TAINT':
-      return '외부 이미지 보안 정책으로 캡처에 실패했어요. 다시 시도해 주세요.';
+      return copy.fitting.captureSecurity;
     case 'DISPLAY_MEDIA_DENIED':
-      return '화면 공유 권한을 허용해 주세요. 권한 허용 후 다시 시도해 주세요.';
+      return copy.fitting.capturePermission;
     case 'DISPLAY_MEDIA_NOT_SUPPORTED':
-      return '현재 브라우저에서 화면 공유 캡처를 지원하지 않아요.';
+      return copy.fitting.captureUnsupported;
     case 'EMPTY_IMAGE_BLOB':
-      return '캡처 이미지 생성에 실패했어요. 다시 시도해 주세요.';
+      return copy.fitting.captureEmpty;
     default:
-      return '옷 캡처에 실패했어요.';
+      return copy.fitting.captureFailed;
   }
 };
 

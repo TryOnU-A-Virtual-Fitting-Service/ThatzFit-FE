@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 import { SquarePlus } from 'lucide-react';
 
 import { Button } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
 
 import { FITTING_MODEL_MAX_COUNT } from './FittingModelAddButton.constant';
@@ -15,13 +16,12 @@ export const FittingModelAddButton = ({
   fittingModelCount,
   fileInputRef,
 }: FittingModelAddButtonProps) => {
+  const copy = getPluginCopy();
   const { toast } = useToast();
 
   const handleClickFittingModel = () => {
     if (fittingModelCount >= FITTING_MODEL_MAX_COUNT) {
-      toast.error(
-        `최대 ${FITTING_MODEL_MAX_COUNT}개의 모델만 추가할 수 있어요.`,
-      );
+      toast.error(copy.model.maxCount(FITTING_MODEL_MAX_COUNT));
       return;
     }
     fileInputRef?.current?.click();

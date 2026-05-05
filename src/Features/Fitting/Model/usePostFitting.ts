@@ -6,6 +6,7 @@ import { useFittingStore } from '@/Entities/Fitting';
 import { fittingHistoryKeys } from '@/Entities/FittingHistory';
 import { useFittingModelStore } from '@/Entities/FittingModel';
 
+import { getPluginCopy } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
 
 import { postFitting } from '../Api';
@@ -20,9 +21,8 @@ import {
   summarizeUrl,
 } from './debug';
 
-const FITTING_FAILED_MESSAGE = '피팅에 실패했어요.';
-
 export const usePostFitting = () => {
+  const copy = getPluginCopy();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -124,7 +124,7 @@ export const usePostFitting = () => {
               defaultModelId: data.defaultModelId,
               modelName: data.modelName,
             });
-            toast.success('피팅을 완료했어요.');
+            toast.success(copy.fitting.completed);
             queryClient.invalidateQueries({
               queryKey: fittingHistoryKeys.list(),
             });
@@ -137,7 +137,7 @@ export const usePostFitting = () => {
             captureDebugError(debugTraceId, 'fitting.execute_failed', {
               error,
             });
-            toast.error(FITTING_FAILED_MESSAGE);
+            toast.error(copy.fitting.failed);
           },
           onSettled: () => {
             captureDebugInfo(
@@ -161,6 +161,7 @@ export const usePostFitting = () => {
     setFittingJobId,
     setCapturedClothingImage,
     setCurrentFittingModel,
+    copy,
   ]);
 
   return { isPending };

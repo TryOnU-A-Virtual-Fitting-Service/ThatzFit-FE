@@ -2,8 +2,8 @@ import { BASE_URL } from '@/Shared/Config';
 import { post } from '@/Shared/Model';
 
 import {
+  getVirtualFittingApiDisabledMessage,
   IS_VIRTUAL_FITTING_API_DISABLED,
-  VIRTUAL_FITTING_API_DISABLED_MESSAGE,
 } from '../Config';
 import {
   captureDebugError,
@@ -20,7 +20,7 @@ import type {
 export const postFittingJob = async (debugTraceId?: string) => {
   if (IS_VIRTUAL_FITTING_API_DISABLED) {
     captureDebugInfo(debugTraceId, 'api.post_fitting_job.disabled');
-    throw new Error(VIRTUAL_FITTING_API_DISABLED_MESSAGE);
+    throw new Error(getVirtualFittingApiDisabledMessage());
   }
 
   captureDebugInfo(debugTraceId, 'api.post_fitting_job.request_start', {
@@ -51,7 +51,7 @@ export const postFitting = async (dto: PostFittingRequestDto) => {
       tryOnJobId: dto.request.tryOnJobId,
       defaultModelId: dto.request.defaultModelId,
     });
-    throw new Error(VIRTUAL_FITTING_API_DISABLED_MESSAGE);
+    throw new Error(getVirtualFittingApiDisabledMessage());
   }
 
   const formData = new FormData();

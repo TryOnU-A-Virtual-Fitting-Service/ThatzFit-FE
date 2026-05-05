@@ -1,5 +1,6 @@
 import { FittingProgress } from '@/Entities/Fitting';
 
+import { getPluginCopy } from '@/Shared/Config';
 import { LoadingAnimation } from '@/Shared/Ui';
 
 type FittingLoadingViewProps = {
@@ -7,12 +8,14 @@ type FittingLoadingViewProps = {
 };
 
 export const FittingLoadingView = ({ isLoading }: FittingLoadingViewProps) => {
+  const copy = getPluginCopy();
+
   return (
     <div className='flex flex-col items-center justify-center gap-0.5'>
       <LoadingAnimation />
       <div className='flex flex-col items-center'>
         <FittingProgress isLoading={isLoading} />
-        <span className='text-body3-medium'>옷 갈아입는 중...</span>
+        <span className='text-body3-medium'>{copy.fitting.loading}</span>
       </div>
     </div>
   );

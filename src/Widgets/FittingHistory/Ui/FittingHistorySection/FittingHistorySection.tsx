@@ -4,12 +4,15 @@ import { FittingHistoryInfoTooltip } from '@/Features/FittingHistory';
 
 import { fittingHistoryQueries } from '@/Entities/FittingHistory';
 
+import { getPluginCopy } from '@/Shared/Config';
+
 import {
   FittingHistoryList,
   FittingHistoryListEmptyView,
 } from '../FittingHistoryList';
 
 export const FittingHistorySection = () => {
+  const copy = getPluginCopy();
   const {
     data: fittingHistoryList,
     isLoading,
@@ -22,7 +25,7 @@ export const FittingHistorySection = () => {
   return (
     <section className='mt-4 mb-[0.875rem] flex w-full flex-col gap-1 select-none'>
       <div className='flex w-full items-center justify-between'>
-        <span className='text-body1'>피팅 히스토리</span>
+        <span className='text-body1'>{copy.history.title}</span>
         <FittingHistoryInfoTooltip />
       </div>
       {fittingHistoryList?.tryOnResults.length === 0 ? (

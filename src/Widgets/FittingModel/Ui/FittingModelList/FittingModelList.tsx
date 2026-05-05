@@ -3,6 +3,7 @@ import { FittingModelListItemButton } from '@/Features/FittingModel';
 import type { GetFittingModelListResponseDto } from '@/Entities/FittingModel/Type';
 
 import { DialogTitle } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 
 type FittingModelListProps = {
   fittingModelList: GetFittingModelListResponseDto;
@@ -11,9 +12,11 @@ type FittingModelListProps = {
 export const FittingModelList = ({
   fittingModelList,
 }: FittingModelListProps) => {
+  const copy = getPluginCopy();
+
   return (
     <>
-      <DialogTitle className='sr-only'>모델 선택</DialogTitle>
+      <DialogTitle className='sr-only'>{copy.model.selectTitle}</DialogTitle>
       <div className='flex h-full w-full flex-col'>
         {fittingModelList.map((fittingModel) => (
           <FittingModelListItemButton

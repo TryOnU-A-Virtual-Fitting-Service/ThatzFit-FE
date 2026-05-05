@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useFittingStore } from '@/Entities/Fitting';
 
 import { Button } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 
 import {
   captureDebugInfo,
@@ -11,6 +12,7 @@ import {
 } from '../../Model/debug';
 
 export const FittingCancelButton = () => {
+  const copy = getPluginCopy();
   const { capturedClothingImage, setIsFittingDialogOpen } = useFittingStore(
     useShallow((state) => ({
       capturedClothingImage: state.capturedClothingImage,
@@ -36,7 +38,7 @@ export const FittingCancelButton = () => {
       className='!grow cursor-pointer'
       onClick={handleClickCancelButton}
     >
-      취소
+      {copy.common.cancel}
     </Button>
   );
 };

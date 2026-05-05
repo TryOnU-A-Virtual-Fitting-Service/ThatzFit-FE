@@ -9,8 +9,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/Shared/Components';
+import { getPluginCopy } from '@/Shared/Config';
 
 export const FittingHistoryInfoTooltip = () => {
+  const copy = getPluginCopy();
   const pluginIframe = usePluginStore((state) => state.pluginIframe);
   const iframeDocument = pluginIframe?.contentDocument;
 
@@ -56,7 +58,7 @@ export const FittingHistoryInfoTooltip = () => {
       >
         <div className='flex items-center gap-1'>
           <span className='text-body2-medium text-grey-03'>
-            최대 20개까지 저장됩니다
+            {copy.history.info}
           </span>
           <Button
             variant='ghost'

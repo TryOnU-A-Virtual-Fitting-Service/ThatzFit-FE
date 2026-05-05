@@ -4,8 +4,8 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { usePostFittingJob } from '@/Features/Fitting';
 import {
+  getVirtualFittingApiDisabledMessage,
   IS_VIRTUAL_FITTING_API_DISABLED,
-  VIRTUAL_FITTING_API_DISABLED_MESSAGE,
 } from '@/Features/Fitting/Config';
 import {
   captureDebugError,
@@ -18,9 +18,8 @@ import {
 import { useFittingStore } from '@/Entities/Fitting';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
+import { getPluginCopy } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
-
-const FITTING_FAILED_MESSAGE = '피팅에 실패했어요.';
 
 const getDialogWindow = (): Window => {
   try {
@@ -109,6 +108,7 @@ const getElementStackAtViewportCenter = (targetWindow: Window) => {
 };
 
 export const FittingDialog = () => {
+  const copy = getPluginCopy();
   const pluginEntryWrapper = usePluginEntryStore((state) => state.entryWrapper);
   const dialogContentRef = useRef<HTMLDivElement>(null);
   const { mutateAsync: postFittingJob, isPending: isFittingJobPending } =
@@ -277,7 +277,7 @@ export const FittingDialog = () => {
       setFittingJobId(null);
       setCapturedClothingImage(null);
       setIsFittingDialogOpen(false);
-      toast.success(VIRTUAL_FITTING_API_DISABLED_MESSAGE);
+      toast.success(getVirtualFittingApiDisabledMessage());
       return;
     }
 
@@ -295,7 +295,7 @@ export const FittingDialog = () => {
         captureDebugError(debugTraceId, 'dialog.job_create_failed', {
           error,
         });
-        toast.error(FITTING_FAILED_MESSAGE);
+        toast.error(copy.fitting.failed);
       },
       onSettled: () => {
         captureDebugInfo(debugTraceId, 'dialog.close_after_job_request');
@@ -313,7 +313,7 @@ export const FittingDialog = () => {
       ref={dialogContentRef}
       role='dialog'
       aria-modal='true'
-      aria-label='피팅 실행 확인'
+      aria-label={copy.fitting.dialogAriaLabel}
       style={{
         position: 'fixed',
         top: '50%',
@@ -353,7 +353,7 @@ export const FittingDialog = () => {
       >
         <img
           src={previewUrl}
-          alt='captured clothing image'
+          alt={copy.fitting.previewAlt}
           onLoad={() => {
             captureDebugInfo(
               debugTraceId,
@@ -393,7 +393,7 @@ export const FittingDialog = () => {
             lineHeight: 1.5,
           }}
         >
-          이 옷을 입어볼까요?
+          {copy.fitting.confirmTitle}
         </span>
         <span
           style={{
@@ -403,7 +403,7 @@ export const FittingDialog = () => {
             lineHeight: 1.5,
           }}
         >
-          상/하의만 입어볼 수 있어요.
+          {copy.fitting.confirmHelp}
         </span>
       </div>
       <div
@@ -428,7 +428,7 @@ export const FittingDialog = () => {
             fontWeight: 500,
           }}
         >
-          취소
+          {copy.common.cancel}
         </button>
         <button
           type='button'
@@ -447,7 +447,7 @@ export const FittingDialog = () => {
             opacity: isFittingJobPending ? 0.7 : 1,
           }}
         >
-          확인
+          {copy.common.confirm}
         </button>
       </div>
     </div>,
