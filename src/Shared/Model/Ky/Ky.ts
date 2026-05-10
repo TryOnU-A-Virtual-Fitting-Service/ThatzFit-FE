@@ -3,6 +3,7 @@ import ky from 'ky';
 import { nanoid } from 'nanoid';
 
 import { BASE_URL, createCustomError, USER_TOKEN_KEY } from '../../Config';
+import { getHostPageUrl } from '../../Lib';
 import type { KySuccess, SuccessResponse } from '../../Type';
 import { parentLocalStorage } from '../ParentLocalStorage';
 
@@ -26,6 +27,7 @@ const api: KyInstance = ky.create({
 function injectUserToken(request: Request) {
   const userToken = getUserToken();
   request.headers.set(USER_TOKEN_KEY, userToken);
+  request.headers.set('X-ThatzFit-Host-Url', getHostPageUrl());
 }
 
 function getUserToken() {

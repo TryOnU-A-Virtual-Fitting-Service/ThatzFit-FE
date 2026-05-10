@@ -27,13 +27,13 @@ export const App = () => {
       initializePlugin();
 
       try {
-        await initUserInfo();
         await initialCompanyInfo();
+        await initUserInfo();
         if (isMounted) {
           setIsUserInitialized(true);
         }
       } catch (error) {
-        console.error('Failed to initialize user info', error);
+        console.error('Failed to initialize ThatzFit plugin', error);
       }
     };
 
