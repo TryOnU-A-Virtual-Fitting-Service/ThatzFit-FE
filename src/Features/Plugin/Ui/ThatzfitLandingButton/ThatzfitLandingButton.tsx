@@ -1,17 +1,23 @@
 import { Button } from '@/Shared/Components';
-import { getPluginCopy } from '@/Shared/Config';
+import { getLocale, getPluginCopy } from '@/Shared/Config';
+
+const THATZFIT_LANDING_BASE_URL = 'https://thatz.fit';
 
 export const ThatzfitLandingButton = () => {
   const copy = getPluginCopy();
+  const landingUrl = `${THATZFIT_LANDING_BASE_URL}/${getLocale()}`;
 
   return (
     <Button
+      asChild
       variant='ghost'
       className='text-grey-04 hover:bg-grey-09 hover:text-grey-01 mt-1 h-[0.9375rem] rounded-sm bg-white px-1 py-1.5 select-none'
     >
-      <span className='text-grey-04 hover:text-grey-01 text-body3'>
-        {copy.plugin.poweredBy}
-      </span>
+      <a href={landingUrl} target='_top' rel='noreferrer'>
+        <span className='text-grey-04 hover:text-grey-01 text-body3'>
+          {copy.plugin.poweredBy}
+        </span>
+      </a>
     </Button>
   );
 };

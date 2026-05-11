@@ -45,10 +45,7 @@ export const FittingModelView = () => {
   }, [fittingModelList, currentFittingModel, setCurrentFittingModel]);
 
   return (
-    <div
-      className='bg-grey-08 relative flex w-full justify-center overflow-visible rounded-[0.375rem] p-[0.5625rem] select-none'
-      style={{ height: 'clamp(7rem, calc(100vh - 16.875rem), 18.75rem)' }}
-    >
+    <div className='bg-grey-08 relative flex h-[18.75rem] w-full justify-center overflow-hidden rounded-[0.375rem] p-[0.5625rem] select-none'>
       <FittingModelActionDialog dialogTriggerClassName='absolute top-2 left-2' />
       {isPostFittingPending && (
         <FittingLoadingView isLoading={isPostFittingPending} />
