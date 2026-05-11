@@ -21,15 +21,21 @@ export const initializeThatzfitStyle = () => {
 
     .thatzfit-desktop {
       position: fixed !important;
-      bottom: 90px !important;
+      bottom: 72px !important;
       right: 24px !important;
-      width: 15rem !important;
-      height: 570px !important;
+      width: min(15rem, calc(100vw - 2rem)) !important;
+      height: min(570px, calc(100dvh - 104px)) !important;
       z-index: 999999 !important;
       display: block !important;
       background-color: transparent !important;
       border-radius: 0.75rem !important;
       box-shadow: 0 0 41.711px 0 rgba(0, 0, 0, 0.15) !important;
+    }
+
+    @supports not (height: 100dvh) {
+      .thatzfit-desktop {
+        height: min(570px, calc(100vh - 104px)) !important;
+      }
     }
 
     #thatzfit-iframe {
