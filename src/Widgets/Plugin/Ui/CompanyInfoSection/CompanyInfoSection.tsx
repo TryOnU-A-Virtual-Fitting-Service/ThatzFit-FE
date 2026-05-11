@@ -22,14 +22,8 @@ export const CompanyInfoSection = ({ className }: CompanyInfoSectionProps) => {
         className,
       )}
     >
-      <CompanyLogo
-        logoUrl={logoUrl}
-        className='h-[2.125rem] max-w-[8.75rem] object-contain'
-      />
-      <CompanySlogan
-        sloganUrl={sloganUrl}
-        className='h-[1.125rem] max-w-[11rem] object-contain'
-      />
+      <CompanyLogo logoUrl={logoUrl} />
+      <CompanySlogan sloganUrl={sloganUrl} />
     </section>
   );
 };

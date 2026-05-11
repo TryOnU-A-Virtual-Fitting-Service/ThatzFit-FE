@@ -16,7 +16,7 @@ const PluginFooter = ({ children }: PropsWithChildren) => {
 
 export const PluginLayout = ({ children }: PropsWithChildren) => {
   return (
-    <div className='grid h-full min-h-0 grid-rows-[4.875rem_minmax(0,1fr)_2rem] overflow-hidden'>
+    <div className='grid h-full min-h-0 grid-rows-[5.375rem_minmax(0,1fr)_2.25rem] overflow-hidden'>
       {children}
     </div>
   );
