@@ -139,6 +139,7 @@
   html,
   body {
     @apply h-full w-full overflow-hidden;
+    font-size: 16px;
   }
 
   #thatzfit-root {
