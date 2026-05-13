@@ -137,7 +137,9 @@ export const usePostFitting = () => {
             captureDebugError(debugTraceId, 'fitting.execute_failed', {
               error,
             });
-            toast.error(copy.fitting.failed);
+            toast.error(
+              error instanceof Error ? error.message : copy.fitting.failed,
+            );
           },
           onSettled: () => {
             captureDebugInfo(

@@ -27,6 +27,31 @@ export const isCustomError = (error: unknown): error is CustomError => {
   return error instanceof CustomError;
 };
 
+const readHttpErrorBody = async (
+  error: HTTPError,
+): Promise<CustomErrorConstructor | null> => {
+  try {
+    const body = (await error.response
+      .clone()
+      .json()) as Partial<ErrorResponse>;
+    if (
+      body.error &&
+      typeof body.error.code === 'string' &&
+      typeof body.error.message === 'string'
+    ) {
+      return {
+        code: body.error.code,
+        message: body.error.message,
+        validationErrors: body.error.validationErrors,
+      };
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+};
+
 export const createCustomError = async (error: unknown): Promise<unknown> => {
   if (error instanceof CustomError) {
     return error;
@@ -40,6 +65,11 @@ export const createCustomError = async (error: unknown): Promise<unknown> => {
   }
 
   if (error instanceof HTTPError) {
+    const responseError = await readHttpErrorBody(error);
+    if (responseError) {
+      return new CustomError(responseError);
+    }
+
     return new CustomError({
       code: error.response.status.toString(),
       message: error.message,

@@ -85,7 +85,9 @@ export const FittingExecutionButton = () => {
         captureDebugError(debugTraceId, 'dialog.job_create_failed', {
           error,
         });
-        toast.error(copy.fitting.failed);
+        toast.error(
+          error instanceof Error ? error.message : copy.fitting.failed,
+        );
       },
       onSettled: () => {
         captureDebugInfo(debugTraceId, 'dialog.close_after_job_request');
