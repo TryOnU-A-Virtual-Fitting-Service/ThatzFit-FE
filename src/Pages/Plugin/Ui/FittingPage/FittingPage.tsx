@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { useShallow } from 'zustand/react/shallow';
 
 import { FittingClothingCaptureScreen, FittingDialog } from '@/Widgets/Fitting';
 import {
@@ -10,6 +11,7 @@ import {
 
 import {
   fittingModelQueries,
+  resolveCurrentFittingModel,
   useFittingModelStore,
 } from '@/Entities/FittingModel';
 
@@ -22,20 +24,30 @@ export const FittingPage = () => {
       select: (response) => response.data,
     });
 
-  const setCurrentFittingModel = useFittingModelStore(
-    (state) => state.setCurrentFittingModel,
+  const { currentFittingModel, setCurrentFittingModel } = useFittingModelStore(
+    useShallow((state) => ({
+      currentFittingModel: state.currentFittingModel,
+      setCurrentFittingModel: state.setCurrentFittingModel,
+    })),
   );
 
   useEffect(() => {
     if (isFittingModelListSuccess) {
-      setCurrentFittingModel({
-        defaultModelUrl: fittingModelList[0].defaultModelUrl,
-        imageName: fittingModelList[0].defaultModelUrl.split('/').pop() ?? '',
-        modelName: fittingModelList[0].modelName,
-        defaultModelId: fittingModelList[0].defaultModelId,
+      const nextFittingModel = resolveCurrentFittingModel({
+        currentFittingModel,
+        fittingModelList,
       });
+
+      if (nextFittingModel !== currentFittingModel) {
+        setCurrentFittingModel(nextFittingModel);
+      }
     }
-  }, [setCurrentFittingModel, fittingModelList, isFittingModelListSuccess]);
+  }, [
+    currentFittingModel,
+    setCurrentFittingModel,
+    fittingModelList,
+    isFittingModelListSuccess,
+  ]);
 
   return (
     <>

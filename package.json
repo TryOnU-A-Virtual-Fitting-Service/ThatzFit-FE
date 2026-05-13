@@ -13,6 +13,7 @@
     "format": "prettier --write src/**/*.{js,jsx,ts,tsx}",
     "format:check": "prettier --check src/**/*.{js,jsx,ts,tsx}",
     "preview": "vite preview",
+    "test:model-selection": "node scripts/verify-model-selection.mjs",
     "prepare": "husky",
     "clean:linux": "rm -rf dist && rm -rf node_modules",
     "clean:windows": "rmdir /s /q dist && rmdir /s /q node_modules",
