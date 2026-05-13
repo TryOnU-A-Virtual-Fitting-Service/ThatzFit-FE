@@ -46,7 +46,7 @@ export const FittingModelView = () => {
 
   return (
     <div className='bg-grey-08 relative flex h-[18.75rem] w-full justify-center overflow-hidden rounded-[0.375rem] p-[0.5625rem] select-none'>
-      <FittingModelActionDialog dialogTriggerClassName='absolute top-2 left-2' />
+      <FittingModelActionDialog dialogTriggerClassName='absolute top-2 left-2 z-10' />
       {isPostFittingPending && (
         <FittingLoadingView isLoading={isPostFittingPending} />
       )}
@@ -62,7 +62,7 @@ export const FittingModelView = () => {
       )}
       {/* TODO: 사이즈 추천 기능 완성 시 추가 */}
       {/* <FittingResultRouteButton /> */}
-      <ModelZoomDialog dialogTriggerClassName='absolute top-2 right-2' />
+      <ModelZoomDialog dialogTriggerClassName='absolute top-2 right-2 z-10' />
     </div>
   );
 };
