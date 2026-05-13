@@ -4,8 +4,4 @@ export const LOADING_ANIMATION_IMAGE_LIST = [
   'ruler',
   'thread',
   'clothes',
-  '',
-  '',
-  '',
-  '',
 ];
