@@ -5,7 +5,7 @@ import { FittingButton } from '@/Features/Fitting';
 
 export const MainSection = () => {
   return (
-    <section className='flex w-full flex-col px-[0.8125rem]'>
+    <section className='flex h-full min-h-0 w-full flex-col px-[0.8125rem] pb-1'>
       <FittingModelView />
       <FittingHistorySection />
       <FittingButton />

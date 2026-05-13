@@ -1,6 +1,6 @@
 export type PostFittingRequestDto = {
   request: {
-    tryOnJobId: Schema.Fitting['tryOnJobId'];
+    tryOnJobId?: Schema.Fitting['tryOnJobId'];
     modelUrl: Schema.FittingModel['defaultModelUrl'];
     defaultModelId: Schema.FittingModel['defaultModelId'];
     productPageUrl?: string;

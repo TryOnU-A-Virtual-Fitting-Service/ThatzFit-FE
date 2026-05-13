@@ -138,12 +138,12 @@
 
   html,
   body {
-    @apply h-full w-full overflow-hidden;
+    @apply h-full w-full;
     font-size: 16px;
   }
 
   #thatzfit-root {
-    @apply h-screen w-full overflow-hidden;
+    @apply h-screen w-full overflow-x-hidden overflow-y-auto;
   }
 }
 

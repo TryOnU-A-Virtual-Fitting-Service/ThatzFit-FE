@@ -48,7 +48,8 @@ const DEFAULT_CAPTURE_ENGINE: CaptureEngineKind =
     ? 'display-media'
     : 'html2canvas';
 const ENABLE_DISPLAY_MEDIA_FALLBACK =
-  import.meta.env.VITE_CAPTURE_FALLBACK_DISPLAY_MEDIA !== 'false';
+  import.meta.env.VITE_CAPTURE_FALLBACK_DISPLAY_MEDIA === 'true';
+const ALLOW_DISPLAY_MEDIA_CAPTURE = false;
 const MAX_CANVAS_EDGE_PX = 32767;
 const MAX_CANVAS_AREA_PX = 268_435_456;
 
@@ -616,6 +617,13 @@ export class DisplayMediaCaptureEngine implements CaptureEngine {
       },
       hasGetDisplayMedia: Boolean(navigator.mediaDevices?.getDisplayMedia),
     });
+
+    if (!ALLOW_DISPLAY_MEDIA_CAPTURE) {
+      throw new CaptureError(
+        'DISPLAY_MEDIA_NOT_SUPPORTED',
+        '화면 공유 캡처는 비활성화되어 있어요.',
+      );
+    }
 
     if (!navigator.mediaDevices?.getDisplayMedia) {
       throw new CaptureError(

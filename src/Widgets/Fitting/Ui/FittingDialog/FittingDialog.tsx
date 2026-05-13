@@ -2,13 +2,11 @@ import { useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 
-import { usePostFittingJob } from '@/Features/Fitting';
 import {
   getVirtualFittingApiDisabledMessage,
   IS_VIRTUAL_FITTING_API_DISABLED,
 } from '@/Features/Fitting/Config';
 import {
-  captureDebugError,
   captureDebugInfo,
   captureDebugWarn,
   getBlobDebugDetails,
@@ -111,8 +109,6 @@ export const FittingDialog = () => {
   const copy = getPluginCopy();
   const pluginEntryWrapper = usePluginEntryStore((state) => state.entryWrapper);
   const dialogContentRef = useRef<HTMLDivElement>(null);
-  const { mutateAsync: postFittingJob, isPending: isFittingJobPending } =
-    usePostFittingJob();
   const { toast } = useToast();
   const {
     capturedClothingImage,
@@ -251,9 +247,9 @@ export const FittingDialog = () => {
   useEffect(() => {
     captureDebugInfo(debugTraceId, 'dialog.execution_button_render_state', {
       capturedBlob,
-      isFittingJobPending,
+      isFittingRequestPending: false,
     });
-  }, [capturedBlob, debugTraceId, isFittingJobPending]);
+  }, [capturedBlob, debugTraceId]);
 
   const handleClickCancelButton = () => {
     captureDebugInfo(debugTraceId, 'dialog.cancel_click', {
@@ -269,7 +265,7 @@ export const FittingDialog = () => {
 
     captureDebugInfo(debugTraceId, 'dialog.confirm_click', {
       capturedBlob,
-      isFittingJobPending,
+      isFittingRequestPending: false,
     });
 
     if (IS_VIRTUAL_FITTING_API_DISABLED) {
@@ -281,29 +277,18 @@ export const FittingDialog = () => {
       return;
     }
 
-    postFittingJob(debugTraceId, {
-      onSuccess: ({ data: { tryOnJobId } }) => {
-        captureDebugInfo(debugTraceId, 'dialog.job_created', {
-          tryOnJobId,
-        });
-        captureDebugInfo(debugTraceId, 'dialog.job_id_store_start', {
-          tryOnJobId,
-        });
-        useFittingStore.getState().setFittingJobId(tryOnJobId);
+    const fittingRequestId =
+      debugTraceId ?? `inline-${Date.now().toString(36)}`;
+    captureDebugInfo(
+      debugTraceId,
+      'dialog.inline_fitting_request_store_start',
+      {
+        fittingRequestId,
       },
-      onError: (error) => {
-        captureDebugError(debugTraceId, 'dialog.job_create_failed', {
-          error,
-        });
-        toast.error(
-          error instanceof Error ? error.message : copy.fitting.failed,
-        );
-      },
-      onSettled: () => {
-        captureDebugInfo(debugTraceId, 'dialog.close_after_job_request');
-        setIsFittingDialogOpen(false);
-      },
-    });
+    );
+    useFittingStore.getState().setFittingJobId(fittingRequestId);
+    captureDebugInfo(debugTraceId, 'dialog.close_after_inline_fitting_request');
+    setIsFittingDialogOpen(false);
   };
 
   if (!capturedClothingImage || !previewUrl || !isFittingDialogOpen) {
@@ -434,19 +419,18 @@ export const FittingDialog = () => {
         </button>
         <button
           type='button'
-          disabled={isFittingJobPending}
           onClick={handleClickExecutionButton}
           style={{
             flexGrow: 1,
             height: '2.5rem',
-            cursor: isFittingJobPending ? 'not-allowed' : 'pointer',
+            cursor: 'pointer',
             border: 'none',
             borderRadius: '0.375rem',
             background: '#181a1b',
             color: '#ffffff',
             fontSize: '0.875rem',
             fontWeight: 500,
-            opacity: isFittingJobPending ? 0.7 : 1,
+            opacity: 1,
           }}
         >
           {copy.common.confirm}

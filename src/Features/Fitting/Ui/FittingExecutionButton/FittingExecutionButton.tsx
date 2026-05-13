@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { useFittingStore } from '@/Entities/Fitting';
@@ -11,9 +10,7 @@ import {
   getVirtualFittingApiDisabledMessage,
   IS_VIRTUAL_FITTING_API_DISABLED,
 } from '../../Config';
-import { usePostFittingJob } from '../../Model';
 import {
-  captureDebugError,
   captureDebugInfo,
   getBlobDebugDetails,
   getBlobDebugTraceId,
@@ -21,8 +18,6 @@ import {
 
 export const FittingExecutionButton = () => {
   const copy = getPluginCopy();
-  const { mutateAsync: postFittingJob, isPending: isFittingJobPending } =
-    usePostFittingJob();
 
   const {
     capturedClothingImage,
@@ -40,17 +35,6 @@ export const FittingExecutionButton = () => {
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    captureDebugInfo(
-      getBlobDebugTraceId(capturedClothingImage),
-      'dialog.execution_button_render_state',
-      {
-        capturedBlob: getBlobDebugDetails(capturedClothingImage),
-        isFittingJobPending,
-      },
-    );
-  }, [capturedClothingImage, isFittingJobPending]);
-
   if (!capturedClothingImage) {
     return null;
   }
@@ -59,7 +43,7 @@ export const FittingExecutionButton = () => {
     const debugTraceId = getBlobDebugTraceId(capturedClothingImage);
     captureDebugInfo(debugTraceId, 'dialog.confirm_click', {
       capturedBlob: getBlobDebugDetails(capturedClothingImage),
-      isFittingJobPending,
+      isFittingRequestPending: false,
     });
 
     if (IS_VIRTUAL_FITTING_API_DISABLED) {
@@ -71,29 +55,18 @@ export const FittingExecutionButton = () => {
       return;
     }
 
-    postFittingJob(debugTraceId, {
-      onSuccess: ({ data: { tryOnJobId } }) => {
-        captureDebugInfo(debugTraceId, 'dialog.job_created', {
-          tryOnJobId,
-        });
-        captureDebugInfo(debugTraceId, 'dialog.job_id_store_start', {
-          tryOnJobId,
-        });
-        setFittingJobId(tryOnJobId);
+    const fittingRequestId =
+      debugTraceId ?? `inline-${Date.now().toString(36)}`;
+    captureDebugInfo(
+      debugTraceId,
+      'dialog.inline_fitting_request_store_start',
+      {
+        fittingRequestId,
       },
-      onError: (error) => {
-        captureDebugError(debugTraceId, 'dialog.job_create_failed', {
-          error,
-        });
-        toast.error(
-          error instanceof Error ? error.message : copy.fitting.failed,
-        );
-      },
-      onSettled: () => {
-        captureDebugInfo(debugTraceId, 'dialog.close_after_job_request');
-        setIsFittingDialogOpen(false);
-      },
-    });
+    );
+    setFittingJobId(fittingRequestId);
+    captureDebugInfo(debugTraceId, 'dialog.close_after_inline_fitting_request');
+    setIsFittingDialogOpen(false);
   };
 
   return (

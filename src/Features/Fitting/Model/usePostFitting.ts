@@ -21,6 +21,19 @@ import {
   summarizeUrl,
 } from './debug';
 
+const CAPTURE_FILE_EXTENSION_BY_TYPE: Record<string, string> = {
+  'image/webp': 'webp',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+};
+
+const toCapturedClothingFile = (blob: Blob): File => {
+  const type = blob.type || 'image/png';
+  const extension = CAPTURE_FILE_EXTENSION_BY_TYPE[type] ?? 'png';
+
+  return new File([blob], `capturedClothingImage.${extension}`, { type });
+};
+
 export const usePostFitting = () => {
   const copy = getPluginCopy();
   const { toast } = useToast();
@@ -58,7 +71,7 @@ export const usePostFitting = () => {
       getBlobDebugTraceId(capturedClothingImage),
       'fitting.effect_check',
       {
-        hasFittingJobId: Boolean(fittingJobId),
+        hasFittingRequestId: Boolean(fittingJobId),
         hasCapturedClothingImage: Boolean(capturedClothingImage),
         hasCurrentFittingModel: Boolean(currentFittingModel),
         capturedBlob: getBlobDebugDetails(capturedClothingImage),
@@ -79,7 +92,7 @@ export const usePostFitting = () => {
 
       if (IS_VIRTUAL_FITTING_API_DISABLED) {
         captureDebugInfo(debugTraceId, 'fitting.execute_skipped_api_disabled', {
-          fittingJobId,
+          fittingRequestId: fittingJobId,
         });
         setFittingJobId(null);
         setCapturedClothingImage(null);
@@ -87,18 +100,12 @@ export const usePostFitting = () => {
       }
 
       captureDebugInfo(debugTraceId, 'fitting.effect_conditions_met', {
-        fittingJobId,
+        fittingRequestId: fittingJobId,
       });
-      const clothingImageFile = new File(
-        [capturedClothingImage],
-        'capturedClothingImage.png',
-        {
-          type: 'image/png',
-        },
-      );
+      const clothingImageFile = toCapturedClothingFile(capturedClothingImage);
 
       captureDebugInfo(debugTraceId, 'fitting.execute_start', {
-        fittingJobId,
+        fittingRequestId: fittingJobId,
         file: {
           name: clothingImageFile.name,
           size: clothingImageFile.size,
@@ -109,7 +116,6 @@ export const usePostFitting = () => {
       executeFitting(
         {
           request: {
-            tryOnJobId: fittingJobId,
             modelUrl: currentFittingModel.defaultModelUrl,
             defaultModelId: currentFittingModel.defaultModelId,
             debugTraceId,
