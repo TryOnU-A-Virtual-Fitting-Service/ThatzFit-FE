@@ -25,8 +25,16 @@ Request -> loader/injector -> plugin bundle load -> backend asset lookup / image
 - `default/assets/animation/ruler.svg`
 - `default/assets/animation/thread.svg`
 - `default/assets/animation/clothes.svg`
-- `default/models/slim-korean-male.png`
-- `default/models/slim-korean-female.png`
+- `default/models/asian-man.png`
+- `default/models/asian-woman.png`
+- `default/models/white-man.png`
+- `default/models/white-woman.png`
+- `default/models/black-man.png`
+- `default/models/black-woman.png`
+- `default/models/default_male_model.png` (legacy alias for Asian male)
+- `default/models/default_female_model.png` (legacy alias for Asian female)
+- `default/models/slim-korean-male.png` (legacy alias for Asian male)
+- `default/models/slim-korean-female.png` (legacy alias for Asian female)
 
 ## Runtime Prefixes
 

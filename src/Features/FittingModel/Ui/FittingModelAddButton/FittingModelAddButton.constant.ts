@@ -1,1 +1,1 @@
-export const FITTING_MODEL_MAX_COUNT = 5;
+export const FITTING_MODEL_MAX_COUNT = 12;
