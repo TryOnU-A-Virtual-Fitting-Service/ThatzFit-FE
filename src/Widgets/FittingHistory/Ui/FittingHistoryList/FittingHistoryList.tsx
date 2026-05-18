@@ -1,7 +1,9 @@
-import { type KeyboardEvent, useEffect, useRef } from 'react';
+import { type KeyboardEvent, useCallback, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { FittingHistoryListItem } from '@/Features/FittingHistory';
+
+import { Button } from '@/Shared/Components';
 
 import {
   CAN_SCROLL_DIRECTION,
@@ -26,8 +28,7 @@ export const FittingHistoryList = ({
   const { state: canScrollDirection, dispatch } =
     useFittingHistoryListScrollReducer();
 
-  // NOTE: useCallback 대신 ref 활용
-  const calculateCanScrollDirection = useRef(
+  const calculateCanScrollDirection = useCallback(
     (args: CanScrollDirectionAction['payload']) => {
       dispatch({
         type: CAN_SCROLL_DIRECTION_TYPE.SET_SCROLL_DIRECTION,
@@ -36,6 +37,36 @@ export const FittingHistoryList = ({
         },
       });
     },
+    [dispatch],
+  );
+
+  const updateCanScrollDirection = useCallback(() => {
+    const scrollContainer = fittingHistoryListContainer.current;
+    if (!scrollContainer) {
+      return;
+    }
+
+    calculateCanScrollDirection({
+      scrollPosition: scrollContainer.scrollLeft,
+      scrollWidth: scrollContainer.scrollWidth,
+      scrollContainerWidth: scrollContainer.clientWidth,
+    });
+  }, [calculateCanScrollDirection]);
+
+  const scrollHistoryList = useCallback(
+    (direction: -1 | 1) => {
+      const scrollContainer = fittingHistoryListContainer.current;
+      if (!scrollContainer) {
+        return;
+      }
+
+      scrollContainer.scrollBy({
+        left: direction * Math.max(scrollContainer.clientWidth - 48, 48),
+        behavior: 'smooth',
+      });
+      requestAnimationFrame(updateCanScrollDirection);
+    },
+    [updateCanScrollDirection],
   );
 
   useEffect(() => {
@@ -44,16 +75,21 @@ export const FittingHistoryList = ({
       return;
     }
 
+    updateCanScrollDirection();
+
     const handleVerticalScroll = (event: WheelEvent) => {
+      if (scrollContainer.scrollWidth <= scrollContainer.clientWidth) {
+        return;
+      }
+
       event.preventDefault();
       event.stopPropagation();
-      const delta = event.deltaY || event.detail;
+      const delta =
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+          ? event.deltaX
+          : event.deltaY || event.detail;
       scrollContainer.scrollLeft += delta;
-      calculateCanScrollDirection.current({
-        scrollPosition: scrollContainer.scrollLeft,
-        scrollWidth: scrollContainer.scrollWidth,
-        scrollContainerWidth: scrollContainer.clientWidth,
-      });
+      updateCanScrollDirection();
     };
 
     scrollContainer.addEventListener('wheel', handleVerticalScroll, {
@@ -63,7 +99,12 @@ export const FittingHistoryList = ({
     return () => {
       scrollContainer.removeEventListener('wheel', handleVerticalScroll);
     };
-  }, [isSuccess]);
+  }, [
+    fittingHistoryList?.length,
+    isLoading,
+    isSuccess,
+    updateCanScrollDirection,
+  ]);
 
   const handleArrowKeyDown = (event: KeyboardEvent) => {
     switch (event.key) {
@@ -71,24 +112,14 @@ export const FittingHistoryList = ({
       case 'ArrowDown': {
         event.preventDefault();
         event.stopPropagation();
-        event.currentTarget.scrollLeft -= 16;
-        calculateCanScrollDirection.current({
-          scrollPosition: event.currentTarget.scrollLeft,
-          scrollWidth: event.currentTarget.scrollWidth,
-          scrollContainerWidth: event.currentTarget.clientWidth,
-        });
+        scrollHistoryList(-1);
         break;
       }
       case 'ArrowRight':
       case 'ArrowUp': {
         event.preventDefault();
         event.stopPropagation();
-        event.currentTarget.scrollLeft += 16;
-        calculateCanScrollDirection.current({
-          scrollPosition: event.currentTarget.scrollLeft,
-          scrollWidth: event.currentTarget.scrollWidth,
-          scrollContainerWidth: event.currentTarget.clientWidth,
-        });
+        scrollHistoryList(1);
         break;
       }
       default:
@@ -108,31 +139,48 @@ export const FittingHistoryList = ({
   }
 
   return (
-    <div
-      className='bg-grey-08 scrollbar-hide !relative mt-2 flex h-[3.625rem] w-full items-center gap-2 overflow-x-auto rounded-md p-2'
-      ref={fittingHistoryListContainer}
-      onKeyDown={handleArrowKeyDown}
-    >
-      {isLoading ? (
-        <FittingHistoryListLoading />
-      ) : (
-        <>
-          {hasLeftScroll && (
-            <ChevronLeft className='text-grey-03 fixed left-4 z-10' size={12} />
-          )}
-          {fittingHistoryList.map((tryOnResult) => (
+    <div className='relative mt-2'>
+      <div
+        className='bg-grey-08 scrollbar-hide flex h-[3.625rem] w-full items-center gap-2 overflow-x-auto rounded-md p-2'
+        ref={fittingHistoryListContainer}
+        tabIndex={0}
+        onKeyDown={handleArrowKeyDown}
+        onScroll={updateCanScrollDirection}
+      >
+        {isLoading ? (
+          <FittingHistoryListLoading />
+        ) : (
+          fittingHistoryList.map((tryOnResult) => (
             <FittingHistoryListItem
               key={tryOnResult.tryOnJobId}
               fittingHistory={tryOnResult}
             />
-          ))}
-          {hasRightScroll && (
-            <ChevronRight
-              className='text-grey-03 fixed right-4 z-10'
-              size={12}
-            />
-          )}
-        </>
+          ))
+        )}
+      </div>
+      {hasLeftScroll && (
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
+          className='bg-grey-08/90 text-grey-03 absolute top-1/2 left-1 z-10 h-8 w-6 -translate-y-1/2 rounded-md p-0 shadow-sm hover:bg-white'
+          aria-label='Previous fitting history'
+          onClick={() => scrollHistoryList(-1)}
+        >
+          <ChevronLeft size={14} />
+        </Button>
+      )}
+      {hasRightScroll && (
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
+          className='bg-grey-08/90 text-grey-03 absolute top-1/2 right-1 z-10 h-8 w-6 -translate-y-1/2 rounded-md p-0 shadow-sm hover:bg-white'
+          aria-label='Next fitting history'
+          onClick={() => scrollHistoryList(1)}
+        >
+          <ChevronRight size={14} />
+        </Button>
       )}
     </div>
   );
