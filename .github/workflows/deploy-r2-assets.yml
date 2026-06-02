@@ -34,7 +34,7 @@ jobs:
       CDN_BASE_URL: ${{ vars.CDN_BASE_URL || secrets.CDN_BASE_URL || vars.VITE_CDN_HOST }}
       VITE_CDN_HOST: ${{ vars.VITE_CDN_HOST || secrets.CDN_BASE_URL }}
       VITE_PROD_SERVER: ${{ vars.VITE_PROD_SERVER || secrets.VITE_PROD_SERVER || 'https://stage-thatzfit.attentionplease.build' }}
-      VITE_MIXPANEL_PROJECT_TOKEN: b2cea665e6ad875fb758099d3ce84315
+      VITE_MIXPANEL_PROJECT_TOKEN: fecdaa3150744c2a60d0f442be77aca6
       DATABASE_URL: ${{ secrets.R2_ASSET_AUDIT_DATABASE_URL }}
     steps:
       - name: Checkout FE

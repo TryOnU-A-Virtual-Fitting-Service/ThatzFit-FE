@@ -5,7 +5,7 @@
 - Product surface: embedded ThatzFit web plugin
 - SDK: `mixpanel-browser`
 - Token env: `VITE_MIXPANEL_PROJECT_TOKEN`
-- Current project token: `b2cea665e6ad875fb758099d3ce84315`
+- Current project token: `fecdaa3150744c2a60d0f442be77aca6`
 - Value Moment: `virtual_try_on_completed`
 - Identity key: parent-page localStorage `X-UUID`, identified after `/api/v1/user/init` succeeds
 - CDP/warehouse: none detected in this frontend
