@@ -6,6 +6,7 @@ import { useFittingStore } from '@/Entities/Fitting';
 import { fittingHistoryKeys } from '@/Entities/FittingHistory';
 import { useFittingModelStore } from '@/Entities/FittingModel';
 
+import { trackProductEvent } from '@/Shared/Analytics';
 import { getPluginCopy } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
 
@@ -103,6 +104,7 @@ export const usePostFitting = () => {
         fittingRequestId: fittingJobId,
       });
       const clothingImageFile = toCapturedClothingFile(capturedClothingImage);
+      const requestStartedAt = performance.now();
 
       captureDebugInfo(debugTraceId, 'fitting.execute_start', {
         fittingRequestId: fittingJobId,
@@ -131,6 +133,15 @@ export const usePostFitting = () => {
               modelName: data.modelName,
             });
             toast.success(copy.fitting.completed);
+            trackProductEvent('virtual_try_on_completed', {
+              fitting_request_id: fittingJobId,
+              try_on_job_id: data.tryOnJobId,
+              default_model_id: data.defaultModelId,
+              model_name: data.modelName,
+              captured_image_type: clothingImageFile.type || 'unknown',
+              captured_image_size_bytes: clothingImageFile.size,
+              duration_ms: Math.round(performance.now() - requestStartedAt),
+            });
             queryClient.invalidateQueries({
               queryKey: fittingHistoryKeys.list(),
             });
@@ -142,6 +153,16 @@ export const usePostFitting = () => {
           onError: (error) => {
             captureDebugError(debugTraceId, 'fitting.execute_failed', {
               error,
+            });
+            trackProductEvent('virtual_try_on_failed', {
+              fitting_request_id: fittingJobId,
+              default_model_id: currentFittingModel.defaultModelId,
+              model_name: currentFittingModel.modelName,
+              captured_image_type: clothingImageFile.type || 'unknown',
+              captured_image_size_bytes: clothingImageFile.size,
+              duration_ms: Math.round(performance.now() - requestStartedAt),
+              error_message:
+                error instanceof Error ? error.message : copy.fitting.failed,
             });
             toast.error(
               error instanceof Error ? error.message : copy.fitting.failed,

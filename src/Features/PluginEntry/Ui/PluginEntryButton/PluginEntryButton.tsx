@@ -6,7 +6,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { usePluginStore } from '@/Entities/Plugin';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
-import { cn } from '@/Shared/Lib';
+import { trackProductEvent } from '@/Shared/Analytics';
+import { cn, getHostPageUrl } from '@/Shared/Lib';
 
 import { PluginActivateButton } from '../PluginActivateButton';
 import { PluginDeactivateButton } from '../PluginDeactivateButton';
@@ -67,8 +68,12 @@ export const PluginEntryButton = () => {
   }
 
   const handleClickEntryButton = () => {
+    const nextIsPluginOpen = !isPluginOpen;
     setIsEntryHintDismissed(true);
-    setIsPluginOpen(!isPluginOpen);
+    setIsPluginOpen(nextIsPluginOpen);
+    trackProductEvent(nextIsPluginOpen ? 'plugin_opened' : 'plugin_closed', {
+      host_page_url: getHostPageUrl(),
+    });
   };
 
   return createPortal(

@@ -24,6 +24,7 @@ import {
   type GetFittingModelListResponseDto,
 } from '@/Entities/FittingModel';
 
+import { trackProductEvent } from '@/Shared/Analytics';
 import { DialogTitle } from '@/Shared/Components';
 import { getPluginCopy, isCustomError } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
@@ -169,6 +170,10 @@ export const FittingModelEditList = ({
         onSuccess: () => {
           queryClient.invalidateQueries({
             queryKey: fittingModelKeys.all,
+          });
+          trackProductEvent('fitting_model_list_updated', {
+            updated_model_count: editedFittingModelList.length,
+            deleted_model_count: deletedFittingModelList.length,
           });
           setModelActionMode(FITTING_MODEL_ACTION_MODE.SELECT);
         },

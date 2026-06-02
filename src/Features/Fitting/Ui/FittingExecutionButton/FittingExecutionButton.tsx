@@ -1,7 +1,9 @@
 import { useShallow } from 'zustand/react/shallow';
 
 import { useFittingStore } from '@/Entities/Fitting';
+import { useFittingModelStore } from '@/Entities/FittingModel';
 
+import { trackProductEvent } from '@/Shared/Analytics';
 import { Button } from '@/Shared/Components';
 import { getPluginCopy } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
@@ -34,6 +36,9 @@ export const FittingExecutionButton = () => {
   );
 
   const { toast } = useToast();
+  const currentFittingModel = useFittingModelStore(
+    (state) => state.currentFittingModel,
+  );
 
   if (!capturedClothingImage) {
     return null;
@@ -57,6 +62,13 @@ export const FittingExecutionButton = () => {
 
     const fittingRequestId =
       debugTraceId ?? `inline-${Date.now().toString(36)}`;
+    trackProductEvent('fitting_request_submitted', {
+      fitting_request_id: fittingRequestId,
+      default_model_id: currentFittingModel.defaultModelId,
+      model_name: currentFittingModel.modelName,
+      captured_image_type: capturedClothingImage.type || 'unknown',
+      captured_image_size_bytes: capturedClothingImage.size,
+    });
     captureDebugInfo(
       debugTraceId,
       'dialog.inline_fitting_request_store_start',

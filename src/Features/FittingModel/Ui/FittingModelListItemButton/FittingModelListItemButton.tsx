@@ -1,5 +1,6 @@
 import { useFittingModelStore } from '@/Entities/FittingModel';
 
+import { trackProductEvent } from '@/Shared/Analytics';
 import { Button, DialogClose } from '@/Shared/Components';
 
 type FittingModelListItemButtonProps = {
@@ -34,12 +35,17 @@ export const FittingModelListItemButton = ({
         type='button'
         variant='ghost'
         className='text-body1 text-grey-01 hover:bg-grey-07 hover:text-grey-01 w-full bg-white'
-        onClick={() =>
+        onClick={() => {
           handleSelectFittingModel({
             defaultModelUrl: fittingModel.defaultModelUrl,
             modelName: fittingModel.modelName,
-          })
-        }
+          });
+          trackProductEvent('fitting_model_selected', {
+            default_model_id: fittingModel.defaultModelId,
+            model_name: fittingModel.modelName,
+            is_custom_model: fittingModel.isCustom,
+          });
+        }}
       >
         {fittingModel.modelName}
       </Button>

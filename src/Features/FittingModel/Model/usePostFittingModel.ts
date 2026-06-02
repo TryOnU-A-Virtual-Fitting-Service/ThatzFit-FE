@@ -8,6 +8,7 @@ import {
 } from '@/Entities/FittingModel';
 import { usePluginStore } from '@/Entities/Plugin';
 
+import { trackProductEvent } from '@/Shared/Analytics';
 import { getPluginCopy, isCustomError } from '@/Shared/Config';
 import { useToast } from '@/Shared/Model';
 
@@ -63,9 +64,17 @@ export const usePostFittingModel = () => {
               modelName: data.modelName,
               defaultModelId: data.id,
             });
+            trackProductEvent('fitting_model_uploaded', {
+              default_model_id: data.id,
+              model_name: data.modelName,
+            });
             toast.success(copy.model.uploadSuccess);
           },
           onError: (error) => {
+            trackProductEvent('fitting_model_upload_failed', {
+              error_message:
+                error instanceof Error ? error.message : copy.fitting.failed,
+            });
             if (isCustomError(error) || error instanceof Error) {
               toast.error(error.message);
             }
