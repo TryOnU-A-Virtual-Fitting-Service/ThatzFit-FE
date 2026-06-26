@@ -2,7 +2,7 @@ import { trackProductEvent } from '@/Shared/Analytics';
 import { Button } from '@/Shared/Components';
 import { getLocale, getPluginCopy } from '@/Shared/Config';
 
-const THATZFIT_LANDING_BASE_URL = 'https://thatz.fit';
+const THATZFIT_LANDING_BASE_URL = 'https://thatzfit.me';
 
 export const ThatzfitLandingButton = () => {
   const copy = getPluginCopy();

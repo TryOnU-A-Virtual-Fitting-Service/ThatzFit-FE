@@ -36,6 +36,7 @@ jobs:
       VITE_PROD_SERVER: ${{ vars.VITE_PROD_SERVER || secrets.VITE_PROD_SERVER || 'https://stage-thatzfit.attentionplease.build' }}
       VITE_MIXPANEL_PROJECT_TOKEN: fecdaa3150744c2a60d0f442be77aca6
       DATABASE_URL: ${{ secrets.R2_ASSET_AUDIT_DATABASE_URL }}
+      THATZFIT_CDN_CACHE_BUST_VERSION: cors-20260626
     steps:
       - name: Checkout FE
         uses: actions/checkout@v4
@@ -88,6 +89,7 @@ jobs:
         run: |
           pnpm install --frozen-lockfile
           pnpm run build
+          pnpm run prepare:r2-plugin-assets
 
       - name: Build loader
         working-directory: _external/Thatzfit-loader
@@ -138,6 +140,9 @@ jobs:
             --exclude "asset-manifest.json" \
             --exclude "ThatzfitSDKInjector.js" \
             --exclude "ThatzfitService.js"
+          aws s3 sync _external/thatzfit-sdk-injector/dist/r2-plugin-assets "s3://$R2_BUCKET_NAME/plugin" \
+            --endpoint-url "$R2_ENDPOINT_URL" \
+            --cache-control "public, max-age=31536000, immutable"
           aws s3 cp dist/asset-manifest.json "s3://$R2_BUCKET_NAME/plugin/asset-manifest.json" \
             --endpoint-url "$R2_ENDPOINT_URL" \
             --cache-control "public, max-age=60"
