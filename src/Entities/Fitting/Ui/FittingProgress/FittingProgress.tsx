@@ -1,35 +1,33 @@
 import { useEffect, useState } from 'react';
 
+export type FittingProgressPhase = 'processing' | 'complete';
+
 type FittingProgressProps = {
-  isLoading?: boolean;
+  phase: FittingProgressPhase;
 };
 
-export const FittingProgress = ({
-  isLoading = false,
-}: FittingProgressProps) => {
-  const [loadingProgress, setLoadingProgress] = useState<number>(0);
+export const FittingProgress = ({ phase }: FittingProgressProps) => {
+  const [loadingProgress, setLoadingProgress] = useState<number>(1);
 
   useEffect(() => {
-    const duration = 16000;
-    const intervalTime = 1000 / 60;
+    if (phase === 'complete') {
+      setLoadingProgress(100);
+      return;
+    }
 
-    const increment = 100 / (duration / intervalTime); // 각 step의 증가량
-
-    setLoadingProgress(0);
-
-    const interval = setInterval(() => {
-      setLoadingProgress((prev) => {
-        const next = prev + increment;
-        if (next >= 100 || !isLoading) {
-          clearInterval(interval);
-          return 100;
+    setLoadingProgress(1);
+    const interval = window.setInterval(() => {
+      setLoadingProgress((currentProgress) => {
+        if (currentProgress >= 99) {
+          return 99;
         }
-        return next;
-      });
-    }, intervalTime);
 
-    return () => clearInterval(interval);
-  }, [isLoading]);
+        return currentProgress + 1;
+      });
+    }, 160);
+
+    return () => window.clearInterval(interval);
+  }, [phase]);
 
   return <span className='text-heading3'>{Math.round(loadingProgress)}%</span>;
 };

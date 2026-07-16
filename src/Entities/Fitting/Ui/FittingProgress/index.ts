@@ -1,1 +1,1 @@
-export { FittingProgress } from './FittingProgress';
+export { FittingProgress, type FittingProgressPhase } from './FittingProgress';

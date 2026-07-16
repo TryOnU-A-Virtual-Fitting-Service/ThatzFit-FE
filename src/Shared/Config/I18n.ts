@@ -1,4 +1,4 @@
-export const SUPPORTED_LOCALES = ['ko', 'ja', 'en'] as const;
+export const SUPPORTED_LOCALES = ['ko', 'en'] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -113,62 +113,6 @@ const pluginCopy = {
       uploadLoading: '모델이 될 준비 중...',
       uploadSuccess: '새로운 모델을 추가했어요.',
       maxCount: (count) => `최대 ${count}개의 모델만 추가할 수 있어요.`,
-    },
-  },
-  ja: {
-    common: {
-      cancel: 'キャンセル',
-      confirm: '確認',
-      done: '完了',
-    },
-    plugin: {
-      reload: '再読み込み',
-      errorLine1: '一時的なエラーが発生しました。',
-      errorLine2: 'しばらくしてからもう一度お試しください。',
-      poweredBy: 'ThatzFitで試着中',
-      companyLogoAlt: '会社ロゴ',
-      companySloganAlt: '会社タグライン',
-      entryButtonAlt: 'プラグイン起動ボタンのロゴ',
-    },
-    fitting: {
-      button: '試着する',
-      loading: '試着を作成中...',
-      failed: '試着を作成できませんでした。',
-      completed: '試着が完了しました。',
-      apiDisabled: '試着APIは一時的に停止中です。',
-      dialogAriaLabel: '試着実行の確認',
-      previewAlt: '選択した服の画像',
-      confirmTitle: 'この服を試着しますか？',
-      confirmHelp: 'トップスまたはボトムスのみ試着できます。',
-      captureGuide: '試着したい服の写真部分をドラッグしてください。',
-      captureFailed: '服のキャプチャに失敗しました。',
-      captureTooLarge: '選択範囲が大きすぎます。少し小さく選択してください。',
-      captureSecurity:
-        '外部画像のセキュリティ制限によりキャプチャできませんでした。もう一度お試しください。',
-      capturePermission:
-        '画面共有の権限を許可してから、もう一度お試しください。',
-      captureUnsupported: '現在のブラウザは画面キャプチャに対応していません。',
-      captureEmpty:
-        'キャプチャ画像を作成できませんでした。もう一度お試しください。',
-    },
-    history: {
-      title: '試着履歴',
-      empty: 'まだ試着した服はありません。新しい服を試してみませんか？',
-      info: '最大20件まで保存されます',
-      resultAlt: 'バーチャル試着結果',
-    },
-    model: {
-      addTitle: 'モデルを追加',
-      addQuestion: 'この写真をモデルメニューに追加しますか？',
-      addHelpLine1: 'シンプルなポーズの全身・半身写真ほど',
-      addHelpLine2: 'より自然な試着結果になります。',
-      selectTitle: 'モデルを選択',
-      editTitle: '試着モデルを編集',
-      zoomIn: 'モデルを拡大',
-      zoomOut: 'モデルを縮小',
-      uploadLoading: 'モデルを準備中...',
-      uploadSuccess: '新しいモデルを追加しました。',
-      maxCount: (count) => `追加できるモデルは最大${count}件です。`,
     },
   },
   en: {

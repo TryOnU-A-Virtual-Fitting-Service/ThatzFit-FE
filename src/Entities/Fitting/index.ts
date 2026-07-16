@@ -1,2 +1,2 @@
 export { useFittingStore } from './Model';
-export { FittingProgress } from './Ui';
+export { FittingProgress, type FittingProgressPhase } from './Ui';

@@ -25,7 +25,7 @@ export const FittingModelView = () => {
       })),
     );
 
-  const { isPending: isPostFittingPending } = usePostFitting();
+  const { isFittingLoading, progressPhase } = usePostFitting();
   const { isPending: isPostFittingModelPending } = usePostFittingModel();
 
   useEffect(() => {
@@ -47,13 +47,11 @@ export const FittingModelView = () => {
   return (
     <div className='bg-grey-08 relative flex h-[18rem] w-full shrink-0 justify-center overflow-hidden rounded-[0.375rem] p-[0.5625rem] select-none'>
       <FittingModelActionDialog dialogTriggerClassName='absolute top-2 left-2 z-10' />
-      {isPostFittingPending && (
-        <FittingLoadingView isLoading={isPostFittingPending} />
-      )}
+      {isFittingLoading && <FittingLoadingView phase={progressPhase} />}
       {isPostFittingModelPending && (
         <FittingModelUploadLoadingView isLoading={isPostFittingModelPending} />
       )}
-      {!isPostFittingPending && !isPostFittingModelPending && (
+      {!isFittingLoading && !isPostFittingModelPending && (
         <FittingModelImage
           src={currentFittingModel.defaultModelUrl}
           imageFileName={currentFittingModel.imageName}
