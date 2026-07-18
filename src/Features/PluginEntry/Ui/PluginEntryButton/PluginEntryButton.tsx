@@ -16,7 +16,7 @@ const entryButtonPositionStyle: CSSProperties = {
   position: 'fixed',
   right: '24px',
   bottom: '24px',
-  zIndex: 999999,
+  zIndex: 1000001,
   width: '48px',
   height: '48px',
 };

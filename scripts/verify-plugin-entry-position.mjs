@@ -13,6 +13,11 @@ assert.match(source, /data-thatzfit-entry-position='true'/);
 assert.match(source, /style=\{entryButtonPositionStyle\}/);
 assert.match(source, /width: '100%'/);
 assert.match(source, /height: '100%'/);
+assert.match(
+  source,
+  /zIndex: 1000001/,
+  'entry anchor must stack above the plugin iframe and entry hint',
+);
 assert.equal(
   (source.match(/\.\.\.entryButtonPositionStyle/g) ?? []).length,
   0,
