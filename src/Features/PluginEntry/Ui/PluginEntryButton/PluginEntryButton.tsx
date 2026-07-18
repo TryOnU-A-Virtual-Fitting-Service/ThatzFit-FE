@@ -22,6 +22,8 @@ const entryButtonPositionStyle: CSSProperties = {
 };
 
 const entryButtonBaseStyle: CSSProperties = {
+  width: '100%',
+  height: '100%',
   padding: 0,
   border: 0,
   borderRadius: '16px',
@@ -29,13 +31,11 @@ const entryButtonBaseStyle: CSSProperties = {
 };
 
 const entryButtonStyle: CSSProperties = {
-  ...entryButtonPositionStyle,
   ...entryButtonBaseStyle,
   background: 'transparent',
 };
 
 const closeButtonStyle: CSSProperties = {
-  ...entryButtonPositionStyle,
   ...entryButtonBaseStyle,
   padding: '12px',
   background: '#ffffff',
@@ -138,25 +138,27 @@ export const PluginEntryButton = () => {
           </svg>
         </div>
       )}
-      {isPluginOpen ? (
-        <PluginDeactivateButton
-          className='cursor-pointer hover:bg-white'
-          style={closeButtonStyle}
-          onClick={handleClickEntryButton}
-        />
-      ) : (
-        <PluginActivateButton
-          className={cn(
-            'cursor-pointer transition-opacity duration-300 ease-in-out',
-            isPluginOpen ? 'opacity-0' : 'opacity-100',
-          )}
-          style={{
-            ...entryButtonStyle,
-            display: isPluginOpen ? 'none' : undefined,
-          }}
-          onClick={handleClickEntryButton}
-        />
-      )}
+      <div data-thatzfit-entry-position='true' style={entryButtonPositionStyle}>
+        {isPluginOpen ? (
+          <PluginDeactivateButton
+            className='cursor-pointer hover:bg-white'
+            style={closeButtonStyle}
+            onClick={handleClickEntryButton}
+          />
+        ) : (
+          <PluginActivateButton
+            className={cn(
+              'cursor-pointer transition-opacity duration-300 ease-in-out',
+              isPluginOpen ? 'opacity-0' : 'opacity-100',
+            )}
+            style={{
+              ...entryButtonStyle,
+              display: isPluginOpen ? 'none' : undefined,
+            }}
+            onClick={handleClickEntryButton}
+          />
+        )}
+      </div>
     </>,
     entryWrapper,
   );
