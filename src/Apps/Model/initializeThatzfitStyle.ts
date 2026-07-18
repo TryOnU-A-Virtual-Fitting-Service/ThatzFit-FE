@@ -1,3 +1,5 @@
+import { PLUGIN_PANEL_BOTTOM } from '@/Shared/Config';
+
 const PLUGIN_WIDTH = 240;
 const PLUGIN_HEIGHT = 570;
 const PLUGIN_HORIZONTAL_MARGIN = 32;
@@ -32,7 +34,7 @@ export const initializeThatzfitStyle = () => {
 
     .thatzfit-desktop {
       position: fixed !important;
-      bottom: 72px !important;
+      bottom: ${PLUGIN_PANEL_BOTTOM} !important;
       right: 24px !important;
       width: 240px !important;
       height: 570px !important;

@@ -7,6 +7,7 @@ import { usePluginStore } from '@/Entities/Plugin';
 import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
 import { trackProductEvent } from '@/Shared/Analytics';
+import { PLUGIN_ENTRY_BOTTOM, PLUGIN_ENTRY_HINT_BOTTOM } from '@/Shared/Config';
 import { cn, getHostPageUrl } from '@/Shared/Lib';
 
 import { PluginActivateButton } from '../PluginActivateButton';
@@ -15,7 +16,7 @@ import { PluginDeactivateButton } from '../PluginDeactivateButton';
 const entryButtonPositionStyle: CSSProperties = {
   position: 'fixed',
   right: '24px',
-  bottom: '24px',
+  bottom: PLUGIN_ENTRY_BOTTOM,
   zIndex: 1000001,
   width: '48px',
   height: '48px',
@@ -98,7 +99,7 @@ export const PluginEntryButton = () => {
           style={{
             position: 'fixed',
             right: '56px',
-            bottom: '60px',
+            bottom: PLUGIN_ENTRY_HINT_BOTTOM,
             zIndex: 1000000,
             width: '96px',
             height: '78px',
