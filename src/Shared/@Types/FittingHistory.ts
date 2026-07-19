@@ -3,8 +3,8 @@ declare global {
     type FittingHistory = {
       tryOnJobId: Schema.Fitting['tryOnJobId'];
       tryOnResultUrl: string;
-      defaultModelId: Schema.FittingModel['defaultModelId'];
-      modelName: Schema.FittingModel['modelName'];
+      defaultModelId?: Schema.FittingModel['defaultModelId'] | null;
+      modelName?: Schema.FittingModel['modelName'] | null;
     };
   }
 }

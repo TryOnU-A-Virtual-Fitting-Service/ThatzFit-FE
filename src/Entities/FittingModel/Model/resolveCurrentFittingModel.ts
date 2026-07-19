@@ -3,6 +3,7 @@ export type CurrentFittingModel = {
   imageName: string;
   modelName: Schema.FittingModel['modelName'];
   defaultModelId: Schema.FittingModel['defaultModelId'];
+  selectionSource?: 'history';
 };
 
 const createCurrentFittingModel = (
@@ -30,13 +31,14 @@ export const resolveCurrentFittingModel = ({
   }
 
   const hasCurrentModel = currentFittingModel.defaultModelUrl.length > 0;
+  const isHistorySelection = currentFittingModel.selectionSource === 'history';
   const isCurrentModelAvailable = fittingModelList.some(
     (fittingModel) =>
       fittingModel.defaultModelId === currentFittingModel.defaultModelId ||
       fittingModel.defaultModelUrl === currentFittingModel.defaultModelUrl,
   );
 
-  if (hasCurrentModel && isCurrentModelAvailable) {
+  if (hasCurrentModel && (isHistorySelection || isCurrentModelAvailable)) {
     return currentFittingModel;
   }
 

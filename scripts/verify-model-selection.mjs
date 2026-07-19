@@ -15,6 +15,10 @@ const fittingPagePath = resolve(
   rootDir,
   'src/Pages/Plugin/Ui/FittingPage/FittingPage.tsx',
 );
+const fittingHistoryItemPath = resolve(
+  rootDir,
+  'src/Features/FittingHistory/Ui/FittingHistoryListItem/FittingHistoryListItem.tsx',
+);
 
 assert.ok(
   existsSync(resolverPath),
@@ -93,6 +97,23 @@ const selectedModel = {
   modelName: 'Model 2',
 };
 
+const legacyHistorySelection = {
+  defaultModelId: 99,
+  defaultModelUrl: 'https://cdn.example.com/legacy-try-on-result.png',
+  imageName: 'legacy-try-on-result.png',
+  modelName: 'Model 1',
+  selectionSource: 'history',
+};
+
+assert.equal(
+  resolveCurrentFittingModel({
+    currentFittingModel: legacyHistorySelection,
+    fittingModelList: defaultModels,
+  }),
+  legacyHistorySelection,
+  'a clicked history result must remain active even when its URL is not a default model URL',
+);
+
 assert.equal(
   resolveCurrentFittingModel({
     currentFittingModel: selectedModel,
@@ -135,6 +156,7 @@ assert.deepEqual(
 );
 
 const fittingPageSource = readFileSync(fittingPagePath, 'utf8');
+const fittingHistoryItemSource = readFileSync(fittingHistoryItemPath, 'utf8');
 
 assert.match(
   fittingPageSource,
@@ -146,6 +168,22 @@ assert.doesNotMatch(
   fittingPageSource,
   /setCurrentFittingModel\(\s*\{\s*defaultModelUrl:\s*fittingModelList\[0\]/s,
   'FittingPage must not reset the current model directly from fittingModelList[0]',
+);
+
+assert.match(
+  fittingHistoryItemSource,
+  /selectionSource:\s*'history'/,
+  'history clicks must explicitly mark the current selection as history',
+);
+assert.match(
+  fittingHistoryItemSource,
+  /aria-pressed=\{isSelected\}/,
+  'the selected history item must expose its active state',
+);
+assert.match(
+  fittingHistoryItemSource,
+  /isSelected[\s\S]*border-black/,
+  'the selected history item must have a visible active style',
 );
 
 console.log('model selection regression checks passed');

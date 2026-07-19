@@ -1,14 +1,11 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+import type { CurrentFittingModel } from './resolveCurrentFittingModel';
+
 type FittingModelState = {
   defaultModels: Schema.FittingModel[];
-  currentFittingModel: {
-    defaultModelUrl: Schema.FittingModel['defaultModelUrl'];
-    imageName: string;
-    modelName: Schema.FittingModel['modelName'];
-    defaultModelId: Schema.FittingModel['defaultModelId'];
-  };
+  currentFittingModel: CurrentFittingModel;
   addedFittingModel?: {
     modelImageFile: File;
     modelImageUrl: string;
@@ -23,12 +20,7 @@ type FittingModelState = {
 
 type FittingModelAction = {
   setDefaultModels: (defaultModels: Schema.FittingModel[]) => void;
-  setCurrentFittingModel: (currentFittingModel: {
-    defaultModelUrl: Schema.FittingModel['defaultModelUrl'];
-    imageName: string;
-    modelName: Schema.FittingModel['modelName'];
-    defaultModelId: Schema.FittingModel['defaultModelId'];
-  }) => void;
+  setCurrentFittingModel: (currentFittingModel: CurrentFittingModel) => void;
   setAddedFittingModel: (addedFittingModel?: {
     modelImageFile: File;
     modelImageUrl: string;
