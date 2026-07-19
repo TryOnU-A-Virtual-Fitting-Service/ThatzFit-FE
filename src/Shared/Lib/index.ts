@@ -1,2 +1,2 @@
-export { getHostPageUrl } from './hostPage';
+export { getHostPageUrl, isThatzFitDemoPage } from './hostPage';
 export { cn } from './utils';

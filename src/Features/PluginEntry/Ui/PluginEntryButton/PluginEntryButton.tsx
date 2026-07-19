@@ -8,7 +8,7 @@ import { usePluginEntryStore } from '@/Entities/PluginEntry';
 
 import { trackProductEvent } from '@/Shared/Analytics';
 import { PLUGIN_ENTRY_BOTTOM, PLUGIN_ENTRY_HINT_BOTTOM } from '@/Shared/Config';
-import { cn, getHostPageUrl } from '@/Shared/Lib';
+import { cn, getHostPageUrl, isThatzFitDemoPage } from '@/Shared/Lib';
 
 import { PluginActivateButton } from '../PluginActivateButton';
 import { PluginDeactivateButton } from '../PluginDeactivateButton';
@@ -92,7 +92,7 @@ export const PluginEntryButton = () => {
           }
         `}
       </style>
-      {!isPluginOpen && !isEntryHintDismissed && (
+      {isThatzFitDemoPage() && !isPluginOpen && !isEntryHintDismissed && (
         <div
           aria-hidden='true'
           data-thatzfit-entry-hint='true'
