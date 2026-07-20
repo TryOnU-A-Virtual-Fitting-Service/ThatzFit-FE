@@ -9,6 +9,8 @@ import {
   MainSection,
 } from '@/Widgets/Plugin';
 
+import { MobileProductTryOnBridge } from '@/Features/Fitting';
+
 import {
   fittingModelQueries,
   resolveCurrentFittingModel,
@@ -64,6 +66,7 @@ export const FittingPage = () => {
       </PluginLayout>
       <FittingClothingCaptureScreen />
       <FittingDialog />
+      <MobileProductTryOnBridge />
     </>
   );
 };

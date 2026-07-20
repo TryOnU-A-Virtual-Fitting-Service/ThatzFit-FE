@@ -36,6 +36,8 @@ type PluginCopy = {
     capturePermission: string;
     captureUnsupported: string;
     captureEmpty: string;
+    mobileImageFailed: string;
+    mobileTagGuide: string;
   };
   history: {
     title: string;
@@ -94,6 +96,8 @@ const pluginCopy = {
         '화면 공유 권한을 허용해 주세요. 권한 허용 후 다시 시도해 주세요.',
       captureUnsupported: '현재 브라우저에서 화면 공유 캡처를 지원하지 않아요.',
       captureEmpty: '캡처 이미지 생성에 실패했어요. 다시 시도해 주세요.',
+      mobileImageFailed: '상품 이미지를 불러오지 못했어요. 다시 시도해 주세요.',
+      mobileTagGuide: '상품 태그에서 입어보기',
     },
     history: {
       title: '피팅 히스토리',
@@ -149,6 +153,9 @@ const pluginCopy = {
       capturePermission: 'Allow screen sharing, then try again.',
       captureUnsupported: "This browser doesn't support screen capture.",
       captureEmpty: "We couldn't create the captured image. Please try again.",
+      mobileImageFailed:
+        "We couldn't load this product image. Please try again.",
+      mobileTagGuide: 'Use a product try-on tag',
     },
     history: {
       title: 'Try-on history',

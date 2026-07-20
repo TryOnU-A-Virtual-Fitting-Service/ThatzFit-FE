@@ -11,6 +11,7 @@ on:
       - index.html
       - package.json
       - pnpm-lock.yaml
+      - scripts/**
       - src/**
       - tsconfig*.json
       - vite.config.ts
@@ -56,7 +57,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm run build
+        run: |
+          pnpm run test:mobile-product-try-on
+          pnpm run build
 
       - name: Checkout SDK injector
         uses: actions/checkout@v4
@@ -88,6 +91,7 @@ jobs:
           THATZFIT_FE_MANIFEST_PATH: ../../dist/asset-manifest.json
         run: |
           pnpm install --frozen-lockfile
+          pnpm run test:mobile-product-try-on
           pnpm run build
           pnpm run prepare:r2-plugin-assets
 

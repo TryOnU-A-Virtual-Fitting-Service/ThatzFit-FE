@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "test:model-selection": "node scripts/verify-model-selection.mjs",
     "test:plugin-entry-position": "node scripts/verify-plugin-entry-position.mjs",
+    "test:mobile-product-try-on": "node scripts/verify-mobile-product-try-on.mjs",
     "prepare": "husky",
     "clean:linux": "rm -rf dist && rm -rf node_modules",
     "clean:windows": "rmdir /s /q dist && rmdir /s /q node_modules",

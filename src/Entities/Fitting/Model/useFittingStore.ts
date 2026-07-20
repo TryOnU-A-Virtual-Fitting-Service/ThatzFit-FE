@@ -7,6 +7,7 @@ type FittingState = {
   isFittingDialogOpen: boolean;
   isImageProcessing: boolean;
   fittingJobId: string | null;
+  productPageUrl: string | null;
 };
 
 type FittingAction = {
@@ -15,6 +16,7 @@ type FittingAction = {
   setIsFittingDialogOpen: (isFittingDialogOpen: boolean) => void;
   setIsImageProcessing: (isImageProcessing: boolean) => void;
   setFittingJobId: (fittingJobId: string | null) => void;
+  setProductPageUrl: (productPageUrl: string | null) => void;
 };
 
 type FittingStore = FittingState & FittingAction;
@@ -26,6 +28,7 @@ export const useFittingStore = create<FittingStore>()(
     isFittingDialogOpen: false,
     isImageProcessing: false,
     fittingJobId: null,
+    productPageUrl: null,
     setIsCapturing: (isCapturing) =>
       set({ isCapturing }, undefined, 'setIsCapturing'),
     setCapturedClothingImage: (capturedClothingImage) =>
@@ -36,5 +39,7 @@ export const useFittingStore = create<FittingStore>()(
       set({ isImageProcessing }, undefined, 'setIsImageProcessing'),
     setFittingJobId: (fittingJobId) =>
       set({ fittingJobId }, undefined, 'setFittingJobId'),
+    setProductPageUrl: (productPageUrl) =>
+      set({ productPageUrl }, undefined, 'setProductPageUrl'),
   })),
 );

@@ -67,14 +67,18 @@ export const usePostFitting = () => {
   const {
     fittingJobId,
     capturedClothingImage,
+    productPageUrl,
     setFittingJobId,
     setCapturedClothingImage,
+    setProductPageUrl,
   } = useFittingStore(
     useShallow((state) => ({
       fittingJobId: state.fittingJobId,
       setFittingJobId: state.setFittingJobId,
       capturedClothingImage: state.capturedClothingImage,
+      productPageUrl: state.productPageUrl,
       setCapturedClothingImage: state.setCapturedClothingImage,
+      setProductPageUrl: state.setProductPageUrl,
     })),
   );
 
@@ -123,6 +127,7 @@ export const usePostFitting = () => {
         });
         setFittingJobId(null);
         setCapturedClothingImage(null);
+        setProductPageUrl(null);
         return;
       }
 
@@ -147,6 +152,7 @@ export const usePostFitting = () => {
             request: {
               modelUrl: currentFittingModel.defaultModelUrl,
               defaultModelId: currentFittingModel.defaultModelId,
+              productPageUrl: productPageUrl ?? undefined,
               debugTraceId,
             },
             file: clothingImageFile,
@@ -203,6 +209,7 @@ export const usePostFitting = () => {
           setIsResultTransitioning(false);
           setFittingJobId(null);
           setCapturedClothingImage(null);
+          setProductPageUrl(null);
         }
       };
 
@@ -212,12 +219,14 @@ export const usePostFitting = () => {
     fittingJobId,
     currentFittingModel,
     capturedClothingImage,
+    productPageUrl,
     fittingModelList,
     toast,
     queryClient,
     executeFitting,
     setFittingJobId,
     setCapturedClothingImage,
+    setProductPageUrl,
     setCurrentFittingModel,
     copy,
   ]);

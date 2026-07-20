@@ -191,6 +191,25 @@ Slice는 도메인 단위입니다.
 
 ## 9. 현재 개선 과제
 
+### 모바일 터치 환경의 상품 직접 피팅
+
+터치 모바일에서는 드래그 캡처 대신 상품 이미지 태그에서 피팅을 바로 시작합니다.
+
+1. SDK injector가 coarse pointer/no-hover 환경에서 상품 이미지를 탐지합니다.
+2. plugin FE가 모델/사용자 초기화를 끝내면 readiness 이벤트를 보냅니다.
+3. 사용자가 상품 우상단 `입어보기` 태그를 누르면 injector가 versioned request 이벤트를 보냅니다.
+4. FE가 host의 coarse pointer/no-hover 조건을 다시 확인하고 payload의 버전, request ID, `http/https` 이미지 URL을 검증합니다.
+5. FE가 `/api/v1/try-on/image/proxy?responseType=blob`으로 이미지를 가져오고 MIME/크기를 다시 확인합니다.
+6. 기존 `capturedClothingImage`/`fittingJobId` 상태에 저장해 확인 다이얼로그 없이 기존 `usePostFitting` 흐름을 실행합니다.
+
+모바일 패널 안의 기존 캡처 버튼은 비활성 안내로 바뀝니다. 데스크톱과 fine pointer 환경에서는 기존 캡처 버튼과 드래그 스크린샷 UI가 그대로 유지됩니다.
+
+보안 전제:
+
+- host DOM과 CustomEvent는 인증 경계가 아니며 입력값으로만 취급합니다.
+- SDK와 FE가 URL scheme, 자격증명, 길이를 검증하고 backend proxy가 DNS/private IP, redirect hop, MIME, 8MB 제한을 다시 검증합니다. backend는 검증된 공개 IP로 실제 TCP 연결을 고정해 DNS rebind도 차단합니다.
+- 원본 이미지 URL이나 이미지 본문은 Mixpanel로 전송하지 않습니다.
+
 ### 9.1 FastAPI 전환에 따른 API 명세 대응
 
 - 배경: 백엔드가 FastAPI 기반으로 변경되면서 엔드포인트/응답 스키마/에러 포맷 차이가 발생할 수 있음

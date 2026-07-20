@@ -85,7 +85,7 @@ const isThatzfitElement = (element: Element): boolean => {
   }
 
   const closest = element.closest?.(
-    '#thatzfit-plugin, #thatzfit-entry, #thatzfit-iframe-wrapper, #thatzfit-iframe, #thatzfit-root, #thatzfit-plugin-wrapper, #thatzfit-plugin-entry-wrapper',
+    '#thatzfit-plugin, #thatzfit-entry, #thatzfit-iframe-wrapper, #thatzfit-iframe, #thatzfit-root, #thatzfit-plugin-wrapper, #thatzfit-plugin-entry-wrapper, #thatzfit-mobile-product-try-on',
   );
 
   return closest !== null;
