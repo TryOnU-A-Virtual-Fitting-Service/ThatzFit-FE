@@ -11,6 +11,13 @@ const source = await readFile(
   ),
   'utf8',
 );
+const activateButtonSource = await readFile(
+  new URL(
+    '../src/Features/PluginEntry/Ui/PluginActivateButton/PluginActivateButton.tsx',
+    import.meta.url,
+  ),
+  'utf8',
+);
 const positionSource = await readFile(
   new URL('../src/Shared/Config/PluginPosition.ts', import.meta.url),
   'utf8',
@@ -101,6 +108,22 @@ assert.equal(
   (source.match(/\.\.\.entryButtonPositionStyle/g) ?? []).length,
   0,
   'position style must belong only to the shared anchor',
+);
+assert.doesNotMatch(
+  activateButtonSource,
+  /transform:\s*'scale\(/,
+  'entry artwork must not be rasterized small and enlarged with a CSS transform',
+);
+assert.match(activateButtonSource, /position: 'relative'/);
+assert.match(activateButtonSource, /position: 'absolute'/);
+assert.match(activateButtonSource, /top: '-52%'/);
+assert.match(activateButtonSource, /left: '-52%'/);
+assert.match(activateButtonSource, /width: '204%'/);
+assert.match(activateButtonSource, /height: '204%'/);
+assert.match(
+  activateButtonSource,
+  /maxWidth: 'none'/,
+  'entry artwork must render at its final layout size before clipping',
 );
 
 console.log('plugin-entry-position: ok');

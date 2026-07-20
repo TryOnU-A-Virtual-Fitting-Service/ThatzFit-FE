@@ -43,6 +43,7 @@ export const PluginActivateButton = ({
         ...style,
         display: isImageLoadComplete ? style?.display : 'none',
         overflow: 'hidden',
+        position: 'relative',
       }}
       onClick={onClick}
     >
@@ -53,12 +54,14 @@ export const PluginActivateButton = ({
         className='h-full w-full'
         style={{
           display: 'block',
-          width: '100%',
-          height: '100%',
+          position: 'absolute',
+          top: '-52%',
+          left: '-52%',
+          width: '204%',
+          height: '204%',
+          maxWidth: 'none',
           borderRadius: '16px',
           objectFit: 'fill',
-          transform: 'scale(2.04)',
-          transformOrigin: 'center',
         }}
       />
     </Button>
